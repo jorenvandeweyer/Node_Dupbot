@@ -1,0 +1,1711 @@
+var jsonfile = require('jsonfile');
+var https = require('https');
+//var cheerio = require("cheerio");
+var fs = require('fs');
+var ytdl = require('ytdl-core');
+const streamOptions = { seek: 0, volume: 1 };
+var google = require('googleapis');
+
+/**************/
+/*****VARS*****/
+/**************/
+
+var youtube
+
+var bot, serverManager, listener, serverSettings;
+
+/***************/
+/****Exports****/
+/***************/
+
+exports.recieveMessage = function(msg){
+	if(isCommand(msg)){
+		if(!commandSwitch(msg)){
+			try{
+				if(serverManager.settings[msg.guild.id].deleteCommands){
+					msg.delete();
+				}
+			} catch(e){
+				//nothing
+			}
+		}
+	}
+}
+
+function isCommand(msg){
+	if(serverSettings.ownerOnlyGuilds.indexOf(msg.guild.id.toString()) && msg.author.id !== serverSettings.botOwner) return false;
+	if(msg.author.id != bot.user.id && msg.content[0] == serverManager.prefix){
+		msg.params = msg.content.slice(1).split(" ");
+		msg.command = msg.params.shift();
+		return true;
+	} else {
+		return false;;
+	}
+}
+
+exports.setup = function (b, l, s){
+	console.log("[*]initiating setup");
+	bot = b;
+	listener = l;
+	serverSettings = s;
+	youtube = google.youtube({
+		version: 'v3',
+		auth: serverSettings.youtubeAuth
+	});
+	serverManager = new Servers(b);
+	for(key of bot.guilds){
+
+		console.log("[*]connected to server: " + key);
+	}
+	if(bot.token == serverSettings.token){
+		serverManager.prefix = serverSettings.prefix;
+	} else {
+		serverManager.prefix = serverSettings.prefix_dev;
+	}
+	console.log("[+]setup ready");
+}
+
+/***************/
+/****Servers****/
+/***************/
+
+function Servers(bot){
+	this.bot = bot;
+	this.settings;
+	this.users;
+	this.stats;
+	this.songQueue = {};
+	this.collectors = {};
+	this.getSettings();
+	this.getUsers();
+	this.getStats();
+}
+
+Servers.prototype = {
+	getSettings: function(){
+		var thus = this;
+		jsonfile.readFile("settings.json", function(err, obj) {
+			thus.settings = obj;
+			if(obj == undefined){
+				thus.settings = {};
+			}
+		});
+	},
+	saveSettings: function(){
+		jsonfile.writeFile("settings.json", this.settings, function(err){
+			//console.error(err);
+		});
+	},
+	getUsers: function(){
+		var thus = this;
+		jsonfile.readFile("users.json", function(err, obj) {
+			thus.users = obj;
+			if(obj == undefined){
+				thus.users = {};
+			}
+		});
+	},
+	saveUsers: function(){
+		jsonfile.writeFile("users.json", this.users, function(err){
+			//console.error(err);
+		});
+	},
+	getStats: function(){
+		var thus = this;
+		jsonfile.readFile("stats.json", function(err, obj) {
+			thus.stats = obj;
+			if(obj == undefined){
+				thus.stats = {};
+			}
+		});
+	},
+	saveStats: function(){
+		jsonfile.writeFile("stats.json", this.stats, function(err){
+			//console.error(err);
+		});
+	},
+	getOwner: function(msg){
+		return this.bot.guilds.get(msg.guild.id).ownerID;
+	},
+	getRoles: function(msg){
+		return msg.member.roles.keyArray();
+	},
+	isOwner: function(msg){
+		return msg.author.id == this.getOwner(msg);
+	},
+	isAdmin: function(msg){
+		return this.isOwner(msg) || msg.author.id == serverSettings.botOwner || this.getRoles(msg).includes(this.settings[msg.guild.id].adminRole);
+	},
+	getMention: function(msg){
+		if (msg.mentions.users.first()){
+			return msg.mentions.users.first().id;
+		} else {
+			return false;
+		}
+	},
+	getMentionRole: function(msg){
+		if (msg.mentions.roles.first()){
+			return msg.mentions.roles.first().id;
+		} else {
+			return false;
+		}
+	},
+	getUsername: function(userID){
+		return this.bot.users.get(userID).username;
+	},
+	getNick: function(msg, userID){
+		return this.bot.guilds.get(msg.guild.id).members.get(userID).nickname;
+	},
+	isVoiceChannel: function(msg, channelID){
+		if(msg.guild.channels.keyArray().includes(channelID)){
+			return msg.guild.channels.get(channelID).type == "voice";
+		}
+	}
+}
+
+/***************/
+/****Commands***/
+/***************/
+
+function commandSwitch(msg){
+	try{
+		switch (msg.command){
+			case "eval":
+				return evalCommand(msg);
+				break;
+			case "evalT":
+				return evalTCommand(msg);
+				break;
+			case "fetch":
+				return fetchCommand(msg);
+				break;
+			case "ping":
+				pingCommand(msg);
+				break;
+
+			case "kill":
+				killCommand(msg);
+				break;
+
+			case "getroles":
+				getrolesCommand(msg);
+				break;
+
+			case "say":
+				sayCommand(msg);
+				break;
+
+			case "kick":
+				kickCommand(msg);
+				break;
+
+			case "warn":
+				warnCommand(msg);
+				break;
+
+			case "ban":
+				banCommand(msg);
+				break;
+
+			case "tempban":
+				tempbanCommand(msg);
+				break;
+
+			case "unban":
+				unbanCommand(msg);
+				break;
+
+			case "silence":
+				silenceCommand(msg);
+				break;
+
+			case "unsilence":
+				unsilenceCommand(msg);
+				break;
+
+			case "help":
+				helpCommand(msg);
+				break;
+
+			case "see":
+				seeCommand(msg);
+				break;
+
+			case "delete":
+				break;
+
+			case "speed":
+				speedCommand(msg);
+				break;
+
+			case "reload":
+				reloadCommand(msg);
+				break;
+
+			case "nuke":
+				nukeCommand(msg);
+				break;
+
+			case "set":
+				setCommand(msg);
+				break;
+
+			case "iam":
+				iamCommand(msg);
+				break;
+
+			case "setrole":
+				setroleCommand(msg);
+				break
+
+			case "delrole":
+				delroleCommand(msg);
+				break;
+
+			case "play":
+				playCommand(msg);
+				break;
+
+			case "skip":
+				skipCommand(msg);
+				break;
+
+			case "info":
+				streamInfo(msg);
+				break;
+
+			case "join":
+				joinCommand(msg);
+				break
+
+			case "leave":
+				leaveCommand(msg);
+				break;
+
+			case "queue":
+				queueCommand(msg);
+				break;
+
+			case "invite":
+				inviteCommand(msg);
+				break;
+
+			default:
+				//send(msg.userID, "No command");
+				return true;
+		}
+	} catch (e) {
+		console.error(e);
+	}
+	return false;
+}
+
+/**************/
+/*****DATA*****/
+/**************/
+
+function log(msg, userID, sort, reason, time){
+	var mod = msg.author.id
+	var presentNick = serverManager.getNick(userID);
+	var username = serverManager.getUsername(msg, userID);
+
+	if(serverManager.users[msg.guild.id] == undefined){
+		serverManager.users[msg.guild.id] = {};
+	}
+
+	if(serverManager.users[msg.guild.id][userID] == undefined){
+		serverManager.users[msg.guild.id][userID] = {
+			id: userID,
+			name: username,
+			nick: presentNick,
+			isBanned: false,
+			cooldownTime: 0,
+			activeWarnings: 0,
+			warnings: {},
+			kicks: {},
+			bans: {},
+			nicks: {},
+			unbans: {},
+			notes: {}
+		}
+	}
+
+	var date = new Date().getTime();
+
+	message ="";
+
+	var file = serverManager.users[msg.guild.id][userID];
+
+	switch(sort){
+		case "warn":
+			file.warnings[date] = {
+				date: date,
+				reason: reason,
+				mod: mod
+			}
+			title = "Warning";
+			message += "**Mod**: " + mod + "\n**User**: " + username + "\n**Reason**: " + reason;
+			break;
+
+		case "kick":
+			file.kicks[date] = {
+				date: date,
+				reason: reason,
+				mod: mod
+			}
+			title = "Kick";
+			message += "**Mod**: " + mod + "\n**Kicked**: " + username + "\n**Reason**: " + reason;
+
+			break;
+
+		case "ban":
+			file.bans[date] = {
+				date: date,
+				reason: reason,
+				sort: "ban",
+				mod: mod
+			}
+			serverManager.users[msg.guild.id].bans[userID] = userName;
+			title = "Ban";
+			message += "**Mod**: " + mod + "\n**Banned**: " + username + "\n**Reason**: " + reason;
+			break;
+
+		case "tempban":
+			file.bans[date] = {
+				date: date,
+				reason: reason,
+				sort: "tempban",
+				time: time,
+				mod: mod
+			}
+			title = "tempban";
+			message += "**Mod**: " + mod + "\n**Tempbanned**: " + username + "\n**Days**:" + time + "days \n**Reason**: " + reason;
+			break;
+
+		case "unban":
+			file.unbans[date] = {
+				date: date,
+				mod: mod
+			}
+			title = "Unban";
+			message += "**Mod**: " + mod + "\n**Unbanned**: " + username;
+			delete serverManager.users[msg.guild.id].bans[userID];
+			break;
+
+		case "note":
+			file.notes[date] = {
+				date: date,
+				note: reason,
+				mod: mod
+			}
+			title = "Note";
+			message += "**Mod**: " + mod + "\n**Note about**: " + presentNick + "\n**Content**: " + reason;
+			break;
+	}
+	message = createEmbed(sort, message, title);
+
+	if(serverManager.settings[msg.guild.id].logchannel){
+		sendChannel(msg, serverManager.settings[msg.guild.id].logchannel, message);
+	}
+
+	if(file.nick != presentNick){
+		file.nicks[date] = {
+			date: date,
+			nick: presentNick
+		}
+		file.nick = presentNick;
+	}
+
+	serverManager.saveUsers();
+}
+
+function dateToString(date){
+	return new Date(date).toISOString().replace(/[A-z]/g, " ");
+}
+
+function createEmbed(colorName, info, title, fields, footer){
+	switch(colorName){
+		case "info":
+			color = 3447003;
+			break;
+
+		case "ban":
+			color = 16007746;
+			break;
+
+		case "kick":
+			color = 16028993;
+			break;
+
+		case "warn":
+			color = 15908236;
+			break;
+
+		case "unban":
+			color = 4193355;
+			break;
+
+		case "succes":
+			color = 4193355;
+			break;
+
+		case "fail":
+			color = 15908236;
+			break;
+
+		default:
+			color = 3447003;
+			break;
+	}
+
+	return {
+		embed:{
+			color: color,
+			description: info,
+			title: title,
+			fields: fields,
+			footer: footer
+		}
+	};
+}
+
+function convertYTDuration(duration) {
+    var a = duration.match(/\d+/g);
+
+    if (duration.indexOf('M') >= 0 && duration.indexOf('H') == -1 && duration.indexOf('S') == -1) {
+        a = [0, a[0], 0];
+    }
+
+    if (duration.indexOf('H') >= 0 && duration.indexOf('M') == -1) {
+        a = [a[0], 0, a[1]];
+    }
+    if (duration.indexOf('H') >= 0 && duration.indexOf('M') == -1 && duration.indexOf('S') == -1) {
+        a = [a[0], 0, 0];
+    }
+
+    duration = 0;
+
+    if (a.length == 3) {
+        duration = duration + parseInt(a[0]) * 3600;
+        duration = duration + parseInt(a[1]) * 60;
+        duration = duration + parseInt(a[2]);
+    }
+
+    if (a.length == 2) {
+        duration = duration + parseInt(a[0]) * 60;
+        duration = duration + parseInt(a[1]);
+    }
+
+    if (a.length == 1) {
+        duration = duration + parseInt(a[0]);
+    }
+    return duration;
+}
+
+function convertTimeToString(seconds) {
+	seconds = Number(seconds);
+	var hours = Math.floor(seconds / 3600);
+	var minutes = Math.floor(seconds % 3600 / 60);
+	var seconds = Math.floor(seconds % 3600 % 60);
+	return ((hours > 0 ? hours + ":" + (minutes < 10 ? "0" : "") : "") + minutes + ":" + (seconds < 10 ? "0" : "") + seconds);
+}
+
+function clean(text) {
+  if (typeof(text) === "string")
+    return text.replace(/`/g, "`" + String.fromCharCode(8203)).replace(/@/g, "@" + String.fromCharCode(8203));
+  else
+      return text;
+}
+
+function splitter(str, l){
+    var strs = [];
+    while(str.length > l){
+        var pos = str.substring(0, l).lastIndexOf(' ');
+        pos = pos <= 0 ? l : pos;
+        strs.push(str.substring(0, pos));
+        var i = str.indexOf(' ', pos)+1;
+        if(i < pos || i > pos+l)
+            i = pos;
+        str = str.substring(i);
+    }
+    strs.push(str);
+    return strs;
+}
+
+/***************/
+/***FUNCTIONS***/
+/***************/
+
+function send(msg, message, _callback){
+	msg.guild.channels.get(msg.channel.id).send(message).then((message) => {
+		if (typeof _callback === "function"){
+			_callback(message);
+		}
+	});
+}
+
+function sendChannel(msg, channelID, message, _callback){
+	msg.guild.channels.get(channelID).send(message).then((message) => {
+		if (typeof _callback === "function"){
+			_callback(message);
+		}
+	});
+}
+
+function kick(msg, userID, reason){
+	message = createEmbed("kick", "<@" + userID + "> You have been kicked :wave:");
+	send(msg, message);
+
+	if(reason){
+		bot.users.get(userID).send(reason);
+	} else {
+		bot.users.get(userID).send("You have been kicked");
+	}
+
+	msg.guild.members.get(userID).kick(reason);
+}
+
+function ban(msg, userID, reason, time){
+	message = createEmbed("ban", "<@"+ userID + "> You have been banned :hammer:");
+	send(msg, message);
+
+	bot.users.get(userID).send(reason);
+
+	msg.guild.ban(userID, {
+		days: 7,
+		reason: reason
+	});
+}
+
+function unban(msg, userID){
+	message = createEmbed("unban", "Unbanned :ok_hand:")
+	send(msg, message);
+
+	msg.guild.unban(userID);
+}
+
+function silence(msg, userID){
+	message = createEmbed("warn", "<@" + userID + "> Muted :point_up_2:")
+	send(msg, message);
+
+	msg.guild.members.get(userID).mute(true);
+}
+
+function unSilence(msg, userID){
+	message = createEmbed("unban", "<@" + userID + "> Unmuted :ok_hand:");
+	send(msg, message);
+
+	msg.guild.members.get(userID).mute(false);
+}
+
+function warn(msg, userID, reason){
+	try{
+		var warnings = serverManager.users[msg.guild.id][userID].warnings;
+	} catch(e){
+		var warnings = {};
+	}
+	try{
+		var warntime = serverManager.settings[msg.guild.id].warntime;
+	} catch(e){
+		var warntime = 24;
+	}
+	if(warntime == undefined) {
+		warntime = 24;
+	}
+
+	var today = new Date().getTime();
+	var active = 0;
+	for (key in warnings){
+		date = warnings[key].date;
+		if(today - date < warntime* 60 * 60 * 1000){
+			active++;
+		}
+	}
+
+	message = createEmbed("warn", reason);
+
+	send(msg, message);
+
+	if (active >= 3){
+		messageKick = createEmbed("kick", "You have been automatically kicked after 3 (active) warnings.");
+		kick(msg, userID, messageKick);
+		log(msg, userID, "kick", "3 warnings");
+	}
+}
+
+function see(msg, userID){
+	if(!userHasFile(msg, userID)) return;
+	var user = serverManager.users[msg.author.id][userID];
+	var warnings = "";
+	var kicks = "";
+	var bans = "";
+	var unbans = ""
+	var nicks = "";
+
+	for(key in user.warnings){
+		warnings += dateToString(user.warnings[key].date) + " - " + user.warnings[key].mod + " - " + user.warnings[key].reason + "\n";
+	}
+	if(warnings == "") warnings = "-";
+	for(key in user.kicks){
+		kicks += dateToString(user.kicks[key].date) + " - " + user.kicks[key].mod + " - " + user.kicks[key].reason + "\n";
+	}
+	if(kicks == "") kicks = "-";
+	for(key in user.bans){
+		bans += dateToString(user.bans[key].date) + " - " + user.bans[key].mod + " - " + user.bans[key].reason + "\n";
+	}
+	if(bans == "") bans = "-";
+	for(key in user.unbans){
+		unbans += dateToString(user.unbans[key].date) + " - " + user.unbans[key].mod + " - " + user.unbans[key].reason + "\n";
+	}
+	if(unbans == "") unbans = "-";
+	for(key in user.nicks){
+		nicks += dateToString(user.nicks[key].date) + " - " + user.nicks[key].nick + "\n";
+	}
+	if(nicks == "") nicks = "-";
+
+	var fields = [
+		{
+			name: "Warnings:",
+			value: warnings
+		},{
+			name: "Kicks:",
+			value: kicks
+		},{
+			name: "Bans:",
+			value: bans
+		},{
+			name: "Unbans:",
+			value: unbans
+		},{
+			name: "Previous nicks:",
+			value: nicks
+		}
+	];
+	message = createEmbed("info", "All events related to " + serverManager.getUsername(userID), serverManager.getUsername(userID), fields);
+	if(serverManager.settings[msg.guild.id].logchannel == undefined){
+		send(channelID, message);
+	} else {
+		sendChannel(msg, serverManager.settings[msg.guild.id].logchannel, message);
+	}
+}
+
+function getIdFromMention(mention){
+
+	return mention.match(/\d+/)[0];
+}
+
+function userHasFile(msg, userID){
+	if(serverManager.users[msg.guild.id] == undefined) return false;
+
+	var user = serverManager.users[msg.guild.id][userID];
+
+	if(user == undefined){
+		message = createEmbed("info", "User has no file!");
+		if(serverManager.settings[msg.author.id].logchannel == undefined){
+			send(channelID, message);
+		} else {
+			sendChannel(msg, serverManager.settings[msg.guild.id].logchannel, message);
+		}
+		return false;
+	}
+	return true;
+}
+
+function broadcastNextSpeed(msg, market){
+	var speeds = [];
+	var str = "";
+	https.get("https://twspeeds.com/callhandler.php?action=discord&market=" + market, (res) => {
+		res.on('data', (chunk) => {
+			str += chunk;
+		});
+		res.on('end', function(){
+			speeds = JSON.parse(str);
+
+			if(speeds.length != 0){
+				message = "```Markdown\r\n"
+				 + "Next speedround:\r\n"
+				 + speeds[0].round + "\r\n"
+				 + "Start: " + speeds[0].start + "\r\n"
+				 + "End: " + speeds[0].end + "\r\n"
+				 + "```" + "\r\n"
+				 + "https://www.tribalwars.nl/page/speed/rounds/future";
+
+			 	message = createEmbed("info", message);
+				send(msg, message);
+			} else {
+				send(msg, createEmbed("info", speedCommand.help));
+			}
+		})
+	});
+}
+
+function broadcastSpeed(msg, market){
+	var speeds = [];
+	var str = "";
+	https.get("https://twspeeds.com/callhandler.php?action=discord&market=" + market, (res) => {
+		res.on('data', (chunk) => {
+			str += chunk;
+		});
+		res.on('end', function(){
+			speeds = JSON.parse(str);
+
+			if(speeds.length != 0){
+
+				message = "```Markdown\r\n"
+				 + "Next speedrounds:\r\n\r\n";
+
+
+				speeds.forEach(function(speed){
+					message += speed.round + "\r\n"
+					 + "Start: " + speed.start + "\r\n"
+					 + "End: " + speed.end + "\r\n\r\n";
+				})
+
+				message += "```" + "\r\n"
+				 + "https://www.tribalwars.nl/page/speed/rounds/future";
+
+				message = createEmbed("info", message);
+				send(msg, message);
+			} else {
+				send(msg, createEmbed("info", speedCommand.help));
+			}
+		});
+	});
+}
+
+function deleteMessage(msg, messageID){
+	msg.channel.messages.get(messageID).delete();
+}
+
+function editMessage(msg, messageID, content){
+	msg.channel.messages.get(messageID).edit(content);
+}
+
+function addToRole(msg, userID, roleID){
+	msg.guild.members.get(userID).addRole(roleID);
+}
+
+function removeFromRole(msg, userID, roleID){
+	msg.guild.members.get(userID).removeRole(roleID);
+}
+
+function joinVoiceChannel(msg, _callback){
+	msg.guild.channels.get(serverManager.settings[msg.guild.id].voiceChannel).join().then(con => _callback(con));
+}
+
+function leaveVoiceChannel(msg){
+	msg.guild.channels.get(serverManager.settings[msg.guild.id].voiceChannel).leave();
+}
+
+function playSong(msg){
+	var connection = bot.voiceConnections.get(msg.guild.id);
+	var video = serverManager.songQueue[msg.guild.id][0];
+
+	if(video.type == "song"){
+		var videoID = video.videoID;
+
+		sendChannel(msg, serverManager.settings[msg.guild.id].musicChannel, {
+			embed: {
+				color: 0x5a00b1,
+				title: "=-=-=-=-=-=-= Song =-=-=-=-=-=-=",
+				fields: [
+					{
+						name: "Now Streaming",
+						value: video.title
+					},
+					{
+						name: "Duration",
+						value: video.duration
+					},
+					{
+						name: "Channel",
+						value: video.channel
+					}
+				],
+				footer: {
+					icon_url: "https://cdn.discordapp.com/avatars/" + video.userID + "/" + video.avatar + ".webp?size=1024",
+					text: "Requested by " + video.username
+				},
+				thumbnail: {
+					url: video.thumbnail
+				}
+			}
+		}, addSongFeedback);
+	} else if(video.type == "playlist"){
+		if(video.shuffle){
+			var shuffleValue = "on";
+			video.current = Math.floor(Math.random()*video.songs.length);
+		} else {
+			var shuffleValue = "off";
+			video.current = 0;
+		}
+
+		var videoID = video.songs[video.current].videoID;
+
+		YouTubeVideo(video.songs[video.current].videoID, function(obj){
+			sendChannel(msg, serverManager.settings[msg.guild.id].musicChannel, {
+				embed: {
+					color: 0x5a00b1,
+					title: "=-=-=-=-=-=-= Playlist =-=-=-=-=-=-=",
+					fields: [
+						{
+							name: video.title,
+							value: video.songs.length + " songs left in playlist || shuffle " + shuffleValue
+						},
+						{
+							name: "Now Streaming",
+							value: obj.title
+						},
+						{
+							name: "Duration",
+							value: obj.duration
+						},
+						{
+							name: "Channel",
+							value: obj.channel
+						}
+					],
+					footer: {
+						icon_url: "https://cdn.discordapp.com/avatars/" + video.userID + "/" + video.avatar + ".webp?size=1024",
+						text: "Requested by " + video.username
+					},
+					thumbnail: {
+						url: obj.thumbnail
+					}
+				}
+			}, addSongFeedback);
+		});
+	}
+
+   	const stream = ytdl('https://www.youtube.com/watch?v=' + videoID, {  });
+   	const dispatcher = connection.playStream(stream, streamOptions);
+
+	dispatcher.on('end', function() {
+		if(serverManager.stats[msg.guild.id] == undefined) {
+			serverManager.stats[msg.guild.id] = {};
+			serverManager.stats[msg.guild.id].songsPlayed = 0;
+		}
+		serverManager.stats[msg.guild.id].songsPlayed ++;
+		serverManager.saveStats();
+		if(serverManager.collectors[msg.guild.id]){
+			serverManager.collectors[msg.guild.id].stop();
+		}
+		if(video.type == "song"){
+			serverManager.songQueue[msg.guild.id].shift();
+		} else if (video.type == "playlist"){
+			if(video.songs.length == 1){
+				serverManager.songQueue[msg.guild.id].shift();
+			} else {
+				video.songs.splice(video.current, 1);
+			}
+		} else {
+			serverManager.songQueue[msg.guild.id].shift()
+		}
+
+		if(serverManager.songQueue[msg.guild.id].length > 0){
+			setTimeout(function(){
+				playSong(msg);
+			},1000);
+		} else {
+			leaveVoiceChannel(msg);
+			sendChannel(msg, serverManager.settings[msg.guild.id].musicChannel, createEmbed("info", "Queue finished"));
+		}
+	});
+}
+
+function addSongFeedback(msg){
+	msg.react("❌");
+	//msg.react("✅");
+	const collector = msg.createReactionCollector(
+	 (reaction, user) => reaction.emoji.name == "❌" || reaction.emoji.name == "✅",
+	 { time: 60 * 60 * 1000 }
+	);
+	serverManager.collectors[msg.guild.id] = collector;
+
+	collector.on('collect', r => {
+		if(r.emoji.name == "❌" && r.users.size > bot.voiceConnections.get(msg.guild.id).channel.members.size / 2){
+			bot.voiceConnections.get(msg.guild.id).dispatcher.end();
+		}
+	});
+}
+
+function nextSong(msg){
+	if(!serverManager.isAdmin(msg)){
+		if(serverManager.songQueue[msg.guild.id].length > 0){
+			if(serverManager.songQueue[msg.guild.id][0].userID != msg.author.id){
+				return;
+			}
+		} else {
+			return;
+		}
+	}
+
+	if(msg.params.length > 0){
+		if(msg.params[0] == "playlist"){
+			serverManager.songQueue[msg.guild.id][0].type = "skipPlaylist";
+		}
+	}
+
+	bot.voiceConnections.get(msg.guild.id).dispatcher.end();
+}
+
+function addSongToQueue(msg, id){
+	YouTubeVideo(id, function(video){
+		var song = {
+			type: "song",
+			userID: msg.author.id,
+			username: msg.author.username,
+			avatar: msg.author.avatarURL,
+			videoID: video.id,
+			title: video.title,
+			channel: video.channel,
+			duration: video.duration,
+			seconds: video.seconds,
+			thumbnail: video.thumbnail
+		}
+		if(serverManager.songQueue[msg.guild.id] == undefined) serverManager.songQueue[msg.guild.id] = [];
+		serverManager.songQueue[msg.guild.id].push(song);
+
+		var message = createEmbed("music");
+		message.embed.title = song.title;
+		message.embed.footer =  {
+			icon_url: song.avatar,
+			text: "Queued by " + song.username
+		}
+
+		sendChannel(msg, serverManager.settings[msg.guild.id].musicChannel, message);
+
+		if(!bot.voiceConnections.get(msg.guild.id)){
+			joinVoiceChannel(msg, function(con){
+				playSong(msg);
+			});
+		}
+
+	});
+}
+
+function addPlaylistToQueue(msg, id, shuffle){
+	YouTubePlaylist({
+		id: id,
+		maxResults: "50"
+	}, function(object){
+		playlist = {
+			type: "playlist",
+			userID: msg.author.id,
+			username: msg.author.username,
+			avatar: msg.author.avatarURL,
+			title: object.title,
+			songs: [],
+			shuffle: shuffle
+		}
+
+		songs = object.items;
+		for(i = 0; i < songs.length; i++){
+			video = songs[i].snippet;
+			try{
+				song = {
+					videoID: video.resourceId.videoId,
+					title: video.title,
+					channel: video.channelTitle,
+					thumbnail: video.thumbnails.default.url
+				}
+				playlist.songs.push(song);
+			} catch(e){
+				console.error(e);
+			}
+
+		}
+
+		if(serverManager.songQueue[msg.guild.id] == undefined) serverManager.songQueue[msg.guild.id] = [];
+		serverManager.songQueue[msg.guild.id].push(playlist);
+
+		var message = createEmbed("music");
+		message.embed.title = playlist.title;
+		message.embed.footer = {
+			icon_url: playlist.avatar,
+			text: "Queued by " + playlist.username
+		}
+
+		sendChannel(msg, serverManager.settings[msg.guild.id].musicChannel, message);
+
+		if(!bot.voiceConnections.get(msg.guild.id)){
+			joinVoiceChannel(msg, function(con){
+				playSong(msg);
+			});
+		}
+
+	});
+}
+
+function YouTubeSearch(search, _callback){
+	youtube.search.list({
+		part: 'snippet',
+		q: search,
+		maxResults: "1",
+		type: "video"
+	}, function (err, data) {
+		if (err) return console.error(err);
+
+		var videoSearch = data.items[0];
+		if(videoSearch == undefined) return;
+		_callback({
+			id: videoSearch.id.videoId,
+			title: videoSearch.snippet.title,
+		});
+
+	});
+}
+
+function YouTubeVideo(id, _callback){
+	youtube.videos.list({
+		id: id,
+		part: 'snippet,contentDetails'
+	}, function (err, data){
+		if (err) return console.error(err);
+
+		var videoResult = data.items[0];
+		if(videoResult == undefined) return;
+
+		_callback({
+			id: videoResult.id,
+			duration: convertTimeToString(convertYTDuration(videoResult.contentDetails.duration)),
+			seconds: convertYTDuration(videoResult.contentDetails.duration),
+			title: videoResult.snippet.title,
+			channel: videoResult.snippet.channelTitle,
+			thumbnail: videoResult.snippet.thumbnails.medium.url
+		});
+	})
+}
+
+function YouTubePlaylist(object, _callback){
+	youtube.playlistItems.list({
+		playlistId: object.id,
+		pageToken: object.pageToken,
+		maxResults: object.maxResults,
+		part: 'snippet,contentDetails'
+	}, function(err, data){
+		if(err) return console.error(err);
+		if(data.items[0] == undefined) return;
+		if(object.items == undefined) object.items = [];
+
+		object.items.push.apply(object.items, data.items)
+
+		if(data.nextPageToken){
+			object.pageToken = data.nextPageToken;
+			if(data.pageInfo.totalResults - object.items.length > 50){
+				object.maxResults = 50;
+			} else {
+				object.maxResults = data.pageInfo.totalResults - object.items.length;
+			}
+			YouTubePlaylist(object, _callback);
+		} else {
+			youtube.playlists.list({
+				id: object.id,
+				part: "snippet, contentDetails"
+			}, function(err, data2){
+				object.title = data2.items[0].snippet.title;
+				_callback(object);
+
+			})
+		}
+	});
+}
+
+/****************/
+/****COMMANDS****/
+/****************/
+
+function evalCommand(msg){
+	if(msg.author.id !== serverSettings.botOwner) return;
+	try{
+		const code = msg.params.join(" ");
+		let evaled = eval(code);
+
+		if(typeof evaled !== "string"){
+			evaled = require("util").inspect(evaled);
+		}
+		msg.channel.send(">" + clean(code), {code:"xl"});
+		msg.channel.send(clean(evaled), {code:"xl"});
+	} catch(err){
+		msg.channel.send(clean(code), {code:"xl"});
+		msg.channel.send(`\`ERROR\` \`\`\`xl\n${clean(err)}\n\`\`\``);
+	}
+	return false;
+}
+
+function evalTCommand(msg){
+	if(msg.author.id !== serverSettings.botOwer) return;
+
+	try{
+		const code = msg.params.join(" ");
+
+		require('child_process').exec(code, function(error, stdout, stderr){
+			msg.channel.send(">" + clean(code), {code:"xl"});
+			if(error !== null) msg.channel.send(`\`ERROR\` \`\`\`xl\n${clean(error)}\n\`\`\``);
+			var message = stdout;
+			if(message.length > 2000){
+				message = splitter(message, 2000);
+				while(message.length > 0){
+					msg.channel.send(clean(message.shift()), {code: "xl"});
+				}
+			}else {
+				msg.channel.send(clean(message), {code: "xl"});
+			}
+		});
+	} catch(err){
+		msg.channel.send(code, {code:"xl"});
+		msg.channel.send(`\`ERROR\` \`\`\`xl\n${clean(err)}\n\`\`\``);
+	}
+	return false;
+}
+
+function fetchCommand(msg){
+	if(msg.author.id !== serverSettings.botOwner) return;
+	try{
+		msg.channel.send(createEmbed("info", "Fetching files.."));
+		require('child_process').exec('ssh pi@home.dupbit.com scp joren@Joren.local:/Users/joren/repos/discord_dupbot/*.js root@dupbit.com:/root/repos/discord_dupbot/', function(error, stdout, stderr){
+			bot.user.lastMessage.edit(createEmbed("info!", "Files fetched succesfully, applying update.."));
+			listener.emit("reload");
+		})
+	} catch(err){
+		msg.channel.send(`\`ERROR\` \`\`\`xl\n${clean(err)}\n\`\`\``);
+	}
+	return false;
+}
+
+function pingCommand(msg){
+	message = createEmbed("info", "Pong");
+	send(msg, message);
+}
+pingCommand.help = "!pong";
+
+function getrolesCommand(msg){
+	message = createEmbed("info", serverManager.getRoles(msg).map(x => ("<@&" + x + ">")).join(", "), "Roles");
+	send(msg, message);
+}
+getrolesCommand.help = "!getroles";
+
+function killCommand(msg){
+	if(msg.params.length == 0){
+		if(serverManager.isAdmin(msg)){
+			message = createEmbed("info", "Admins are immortal");
+			send(msg, message);
+			return;
+		}
+		message = createEmbed("kick", msg.auther.username + " died...");
+		send(msg, message);
+		kick(msg, msg.author.id);
+	} else if (msg.params.length >= 1){
+		if(!serverManager.isAdmin(msg)){
+			message = createEmbed("info", "You can't kill people :point_up:");
+			send(msg, message);
+			return;
+		}
+		if(serverManager.getMention(msg)){
+			kick(msg, serverManager.getMention(msg) );
+		}
+	}
+}
+killCommand.help = "!kill [@name]";
+
+function kickCommand(msg){
+	if (msg.params.length >= 1){
+		if(!serverManager.isAdmin(msg)){
+			message = createEmbed("info", "You can't kick people :point_up:");
+			send(msg, message);
+			return;
+		}
+		var targetID = serverManager.getMention(msg);
+		if(targetID){
+			if(msg.params.length >= 2){
+				var message = "You are kicked because: ";
+				var reason = "";
+				for (i = 1; i<msg.params.length; i++){
+					reason += " " + msg.params[i];
+				}
+				kick(msg, targetID, message + reason);
+				log(msg, targetID, "kick", reason);
+			} else {
+				kick(msg, targetID );
+				log(msg, targetID, "kick", "No reason specified");
+			}
+		}
+	}
+}
+kickCommand.help = "!kick @name [reason]";
+
+function warnCommand(msg){
+	if (msg.params.length >= 1){
+		if(!serverManager.isAdmin(msg)){
+			message = createEmbed("info", "You can't warn people :point_up:");
+			send(msg, message);
+			return;
+		}
+
+		var targetID = serverManager.getMention(msg);
+		if(targetID){
+			var message = "<@" + targetID + "> warning! You got a warning for: ";
+
+			if(msg.params.length >= 2){
+				var reason =  "";
+				for (i = 1; i<msg.params.length; i++){
+					reason += " " + msg.params[i];
+				}
+				bot.users.get(targetID).send(message + reason)
+				log(msg, targetID, "warn", reason);
+				warn(msg, targetID, message + reason);
+			} else {
+				bot.users.get(targetID).send("Warning! Behave yourself or you'll be kicked")
+				log(msg, targetID, "warn", "No reason specified");
+				warn(msg, targetID, "<@" + targetID + "> warning! Behave!");
+			}
+		}
+	}
+}
+warnCommand.help = "!warn @name [reason]";
+
+function banCommand(msg){
+	if (msg.params.length >=1){
+		if(!serverManager.isAdmin(msg)){
+			message = createEmbed("info", "You can't ban people :point_up:");
+			send(msg, message);
+			return;
+		}
+
+		if(serverManager.getMention(msg)){
+			if(msg.params.length >= 2){
+				var message = "You are banned because:";
+				var reason = "";
+				for (i = 1; i<msg.params.length; i++){
+					reason += " " + msg.params[i];
+				}
+				var targetID = serverManager.getMention(msg);
+				ban(msg, targetID, message + reason);
+				log(msg, targetID, "ban", reason);
+			} else {
+				message = createEmbed("info", "You must specify a reason for a ban");
+				send(msg, message);
+			}
+		}
+	}
+}
+banCommand.help = "!ban @name [reason]";
+
+function tempbanCommand(msg){
+	if (msg.params.length >= 1){
+		if(!serverManager.isAdmin(msg)){
+			message = createEmbed("info", "You can't ban people :point_up:");
+			send(msg, message);
+			return;
+		}
+
+		if(serverManager.getMention(msg)){
+			if(msg.params.length >= 3){
+				var message = "You are banned for " + msg.params[1] + " days, because: ";
+				var reason = "";
+				for (i = 2; i<msg.params.length; i++){
+					reason += " " + msg.params[i];
+				}
+				var targetID = serverManager.getMention(msg);
+				ban(msg, targetID, message + reason, msg.params[1]);
+				log(msg, targetID, "tempban", reason, msg.params[1]);
+			} else {
+				message = createEmbed("info", "You must specify a time and a reason for a tempban");
+				send(msg, message);
+			}
+		}
+	}
+}
+tempbanCommand.help = "!tempban @name <time> [reason]";
+
+function unbanCommand(msg){
+	if (msg.params.length >= 1){
+		if(!serverManager.isAdmin(msg)){
+			message = createEmbed("info", "You can't unban people :point_up:");
+			send(msg, message);
+			return;
+		}
+		if(msg.params[0] in serverManager.users[msg.guild.id].bans){
+			unban(msg, msg.params[0]);
+			log(msg, serverManager.users[msg.guild.id].bans[msg.params[0]], "unban");
+		}
+	} else {
+		title = "Banned players:";
+		message = "";
+		var bans = serverManager.users[msg.guild.id].bans;
+		for(key in bans){
+			message += "  * " + bans[key] + ": " + key + "\n";
+		}
+		message = createEmbed("info", message, title);
+		sendChannel(msg, serverManager.settings[msg.guild.id].logchannel, message);
+	}
+}
+unbanCommand.help = "!unban @userid";
+
+function sayCommand(msg){
+	if(!serverManager.isAdmin(msg)){
+		message = createEmbed("info", "You can't say things");
+		send(msg, message);
+		return;
+	}
+
+	message = createEmbed("info", msg.params.join(" "));
+	send(msg, message);
+}
+sayCommand.help = "!say <text>";
+
+function silenceCommand(msg){
+	if (msg.params.length >= 1){
+		if(!serverManager.isAdmin(msg)){
+			message = createEmbed("info", "You can't silence people :point_up:");
+			send(msg, message);
+			return;
+		}
+		if(serverManager.getMention(msg)){
+			silence(msg, serverManager.getMention(msg));
+		}
+	}
+}
+silenceCommand.help = "!silence @name";
+
+function unsilenceCommand(msg){
+	if (msg.params.length >= 1){
+		if(!serverManager.isAdmin(msg)){
+			message = createEmbed("info", "You can't unsilence people :point_up:");
+			send(msg, message);
+			return;
+		}
+
+		if(serverManager.getMention(msg)){
+			unSilence(msg, serverManager.getMention(msg));
+		}
+	}
+}
+unsilenceCommand.help = "!unsilence @name";
+
+function seeCommand(msg){
+	if (msg.params.length >= 1){
+		if(!serverManager.isAdmin(msg)){
+			message = createEmbed("info", "You can't see into people");
+			send(msg, message);
+			return;
+		}
+
+		see(msg, serverManager.getMention(msg));
+	}
+}
+seeCommand.help = "!see @name";
+
+function helpCommand(msg){
+	if(msg.guild.id == "110373943822540800") return; //mute help command for specific guilds Discord Bots
+	if (msg.params.length >= 1){
+		try{
+			var help = "broken :( rewriting at the moment";
+			//var help = GLOBAL[msg.params[0] + "Command"].help;
+		} catch (e){
+			var help = "No command";
+		}
+		message = createEmbed("info", help);
+		send(msg, message);
+	} else {
+		message = createEmbed("info", "All available commands, more info !help <command>", "Commands", [
+		{
+			name: "Everyone",
+			value: "!ping, !getroles, !kill, !help, !iam"
+		},{
+			name: "Music",
+			value: "!play, !skip, !queue"
+		},{
+			name: "Admin only",
+			value: "!kick, !warn, !ban, !tempban, !unban, !setrole, !delrole,\n!set, !say, !silence, !unsilence, !see, !reload, !nuke"
+		}
+		]);
+		send(msg, message);
+	}
+}
+helpCommand.help = "!help <command>";
+
+function speedCommand(msg){
+	if (msg.params.length == 0){
+		broadcastNextSpeed(msg, "nl");
+	} else if(msg.params.length == 1){
+		broadcastNextSpeed(msg, msg.params[0]);
+	} else {
+		if (msg.params[1] == "all"){
+			broadcastSpeed(msg, msg.params[0]);
+		} else {
+			message = createEmbed("info", speedCommand.help);
+			send(msg, message);
+		}
+	}
+}
+speedCommand.help = "!speed [market] [all]";
+
+function reloadCommand(msg){
+	if(!serverManager.isAdmin(msg)){
+		message = createEmbed("info", "You can't reload the bot");
+		send(msg, message);
+		return;
+	}
+	message = createEmbed("info", "reloading..");
+
+	send(msg, message, function(){
+		listener.emit("reload");
+	});
+}
+reloadCommand.help = "!reload";
+
+function nukeCommand(msg){
+	if(!serverManager.isAdmin(msg)){
+		message = createEmbed("info", "You can't nuke idiot :point_up:");
+		send(msg, message);
+		return;
+	}
+
+	if(msg.params.length >= 1){
+		messageLimit = msg.params[0];
+	} else {
+		messageLimit = 50;
+	}
+
+	msg.channel.bulkDelete(messageLimit);
+}
+nukeCommand.help = "!nuke <amount>";
+
+function setCommand(msg){
+	if(!serverManager.isAdmin(msg)){
+		message = createEmbed("info", "You can't edit the settings");
+		send(msg, message);
+		return;
+	}
+
+	if(serverManager.settings[msg.guild.id] == undefined){
+		serverManager.settings[msg.guild.id] = {};
+	}
+
+	if(msg.params.length >= 1){
+		switch(msg.params[0]){
+			case "log":
+				serverManager.settings[msg.guild.id].logchannel = msg.channel.id;
+				message = createEmbed("succes", "Logchannel set.");
+				send(msg, message);
+				break;
+
+			case "warntime":
+				if(msg.params.length >= 2){
+					serverManager.settings[msg.guild.id].warntime = msg.params[1];
+					message = createEmbed("succes", "Warntime set to " + msg.params[1] + " hours.");
+					send(msg, message);
+				} else {
+					message = createEmbed("info", "!set warntime <hours>");
+					send(msg, message);
+				}
+				break;
+
+			case "role":
+				if(msg.params.length >= 2){
+					if(serverManager.settings[msg.guild.id].role == undefined) serverManager.settings[msg.guild.id].role = {};
+
+					roleID = serverManager.getMentionRole(msg);
+
+					if(roleID){
+						var role = serverManager.settings[msg.guild.id].role;
+
+						if(roleID in role){
+							delete role[roleID];
+						} else {
+							role[roleID] = roleID;
+						}
+
+						allRoles = [];
+
+						for(key in role){
+							allRoles.push("<@&" + role[key] + ">");
+						}
+
+						message = createEmbed("info", allRoles.join(", "), "All assignable roles:");
+						send(msg, message);
+					}
+				} else {
+					message = createEmbed("info", "!set role <@Role>");
+					send(msg, message);
+				}
+				break;
+
+			case "admin":
+				if(msg.params.length >= 2){
+					roleID = serverManager.getMentionRole(msg);
+					if(roleID){
+						serverManager.settings[msg.guild.id].adminRole = roleID;
+						message = createEmbed("succes", "Adminrole set to <@&" + roleID + ">");
+						send(msg, message);
+					}
+				} else {
+					message = createEmbed("info", "!set admin @Role");
+					send(msg, message);
+				}
+				break;
+
+			case "voice":
+				if(msg.params.length >=2){
+					channelID = msg.params[1];
+					if(serverManager.isVoiceChannel(msg, channelID)){
+						serverManager.settings[msg.guild.id].voiceChannel = channelID;
+						message = createEmbed("succes", "Voice channel set to <#" + channelID + ">");
+						send(msg, message);
+					} else {
+						message = createEmbed("fail", "Not a voice channel");
+						send(msg, message);
+					}
+				} else {
+					message = createEmbed("info", "!set voice plainChannelID");
+					send(msg, message);
+				}
+				break;
+
+			case "music":
+				serverManager.settings[msg.guild.id].musicChannel = msg.channel.id;
+				message = createEmbed("succes", "Music channel set.");
+				send(msg, message);
+				break;
+
+			case "deleteCommands":
+				if(serverManager.settings[msg.guild.id].deleteCommands){
+					serverManager.settings[msg.guild.id].deleteCommands = false;
+					message = createEmbed("succes", "Commands won't be deleted anymore.");
+				} else {
+					serverManager.settings[msg.guild.id].deleteCommands = true;
+					message = createEmbed("succes", "Commands will be deleted.");
+				}
+				send(msg, message);
+				break;
+
+			default:
+				message = createEmbed("info", setCommand.help);
+				send(msg, message);
+				break;
+		}
+	} else {
+		message = createEmbed("info", setCommand.help);
+		send(msg, message);
+	}
+
+	serverManager.saveSettings();
+}
+setCommand.help = "!set <warntime, log, role, admin, deleteCommands> <opt>";
+
+function iamCommand(msg){
+	if(serverManager.settings[msg.guild.id] == undefined || serverManager.settings[msg.guild.id].musicChannel == undefined || serverManager.settings[msg.guild.id].voiceChannel == undefined){
+		var message = createEmbed("warn", "Please ask your Admin to set iam roles before you can use them.");
+		send(msg, message);
+		return
+	}
+	if (msg.params.length >= 1){
+		roleID = serverManager.getMentionRole(msg);
+
+		if(serverManager.getRoles(msg).indexOf(roleID) == -1){
+			addToRole(msg, msg.author.id, roleID);
+		} else {
+			removeFromRole(msg, msg.author.id, roleID);
+		}
+	} else {
+		allRoles = [];
+		var role = serverManager.settings[msg.guild.id].role;
+		for(key in role){
+			allRoles.push("<@&" + role[key] + ">");
+		}
+		message = createEmbed("info", allRoles.join(", "), "You can assign yourself these roles:");
+		send(msg, message);
+	}
+}
+iamCommand.help = "!iam <role>";
+
+function setroleCommand(msg){
+	if(!serverManager.isAdmin(msg)){
+		message = createEmbed("info", "You can't set roles.");
+		send(msg, message);
+		return;
+	}
+
+	userID = serverManager.getMention(msg);
+	roleID = serverManager.getMentionRole(msg);
+	if(userID && roleID){
+		addToRole(msg, userID, roleID);
+	}
+}
+setroleCommand.help = "!setrole @name @role";
+
+function delroleCommand(msg){
+	if(!serverManager.isAdmin(msg)){
+		message = createEmbed("info", "You can't delete roles.");
+		send(msg, message);
+		return;
+	}
+
+	userID = serverManager.getMention(msg);
+	roleID = serverManager.getMentionRole(msg);
+
+	if(userID && roleID){
+		removeFromRole(msg, userID, roleID);
+	}
+}
+delroleCommand.help = "!delrole @name @role";
+
+function playCommand(msg){
+	if(msg.params.length > 0){
+		if(serverManager.songQueue[msg.guild.id] == undefined) serverManager.songQueue[msg.guild.id]= [];
+		if(serverManager.settings[msg.guild.id] == undefined || serverManager.settings[msg.guild.id].musicChannel == undefined || serverManager.settings[msg.guild.id].voiceChannel == undefined){
+			var message = createEmbed("warn", "Please ask your Admin to set the music channel [text] and the voice channel [voice] for the bot");
+			send(msg, message);
+			return
+		}
+		if(serverManager.songQueue[msg.guild.id].length >= 100){
+			return;
+		}
+
+		if(msg.params[0].indexOf("watch?v=") != -1){
+			addSongToQueue(msg, msg.params[0].split("watch?v=")[1].split("&")[0]);
+		} else if(msg.params[0].indexOf("playlist?list=") != -1){
+			shuffle = false;
+			if(msg.params.length > 1){
+				if(msg.params[1] == "shuffle"){
+					shuffle = true;
+				}
+			}
+			addPlaylistToQueue(msg, msg.params[0].split("playlist?list=")[1].split("&")[0], shuffle);
+		} else {
+			YouTubeSearch(msg.params.join(" "), function(video){
+				addSongToQueue(msg, video.id);
+			});
+		}
+	}
+}
+playCommand.help = "!play <youtube url, song name>";
+
+function skipCommand(msg){
+	if(bot.voiceConnections.get(msg.guild.id)){
+		nextSong(msg);
+	}
+}
+skipCommand.help = "!skip (only own submissions)";
+
+function queueCommand(msg){
+	message = "";
+	if(serverManager.songQueue[msg.guild.id] == undefined) serverManager.songQueue[msg.guild.id]= [];
+	for(song in serverManager.songQueue[msg.guild.id]){
+		if(serverManager.songQueue[msg.guild.id][song].type == "playlist"){
+			var playlist = " | Playlist " + serverManager.songQueue[msg.guild.id][song].songs.length + " songs left";
+		} else {
+			var playlist = "";
+		}
+		message += song + ": " + serverManager.songQueue[msg.guild.id][song].title + playlist + "\n";
+	}
+	message = createEmbed("music", message, "Song queue");
+	sendChannel(msg, serverManager.settings[msg.guild.id].musicChannel, message);
+}
+queueCommand.help = "!queue";
+
+function inviteCommand(msg){
+	msg.member.send("https://discordapp.com/oauth2/authorize/?permissions=2146958591&scope=bot&client_id=346727503357935616")
+}
+inviteCommand.help = "!invite";

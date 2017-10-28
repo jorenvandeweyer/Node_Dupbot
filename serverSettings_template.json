@@ -1,0 +1,10 @@
+{
+    "token": "token",
+    "dev_token": "dev_token",
+    "filePath": "/root/repos/Node_dupbot/run.js",
+    "prefix": "!",
+    "prefix_dev": "&",
+    "botOwner":  "261634894428372992",
+    "ownerOnlyGuilds" : ["110373943822540800"],
+    "youtubeAuth": "YoutTube Auth key"
+}
