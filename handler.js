@@ -13,7 +13,7 @@ var google = require('googleapis');
 var youtube
 
 var bot, serverManager, listener, serverSettings;
-
+var help = {};
 /***************/
 /****Exports****/
 /***************/
@@ -1177,13 +1177,15 @@ function pingCommand(msg){
 	message = createEmbed("info", "Pong");
 	send(msg, message);
 }
-pingCommand.help = "!pong";
+//pingCommand.help = "!pong";
+help["ping"] = "!ping";
 
 function getrolesCommand(msg){
 	message = createEmbed("info", serverManager.getRoles(msg).map(x => ("<@&" + x + ">")).join(", "), "Roles");
 	send(msg, message);
 }
-getrolesCommand.help = "!getroles";
+//getrolesCommand.help = "!getroles";
+help["getroles"] = "!getroles";
 
 function killCommand(msg){
 	if(msg.params.length == 0){
@@ -1206,7 +1208,8 @@ function killCommand(msg){
 		}
 	}
 }
-killCommand.help = "!kill [@name]";
+//killCommand.help = "!kill [@name]";
+help["kill"] = "!kill [@name]";
 
 function kickCommand(msg){
 	if (msg.params.length >= 1){
@@ -1232,7 +1235,8 @@ function kickCommand(msg){
 		}
 	}
 }
-kickCommand.help = "!kick @name [reason]";
+//kickCommand.help = "!kick @name [reason]";
+help["kick"] = "!kick @name [reason]";
 
 function warnCommand(msg){
 	if (msg.params.length >= 1){
@@ -1262,7 +1266,8 @@ function warnCommand(msg){
 		}
 	}
 }
-warnCommand.help = "!warn @name [reason]";
+//warnCommand.help = "!warn @name [reason]";
+help["warn"] = "!warn @name [reason]";
 
 function banCommand(msg){
 	if (msg.params.length >=1){
@@ -1289,7 +1294,8 @@ function banCommand(msg){
 		}
 	}
 }
-banCommand.help = "!ban @name [reason]";
+//banCommand.help = "!ban @name [reason]";
+help["ban"] = "!ban @name [reason]";
 
 function tempbanCommand(msg){
 	if (msg.params.length >= 1){
@@ -1316,7 +1322,8 @@ function tempbanCommand(msg){
 		}
 	}
 }
-tempbanCommand.help = "!tempban @name <time> [reason]";
+//tempbanCommand.help = "!tempban @name <time> [reason]";
+help["tempban"] = "!tempban @name <time> [reason]";
 
 function unbanCommand(msg){
 	if (msg.params.length >= 1){
@@ -1340,7 +1347,8 @@ function unbanCommand(msg){
 		sendChannel(msg, serverManager.settings[msg.guild.id].logchannel, message);
 	}
 }
-unbanCommand.help = "!unban @userid";
+//unbanCommand.help = "!unban @userid";
+help["unban"] = "!unban @userid";
 
 function sayCommand(msg){
 	if(!serverManager.isAdmin(msg)){
@@ -1352,7 +1360,8 @@ function sayCommand(msg){
 	message = createEmbed("info", msg.params.join(" "));
 	send(msg, message);
 }
-sayCommand.help = "!say <text>";
+//sayCommand.help = "!say <text>";
+help["say"] = "!say <text>";
 
 function silenceCommand(msg){
 	if (msg.params.length >= 1){
@@ -1366,7 +1375,8 @@ function silenceCommand(msg){
 		}
 	}
 }
-silenceCommand.help = "!silence @name";
+//silenceCommand.help = "!silence @name";
+help["silence"] = "!silence @name";
 
 function unsilenceCommand(msg){
 	if (msg.params.length >= 1){
@@ -1381,7 +1391,8 @@ function unsilenceCommand(msg){
 		}
 	}
 }
-unsilenceCommand.help = "!unsilence @name";
+//unsilenceCommand.help = "!unsilence @name";
+help["unsilence"] = "!unsilence @name";
 
 function seeCommand(msg){
 	if (msg.params.length >= 1){
@@ -1394,18 +1405,19 @@ function seeCommand(msg){
 		see(msg, serverManager.getMention(msg));
 	}
 }
-seeCommand.help = "!see @name";
+//seeCommand.help = "!see @name";
+help["see"] = "!see @name";
 
 function helpCommand(msg){
 	if(msg.guild.id == "110373943822540800") return; //mute help command for specific guilds Discord Bots
 	if (msg.params.length >= 1){
 		try{
-			var help = "broken :( rewriting at the moment";
+			var helpmsg = help[msg.params[0]];
 			//var help = GLOBAL[msg.params[0] + "Command"].help;
 		} catch (e){
-			var help = "No command";
+			var helpmsg = "No command";
 		}
-		message = createEmbed("info", help);
+		message = createEmbed("info", helpmsg);
 		send(msg, message);
 	} else {
 		message = createEmbed("info", "All available commands, more info !help <command>", "Commands", [
@@ -1423,7 +1435,8 @@ function helpCommand(msg){
 		send(msg, message);
 	}
 }
-helpCommand.help = "!help <command>";
+//helpCommand.help = "!help <command>";
+help["help"] = "!help <command>";
 
 function speedCommand(msg){
 	if (msg.params.length == 0){
@@ -1439,7 +1452,8 @@ function speedCommand(msg){
 		}
 	}
 }
-speedCommand.help = "!speed [market] [all]";
+//speedCommand.help = "!speed [market] [all]";
+help["speed"] = "!speed [market] [all]";
 
 function reloadCommand(msg){
 	if(!serverManager.isAdmin(msg)){
@@ -1453,7 +1467,8 @@ function reloadCommand(msg){
 		listener.emit("reload");
 	});
 }
-reloadCommand.help = "!reload";
+//reloadCommand.help = "!reload";
+help["reload"] = "!reload";
 
 function nukeCommand(msg){
 	if(!serverManager.isAdmin(msg)){
@@ -1470,7 +1485,8 @@ function nukeCommand(msg){
 
 	msg.channel.bulkDelete(messageLimit);
 }
-nukeCommand.help = "!nuke <amount>";
+//nukeCommand.help = "!nuke <amount>";
+help["nuke"] = "!nuke <amount>";
 
 function setCommand(msg){
 	if(!serverManager.isAdmin(msg)){
@@ -1592,7 +1608,8 @@ function setCommand(msg){
 
 	serverManager.saveSettings();
 }
-setCommand.help = "!set <warntime, log, role, admin, deleteCommands> <opt>";
+//setCommand.help = "!set <warntime, log, role, admin, deleteCommands> <opt>";
+help["set"] = "!set <warntime, log, role, admin, deleteCommands> <opt>";
 
 function iamCommand(msg){
 	if(serverManager.settings[msg.guild.id] == undefined || serverManager.settings[msg.guild.id].musicChannel == undefined || serverManager.settings[msg.guild.id].voiceChannel == undefined){
@@ -1618,7 +1635,8 @@ function iamCommand(msg){
 		send(msg, message);
 	}
 }
-iamCommand.help = "!iam <role>";
+//iamCommand.help = "!iam <role>";
+help["iam"] = "!iam <role>";
 
 function setroleCommand(msg){
 	if(!serverManager.isAdmin(msg)){
@@ -1633,7 +1651,8 @@ function setroleCommand(msg){
 		addToRole(msg, userID, roleID);
 	}
 }
-setroleCommand.help = "!setrole @name @role";
+//setroleCommand.help = "!setrole @name @role";
+help["setrole"] = "!setrole @name @role";
 
 function delroleCommand(msg){
 	if(!serverManager.isAdmin(msg)){
@@ -1649,7 +1668,8 @@ function delroleCommand(msg){
 		removeFromRole(msg, userID, roleID);
 	}
 }
-delroleCommand.help = "!delrole @name @role";
+//delroleCommand.help = "!delrole @name @role";
+help["delrole"] = "!delrole @name @role";
 
 function playCommand(msg){
 	if(msg.params.length > 0){
@@ -1680,14 +1700,16 @@ function playCommand(msg){
 		}
 	}
 }
-playCommand.help = "!play <youtube url, song name>";
+//playCommand.help = "!play <youtube url, song name>";
+help["play"] = "!play <youtube url, song name>";
 
 function skipCommand(msg){
 	if(bot.voiceConnections.get(msg.guild.id)){
 		nextSong(msg);
 	}
 }
-skipCommand.help = "!skip (only own submissions)";
+//skipCommand.help = "!skip (only own submissions)";
+help["skip"] = "!skip (only own submissions)";
 
 function queueCommand(msg){
 	message = "";
@@ -1703,9 +1725,11 @@ function queueCommand(msg){
 	message = createEmbed("music", message, "Song queue");
 	sendChannel(msg, serverManager.settings[msg.guild.id].musicChannel, message);
 }
-queueCommand.help = "!queue";
+//queueCommand.help = "!queue";
+help["queue"] = "!queue";
 
 function inviteCommand(msg){
 	msg.member.send("https://discordapp.com/oauth2/authorize/?permissions=2146958591&scope=bot&client_id=346727503357935616")
 }
-inviteCommand.help = "!invite";
+//inviteCommand.help = "!invite";
+help["invite"] = "!invite";
