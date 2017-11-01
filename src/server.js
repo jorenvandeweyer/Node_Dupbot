@@ -13,22 +13,25 @@ module.exports = class Servers{
     }
 
     getSettings(){
-        this.settings = JSON.parse(fs.readFileSync('./data/settings.json', 'utf8'));
-        if(this.settings == undefined){
+        try {
+            this.settings = JSON.parse(fs.readFileSync('./data/settings.json', 'utf8'));
+        } catch(e) {
             this.settings = {};
         }
     }
 
     getUsers(){
-        this.users = JSON.parse(fs.readFileSync("./data/users.json", "utf8"));
-        if(this.users == undefined){
+        try {
+            this.users = JSON.parse(fs.readFileSync("./data/users.json", "utf8"));
+        } catch(e) {
             this.users = {};
         }
     }
 
     getStats(){
-        this.stats = JSON.parse(fs.readFileSync("./data/stats.json", "utf8"));
-        if(this.stats == undefined){
+        try {
+            this.stats = JSON.parse(fs.readFileSync("./data/stats.json", "utf8"));
+        } catch(e) {
             this.users = {};
         }
     }

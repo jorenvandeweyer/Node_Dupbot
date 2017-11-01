@@ -5,7 +5,7 @@ const Round = require("./src/round");
 var game;
 
 class CAH {
-    constructor(owner, packs=["Base"], cards=5, rounds=5){
+    constructor(owner, cards=5, rounds=5, packs=["Base"]){
         if(cards < 3){
             cards = 3;
         }
@@ -120,10 +120,10 @@ class CAH {
 
     nextRound(){
         if(this.currentRound++ >= this.rounds){
-            return {
+            return [{
                 status: "finished",
                 description: "The game is finished, start another one!"
-            }
+            }];
         }
         let blackPlayer = Object.keys(this.players)[Math.floor(Math.random()*Object.keys(this.players).length)];
         let blackCards = [];
@@ -133,7 +133,6 @@ class CAH {
 
         }
         for(let player in this.players){
-            console.log(player + ": " + this.players[player].Cards.length + "/" + this.cards);
             while(this.players[player].Cards.length < this.cards){
                 this.players[player].addCard(cards.whiteCards[this.whiteCard]);
             }
@@ -175,8 +174,10 @@ class CAH {
 }
 
 module.exports = class CAHGame{
-    constructor(id, packs=["Base"], cards=5, rounds=5){
-        this.cah = new CAH(id, packs=packs, cards=cards, rounds=rounds);
+    constructor(id, cards=5, rounds=5, packs=["Base"]){
+        this.owner = id;
+        this.started = false;
+        this.cah = new CAH(id, cards=cards, rounds=rounds, packs=packs);
     }
 
     join(id){
@@ -188,6 +189,7 @@ module.exports = class CAHGame{
     }
 
     start(){
+        this.started = true;
         return this.cah.start();
     }
 

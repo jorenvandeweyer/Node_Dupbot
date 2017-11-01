@@ -9,9 +9,8 @@ var google = require('googleapis');
 const Servers = require("./src/server");
 const commands = require("./src/commands/commands");
 
+var cah = require("./src/cahgamehandler");
 
-var CAH = require("./node_modules/cah_node/cah");
-var game;
 /**************/
 /*****VARS*****/
 /**************/
@@ -198,8 +197,8 @@ function commandSwitch(msg){
 				break;
 
 			case "c":
-			case "cah":
-				cahCommand(msg);
+			case "cchoose":
+				cahChooseCommand(msg);
 				break;
 
 			case "cstart":
@@ -212,6 +211,10 @@ function commandSwitch(msg){
 
 			case "cjoin":
 				cahJoinCommand(msg);
+				break;
+
+			case "creset":
+				cahResetCommand(msg);
 				break;
 
 			default:
@@ -1614,70 +1617,27 @@ function inviteCommand(msg){
 	msg.member.send("https://discordapp.com/oauth2/authorize/?permissions=2146958591&scope=bot&client_id=346727503357935616")
 }
 
-function broadcastCahMessages(msg, array){
-	for (let i = 0; i < array.length; i++){
-		let data = array[i];
-
-		var message;
-		if(data.description){
-			message = data.description;
-		}
-
-		if(data.id != undefined && message.includes("%player")){
-			message = message.replace("%player", "<@" + data.id + ">");
-		}
-
-		message = createEmbed("purple", message.replace(/_/g, "\\_"));
-		send(msg, message);
-
-		if(data.private != undefined){
-			for(let j = 0; j < data.id_private.length; j++){
-				bot.users.get(data.id_private[j]).send(data.description_private[j].replace(/_/g, "\\_"));
-			}
-		}
-	}
-}
-
-function cahCommand(msg){
-	if(game == undefined){
-		let message = createEmbed("purple", "No CAH game playing atm, type &cstart to start a game");
-		broadcastCahMessages(msg, message);
-		return;
-	}
-	var data = game.choose(msg.author.id, msg.params);
-	if(data.status == "finished") game = undefined;
-	broadcastCahMessages(msg, data);
-}
-
 function cahStartCommand(msg){
-	if(game == undefined){
-		game = new CAH(1);
-		let message = createEmbed("purple", "CAH Game started, type &cjoin to join!");
-		broadcastCahMessages(msg, message);
-		return;
-	} else {
-		let data = game.start();
-		broadcastCahMessages(msg, data);
-	}
-}
-
-function cahLeaveCommand(msg){
-	if(game == undefined){
-		let message = createEmbed("purple", "No CAH Game playing.");
-		broadcastCahMessages(msg, message);
-	} else {
-		let data = game.leave(msg.author.id);
-		if(data.status == "finished") game == undefined;
-		broadcastCahMessages(msg, data);
-	}
+	cah.start(msg);
 }
 
 function cahJoinCommand(msg){
-	if(game == undefined){
-		let message = createEmbed("purple", "No CAH Game playing atm, type &cstart to start a game");
-		broadcastCahMessages(msg, message);
-	} else {
-		let data = game.join(msg.author.id);
-		broadcastCahMessages(msg, data);
+	cah.join(msg);
+}
+
+function cahLeaveCommand(msg){
+	cah.leave(msg);
+}
+
+function cahChooseCommand(msg){
+	cah.choose(msg);
+}
+
+function cahResetCommand(msg){
+	if(!serverManager.isAdmin(msg)){
+		message = createEmbed("purple", "You can't reset the game");
+		send(msg, message);
+		return;
 	}
+	cah.reset(msg);
 }

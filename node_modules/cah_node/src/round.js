@@ -17,7 +17,7 @@ module.exports = class Round{
                 case "black":
                     if(id == this.blackPlayer){
                         this.blackCard = this.blackCards[card[0]].text;
-                        this.pick = this.blackCards[card[0]].text;
+                        this.pick = this.blackCards[card[0]].pick;
                         this.status = "white";
 
                         let id_private = [];
@@ -128,7 +128,7 @@ module.exports = class Round{
                         let won = card[0];
                         won = this.cards_keys[won];
 
-                        let points = this.players[won].won();
+                        this.players[won].won();
                         this.status = "ready";
 
                         var description = "%player won the round! **( " + this.players[won].points + " Points)** %won\n";
