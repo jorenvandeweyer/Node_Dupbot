@@ -34,19 +34,19 @@ module.exports = class Servers{
     }
 
     saveSettings(_callback){
-        fs.writeFile("../data/settings.json", JSON.stringify(this.settings), "utf8", function(err){
+        fs.writeFile(__dirname + "/../data/settings.json", JSON.stringify(this.settings), "utf8", function(err){
             (typeof _callback === 'function') ? _callback(err) : null;
         });
     }
 
     saveUsers(_callback){
-        fs.writeFile("../data/users.json", JSON.stringify(this.users), "utf8", function(err){
+        fs.writeFile(__dirname + "/../data/users.json", JSON.stringify(this.users), "utf8", function(err){
             (typeof _callback === 'function') ? _callback(err) : null;
         });
     }
 
     saveStats(_callback){
-        fs.writeFile("../data/stats.json", JSON.stringify(this.stats), "utf8", function(err){
+        fs.writeFile(__dirname + "/../data/stats.json", JSON.stringify(this.stats), "utf8", function(err){
             (typeof _callback === 'function') ? _callback(err) : null;
         });
     }
