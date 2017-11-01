@@ -1,5 +1,5 @@
-var CAH = require("cah_game");
-var fs = require("fs");
+const CAH = require("cah_game");
+const fs = require("fs");
 
 function createEmbed(colorName, info, title, fields, footer){
 	switch(colorName){
@@ -59,7 +59,7 @@ function broadcastCahMessages(msg, array){
 	for (let i = 0; i < array.length; i++){
 		let data = array[i];
 
-		var message;
+		let message;
 		if(data.description){
 			message = data.description;
 		}
@@ -103,17 +103,19 @@ class gameHandler{
         let id = msg.channel.id;
         if(this.holder[id] == undefined){
             let args = msg.params.slice(0);
+            let cards;
             if(args.includes("-cards")){
                 let index = args.indexOf("-cards");
-                var cards = args[index + 1];
+                cards = args[index + 1];
             } else {
-                var cards = 5;
+                cards = 5;
             }
+            let rounds;
             if(args.includes("-rounds")){
                 let index = args.indexOf("-rounds");
-                var rounds = args[index+1];
+                rounds = args[index+1];
             } else {
-                var rounds = 5;
+                rounds = 5;
             }
 
             this.holder[id] = new CAH(msg.author.id, cards, rounds);
@@ -207,4 +209,4 @@ exports.reset = function(msg){
     game.reset(msg);
 }
 
-var game = new gameHandler();
+const game = new gameHandler();
