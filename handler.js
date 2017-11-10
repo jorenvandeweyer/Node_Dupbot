@@ -1,4 +1,3 @@
-var jsonfile = require('jsonfile');
 var https = require('https');
 //var cheerio = require("cheerio");
 var fs = require('fs');
@@ -8,7 +7,8 @@ var google = require('googleapis');
 
 const Servers = require("./src/server");
 const commands = require("./src/commands/commands");
-
+//const permissions = require("./src/permissions");
+const db = require("./src/database");
 var cah = require("./src/cahgamehandler");
 
 /**************/
@@ -24,15 +24,17 @@ var bot, serverManager, listener, serverSettings;
 
 exports.recieveMessage = function(msg){
 	if(isCommand(msg)){
-		if(!commandSwitch(msg)){
-			try{
-				if(serverManager.settings[msg.guild.id].deleteCommands){
-					msg.delete();
+		commandSwitch(msg, (deleteMsg) => {
+			if(deleteMsg){
+				try{
+					if(serverManager.settings[msg.guild.id].deleteCommands){
+						msg.delete();
+					}
+				} catch(e){
+					//nothing
 				}
-			} catch(e){
-				//nothing
 			}
-		}
+		});
 	}
 }
 
@@ -41,6 +43,7 @@ function isCommand(msg){
 	if(msg.author.id != bot.user.id && msg.content[0] == serverManager.prefix){
 		msg.params = msg.content.slice(1).split(" ");
 		msg.command = msg.params.shift();
+		msg.permissionLevel = serverManager.getPermissionLevel(msg);
 		return true;
 	} else {
 		return false;;
@@ -57,8 +60,8 @@ exports.setup = function (b, l, s){
 		auth: serverSettings.youtubeAuth
 	});
 	serverManager = new Servers(b, s);
+	db.setup(bot.guilds);
 	for(key of bot.guilds){
-
 		console.log("[*]connected to server: " + key);
 	}
 	if(bot.token == serverSettings.token){
@@ -66,6 +69,12 @@ exports.setup = function (b, l, s){
 	} else {
 		serverManager.prefix = serverSettings.prefix_dev;
 	}
+
+	bot.on("guildCreate", (guild) => {
+		console.log(guild);
+		db.add(guild.id);
+	});
+
 	console.log("[+]setup ready");
 }
 
@@ -73,158 +82,134 @@ exports.setup = function (b, l, s){
 /****Commands***/
 /***************/
 
-function commandSwitch(msg){
+function commandSwitch(msg, _callback){
 	try{
+		let command;
 		switch (msg.command){
 			case "eval":
-				return evalCommand(msg);
+				command = evalCommand;
 				break;
 			case "evalT":
-				return evalTCommand(msg);
+				command = evalTCommand;
 				break;
 			case "fetch":
-				return fetchCommand(msg);
+				command = fetchCommand;
 				break;
 			case "ping":
-				pingCommand(msg);
+				command = pingCommand;
 				break;
-
 			case "kill":
-				killCommand(msg);
+				command = killCommand;
 				break;
-
 			case "getroles":
-				getrolesCommand(msg);
+				command = getrolesCommand;
 				break;
-
 			case "say":
-				sayCommand(msg);
+				command = sayCommand;
 				break;
-
 			case "kick":
-				kickCommand(msg);
+				command = kickCommand;
 				break;
-
 			case "warn":
-				warnCommand(msg);
+				command = warnCommand;
 				break;
-
 			case "ban":
-				banCommand(msg);
+				command = banCommand;
 				break;
-
 			case "tempban":
-				tempbanCommand(msg);
+				command = tempbanCommand;
 				break;
-
 			case "unban":
-				unbanCommand(msg);
+				command = unbanCommand;
 				break;
-
 			case "silence":
-				silenceCommand(msg);
+				command = silenceCommand;
 				break;
-
 			case "unsilence":
-				unsilenceCommand(msg);
+				command = unsilenceCommand;
 				break;
-
 			case "help":
-				helpCommand(msg);
+				command = helpCommand;
 				break;
-
+			case "permissions":
+				command = permissionsCommand;
+				break;
 			case "see":
-				seeCommand(msg);
+				command = seeCommand;
 				break;
-
-			case "delete":
-				break;
-
 			case "speed":
-				speedCommand(msg);
+				command = speedCommand;
 				break;
-
 			case "reload":
-				reloadCommand(msg);
+				command = reloadCommand;
 				break;
-
 			case "nuke":
-				nukeCommand(msg);
+				command = nukeCommand;
 				break;
-
 			case "set":
-				setCommand(msg);
+				command = setCommand;
 				break;
-
 			case "iam":
-				iamCommand(msg);
+				command = iamCommand;
 				break;
-
 			case "setrole":
-				setroleCommand(msg);
+				command = setroleCommand;
 				break
-
 			case "delrole":
-				delroleCommand(msg);
+				command = delroleCommand;
 				break;
-
 			case "play":
-				playCommand(msg);
+				command = playCommand;
 				break;
-
 			case "skip":
-				skipCommand(msg);
+				command = skipCommand;
 				break;
-
-			case "info":
-				streamInfo(msg);
-				break;
-
-			case "join":
-				joinCommand(msg);
-				break
-
-			case "leave":
-				leaveCommand(msg);
-				break;
-
 			case "queue":
-				queueCommand(msg);
+				command = queueCommand;
 				break;
-
 			case "invite":
-				inviteCommand(msg);
+				command = inviteCommand;
 				break;
-
+			case "cstart":
+				command = cahStartCommand;
+				break;
+			case "cjoin":
+				command = cahJoinCommand;
+				break;
+			case "cleave":
+				command = cahLeaveCommand;
+				break;
 			case "c":
 			case "cchoose":
-				cahChooseCommand(msg);
+				command = cahChooseCommand;
 				break;
-
-			case "cstart":
-				cahStartCommand(msg);
-				break;
-
-			case "cleave":
-				cahLeaveCommand(msg);
-				break;
-
-			case "cjoin":
-				cahJoinCommand(msg);
-				break;
-
 			case "creset":
-				cahResetCommand(msg);
+				command = cahResetCommand;
 				break;
-
 			default:
 				//send(msg.userID, "No command");
-				return true;
+				return _callback(false);
 		}
+
+		db.getPermissions(msg.guild.id, msg.command, (value) => {
+			console.log("------ " + msg.permissionLevel + "/" + value + " : " + msg.command);
+			if (value == undefined || value == 0) return _callback(false);
+
+			if (msg.permissionLevel >= value){
+				return _callback(!command(msg));
+			} else {
+				if(commands[msg.command].failPermission != undefined){
+					let message = createEmbed("info", commands[msg.command].failPermission);
+					send(msg, message);
+				}
+				return _callback(false);
+			}
+		});
+
 	} catch (e) {
 		console.error(e);
 	}
-	return false;
+	return _callback(false);
 }
 
 /**************/
@@ -233,7 +218,7 @@ function commandSwitch(msg){
 
 function log(msg, userID, sort, reason, time){
 	var mod = msg.author.id
-	var presentNick = serverManager.getNick(userID);
+	var presentNick = serverManager.getNick(msg, userID);
 	var username = serverManager.getUsername(msg, userID);
 
 	if(serverManager.users[msg.guild.id] == undefined){
@@ -566,7 +551,7 @@ function warn(msg, userID, reason){
 
 function see(msg, userID){
 	if(!userHasFile(msg, userID)) return;
-	var user = serverManager.users[msg.author.id][userID];
+	var user = serverManager.users[msg.guild.id][msg.author.id];
 	var warnings = "";
 	var kicks = "";
 	var bans = "";
@@ -612,7 +597,7 @@ function see(msg, userID){
 			value: nicks
 		}
 	];
-	message = createEmbed("info", "All events related to " + serverManager.getUsername(userID), serverManager.getUsername(userID), fields);
+	message = createEmbed("info", "All events related to " + serverManager.getUsername(msg, userID), serverManager.getUsername(msg, userID), fields);
 	if(serverManager.settings[msg.guild.id].logchannel == undefined){
 		send(channelID, message);
 	} else {
@@ -1047,7 +1032,6 @@ function YouTubePlaylist(object, _callback){
 /****************/
 
 function evalCommand(msg){
-	if(msg.author.id !== serverSettings.botOwner) return;
 	try{
 		const code = msg.params.join(" ");
 		let evaled = eval(code);
@@ -1065,8 +1049,6 @@ function evalCommand(msg){
 }
 
 function evalTCommand(msg){
-	if(msg.author.id !== serverSettings.botOwer) return;
-
 	try{
 		const code = msg.params.join(" ");
 
@@ -1091,7 +1073,6 @@ function evalTCommand(msg){
 }
 
 function fetchCommand(msg){
-	if(msg.author.id !== serverSettings.botOwner) return;
 	try{
 		msg.channel.send(createEmbed("info", "Fetching files.."));
 		require('child_process').exec('ssh pi@home.dupbit.com scp joren@Joren.local:/Users/joren/repos/discord_dupbot/*.js root@dupbit.com:/root/repos/discord_dupbot/', function(error, stdout, stderr){
@@ -1138,11 +1119,6 @@ function killCommand(msg){
 
 function kickCommand(msg){
 	if (msg.params.length >= 1){
-		if(!serverManager.isAdmin(msg)){
-			message = createEmbed("info", "You can't kick people :point_up:");
-			send(msg, message);
-			return;
-		}
 		var targetID = serverManager.getMention(msg);
 		if(targetID){
 			if(msg.params.length >= 2){
@@ -1163,12 +1139,6 @@ function kickCommand(msg){
 
 function warnCommand(msg){
 	if (msg.params.length >= 1){
-		if(!serverManager.isAdmin(msg)){
-			message = createEmbed("info", "You can't warn people :point_up:");
-			send(msg, message);
-			return;
-		}
-
 		var targetID = serverManager.getMention(msg);
 		if(targetID){
 			var message = "<@" + targetID + "> warning! You got a warning for: ";
@@ -1192,12 +1162,6 @@ function warnCommand(msg){
 
 function banCommand(msg){
 	if (msg.params.length >=1){
-		if(!serverManager.isAdmin(msg)){
-			message = createEmbed("info", "You can't ban people :point_up:");
-			send(msg, message);
-			return;
-		}
-
 		if(serverManager.getMention(msg)){
 			if(msg.params.length >= 2){
 				var message = "You are banned because:";
@@ -1218,12 +1182,6 @@ function banCommand(msg){
 
 function tempbanCommand(msg){
 	if (msg.params.length >= 1){
-		if(!serverManager.isAdmin(msg)){
-			message = createEmbed("info", "You can't ban people :point_up:");
-			send(msg, message);
-			return;
-		}
-
 		if(serverManager.getMention(msg)){
 			if(msg.params.length >= 3){
 				var message = "You are banned for " + msg.params[1] + " days, because: ";
@@ -1244,11 +1202,6 @@ function tempbanCommand(msg){
 
 function unbanCommand(msg){
 	if (msg.params.length >= 1){
-		if(!serverManager.isAdmin(msg)){
-			message = createEmbed("info", "You can't unban people :point_up:");
-			send(msg, message);
-			return;
-		}
 		if(msg.params[0] in serverManager.users[msg.guild.id].bans){
 			unban(msg, msg.params[0]);
 			log(msg, serverManager.users[msg.guild.id].bans[msg.params[0]], "unban");
@@ -1266,23 +1219,12 @@ function unbanCommand(msg){
 }
 
 function sayCommand(msg){
-	if(!serverManager.isAdmin(msg)){
-		message = createEmbed("info", "You can't say things");
-		send(msg, message);
-		return;
-	}
-
 	message = createEmbed("info", msg.params.join(" "));
 	send(msg, message);
 }
 
 function silenceCommand(msg){
 	if (msg.params.length >= 1){
-		if(!serverManager.isAdmin(msg)){
-			message = createEmbed("info", "You can't silence people :point_up:");
-			send(msg, message);
-			return;
-		}
 		if(serverManager.getMention(msg)){
 			silence(msg, serverManager.getMention(msg));
 		}
@@ -1291,12 +1233,6 @@ function silenceCommand(msg){
 
 function unsilenceCommand(msg){
 	if (msg.params.length >= 1){
-		if(!serverManager.isAdmin(msg)){
-			message = createEmbed("info", "You can't unsilence people :point_up:");
-			send(msg, message);
-			return;
-		}
-
 		if(serverManager.getMention(msg)){
 			unSilence(msg, serverManager.getMention(msg));
 		}
@@ -1305,12 +1241,6 @@ function unsilenceCommand(msg){
 
 function seeCommand(msg){
 	if (msg.params.length >= 1){
-		if(!serverManager.isAdmin(msg)){
-			message = createEmbed("info", "You can't see into people");
-			send(msg, message);
-			return;
-		}
-
 		see(msg, serverManager.getMention(msg));
 	}
 }
@@ -1335,12 +1265,64 @@ function helpCommand(msg){
 			name: "Music",
 			value: "!play, !skip, !queue"
 		},{
+			name: "Cards Against Humanity",
+			value: "!cstart, !cjoin, !cleave, !c, !choose, !creset",
+		},{
 			name: "Admin only",
 			value: "!kick, !warn, !ban, !tempban, !unban, !setrole, !delrole,\n!set, !say, !silence, !unsilence, !see, !reload, !nuke"
 		}
 		]);
 		send(msg, message);
 	}
+}
+
+function permissionsCommand(msg){
+	db.getPermissions(msg.guild.id, "allPermissions", (permissions) => {
+		let disabled = [];
+		let everyone =  [];
+		let mod = [];
+		let owner = [];
+		let botOwner = [];
+
+		for(let i = 0; i < permissions.length; i++){
+			let command = permissions[i].command;
+			switch (permissions[i].value) {
+				case 0:
+					disabled.push(command);
+					break;
+				case 1:
+					everyone.push(command);
+					break;
+				case 2:
+					mod.push(command);
+					break;
+				case 3:
+					owner.push(command);
+					break;
+				case 4:
+					botOwner.push(command);
+					break;
+				default:
+
+			}
+		}
+		message = createEmbed("info", "Permissions of all commands", "Permissions", [
+			{
+				name: "Disabled",
+				value: disabled.join(", ")
+			}, {
+				name: "Everyone",
+				value: everyone.join(", ")
+			}, {
+				name: "Moderator",
+				value: mod.join(", ")
+			}, {
+				name: "Owner",
+				value: owner.join(", ")
+			}
+		]);
+		send(msg, message);
+	});
 }
 
 function speedCommand(msg){
@@ -1359,25 +1341,13 @@ function speedCommand(msg){
 }
 
 function reloadCommand(msg){
-	if(!serverManager.isAdmin(msg)){
-		message = createEmbed("info", "You can't reload the bot");
-		send(msg, message);
-		return;
-	}
 	message = createEmbed("info", "reloading..");
-
 	send(msg, message, function(){
 		listener.emit("reload");
 	});
 }
 
 function nukeCommand(msg){
-	if(!serverManager.isAdmin(msg)){
-		message = createEmbed("info", "You can't nuke idiot :point_up:");
-		send(msg, message);
-		return;
-	}
-
 	if(msg.params.length >= 1){
 		messageLimit = msg.params[0];
 	} else {
@@ -1388,12 +1358,6 @@ function nukeCommand(msg){
 }
 
 function setCommand(msg){
-	if(!serverManager.isAdmin(msg)){
-		message = createEmbed("info", "You can't edit the settings");
-		send(msg, message);
-		return;
-	}
-
 	if(serverManager.settings[msg.guild.id] == undefined){
 		serverManager.settings[msg.guild.id] = {};
 	}
@@ -1495,6 +1459,15 @@ function setCommand(msg){
 				send(msg, message);
 				break;
 
+			case "perm":
+				if(msg.params.length >= 3){
+					let command = msg.params[1];
+					let value = msg.params[2];
+
+					db.setPermissions(msg.guild.id, command, value);
+				}
+				break;
+
 			default:
 				message = createEmbed("info", setCommand.help);
 				send(msg, message);
@@ -1534,12 +1507,6 @@ function iamCommand(msg){
 }
 
 function setroleCommand(msg){
-	if(!serverManager.isAdmin(msg)){
-		message = createEmbed("info", "You can't set roles.");
-		send(msg, message);
-		return;
-	}
-
 	userID = serverManager.getMention(msg);
 	roleID = serverManager.getMentionRole(msg);
 	if(userID && roleID){
@@ -1548,12 +1515,6 @@ function setroleCommand(msg){
 }
 
 function delroleCommand(msg){
-	if(!serverManager.isAdmin(msg)){
-		message = createEmbed("info", "You can't delete roles.");
-		send(msg, message);
-		return;
-	}
-
 	userID = serverManager.getMention(msg);
 	roleID = serverManager.getMentionRole(msg);
 
@@ -1634,10 +1595,5 @@ function cahChooseCommand(msg){
 }
 
 function cahResetCommand(msg){
-	if(!serverManager.isAdmin(msg)){
-		message = createEmbed("purple", "You can't reset the game");
-		send(msg, message);
-		return;
-	}
 	cah.reset(msg);
 }

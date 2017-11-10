@@ -70,6 +70,20 @@ module.exports = class Servers{
 		return this.isOwner(msg) || msg.author.id == this.serverSettings.botOwner || this.getRoles(msg).includes(this.settings[msg.guild.id].adminRole);
 	}
 
+    getPermissionLevel(msg){
+        console.log(msg.author.id);
+        console.log(this.botOwner);
+        if(msg.author.id == this.serverSettings.botOwner){
+            return 4;
+        } else if(this.isOwner(msg)){
+            return 3;
+        } else if(this.isAdmin(msg)){
+            return 2;
+        } else {
+            return 1;
+        }
+    }
+
 	getMention(msg){
 		if (msg.mentions.users.first()){
 			return msg.mentions.users.first().id;
@@ -86,7 +100,7 @@ module.exports = class Servers{
 		}
 	}
 
-	getUsername(userID){
+	getUsername(msg, userID){
 		return this.bot.users.get(userID).username;
 	}
 

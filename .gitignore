@@ -3,3 +3,4 @@ upload.sh
 settings.json
 users.json
 stats.json
+node_modules/

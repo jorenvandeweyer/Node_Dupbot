@@ -51,8 +51,12 @@ function createEmbed(colorName, info, title, fields, footer){
 	};
 }
 
-function send(msg, message){
-    msg.channel.send(message);
+function send(msg, message, _callback){
+    msg.channel.send(message).then((data) => {
+		if(typeof _callback === "function"){
+			_callback(message);
+		}
+	});
 }
 
 function broadcastCahMessages(msg, array){
@@ -73,11 +77,51 @@ function broadcastCahMessages(msg, array){
 
 		if(data.private != undefined){
 			for(let j = 0; j < data.id_private.length; j++){
+				//msg.channel.members.get(data.id_private[j]).send(data.description_private[j].replace(/_/g, "\\_")).then((newmsg) => {addReactions(newmsg, data)});
 				msg.channel.members.get(data.id_private[j]).send(data.description_private[j].replace(/_/g, "\\_"));
 			}
 		}
 	}
 }
+
+// in progress
+// function addReactions(msg, data){
+// 	switch (data.cards) {
+// 		case 10:
+// 			msg.react("🔟");
+// 		case 9:
+// 			msg.react("9⃣");
+// 		case 8:
+// 			msg.react("8⃣");
+// 		case 7:
+// 			msg.react("7⃣");
+// 		case 6:
+// 			msg.react("6⃣");
+// 		case 5:
+// 			msg.react("5⃣");
+// 		case 4:
+// 			msg.react("4⃣");
+// 		case 3:
+// 			msg.react("3⃣");
+// 		case 2:
+// 			msg.react("2⃣");
+// 		case 1:
+// 			msg.react("1⃣");
+// 			break;
+// 		default:
+//
+// 	}
+// 	const collector = msg.createReactionCollector(
+// 	 (reaction, user) => reaction.emoji.name == "1⃣" || reaction.emoji.name == "2⃣" || reaction.emoji.name == "3⃣" || reaction.emoji.name == "4⃣" || reaction.emoji.name == "5⃣" || reaction.emoji.name == "6⃣" || reaction.emoji.name == "7⃣" || reaction.emoji.name == "8⃣" || reaction.emoji.name == "9⃣" || reaction.emoji.name == "🔟",
+// 	 { time: 60 * 60 * 1000}
+// 	);
+//
+// 	collector.on('collect', r => {
+// 		send(msg, r.emoji.name);
+// 		collector.stop();
+// 	});
+// }
+
 
 class gameHandler{
     constructor(){
@@ -107,6 +151,9 @@ class gameHandler{
             if(args.includes("-cards")){
                 let index = args.indexOf("-cards");
                 cards = args[index + 1];
+				if(cards > 10){
+					cards = 10;
+				}
             } else {
                 cards = 5;
             }
@@ -118,7 +165,12 @@ class gameHandler{
                 rounds = 5;
             }
 
-            this.holder[id] = new CAH(msg.author.id, cards, rounds);
+			let guildid = msg.guild.id;
+			if(this.stats[guildid] == undefined){
+				this.stats[guildid] = {};
+			}
+
+            this.holder[id] = new CAH(msg.author.id, this.stats[msg.guild.id], cards, rounds);
 
             let message = createEmbed("purple", "CAH Game started, type !cjoin to join!");
             send(msg, message);
@@ -177,6 +229,31 @@ class gameHandler{
             }
 
             broadcastCahMessages(msg, data);
+
+			for(let i = 0; i < data.length; i++){
+				let message = data[i];
+
+				if(data.status == "data"){
+					switch (data.subj) {
+						case "point":
+							let points = data.data;
+							let guildid = msg.guild.id;
+							//delete?
+							if(this.stats[guildid] == undefined){
+								this.stats[guildid] = {};
+							}
+							if(this.stats[guildid][data.winner] == undefined){
+								this.stats[guildid][data.winner] = {points: 0};
+							}
+							this.stats[guildid][data.winner].points++;
+
+							this.saveStats();
+							break;
+						default:
+
+					}
+				}
+			}
         }
     }
 
