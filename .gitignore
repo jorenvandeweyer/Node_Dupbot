@@ -3,4 +3,5 @@ upload.sh
 settings.json
 users.json
 stats.json
+data/database
 node_modules/

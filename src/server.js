@@ -71,8 +71,6 @@ module.exports = class Servers{
 	}
 
     getPermissionLevel(msg){
-        console.log(msg.author.id);
-        console.log(this.botOwner);
         if(msg.author.id == this.serverSettings.botOwner){
             return 4;
         } else if(this.isOwner(msg)){

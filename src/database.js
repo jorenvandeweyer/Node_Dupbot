@@ -1,5 +1,5 @@
 const sqlite3 = require('sqlite3').verbose();
-const db = new sqlite3.Database(__dirname + '/../data/dupbot');
+const db = new sqlite3.Database(__dirname + '/../data/database');
 const commands = require('./commands/commands');
 const settings = require(__dirname + '/../data/default');
 
@@ -31,12 +31,16 @@ exports.getPermissions = function(guild, command, _callback){
 
 exports.setPermissions = function(guild, command, value){
     if(command in commands && value >= 0 && value < 5){
-        db.run("UPDATE permissions_" + guild + " SET value=$value WHERE command=$command", {
-            $value: value,
-            $command: command
-        }, () => {
-            //console.log("update");
-        });
+        db.get("SELECT value FROM permissions_" + guild + " WHERE command='" + command + "'", (err, row) => {
+            if(row.value < 4){
+                db.run("UPDATE permissions_" + guild + " SET value=$value WHERE command=$command", {
+                    $value: value,
+                    $command: command
+                }, () => {
+                    //console.log("update");
+                });
+            }
+        })
     }
 }
 
@@ -62,7 +66,7 @@ exports.setSettings = function(guild, setting, value){
             $value: value,
             $setting: setting
         }, () => {
-            console.log("update");
+            //console.log("update");
         });
     }
 }
@@ -84,7 +88,6 @@ function addGuild(guild){
                 stmt.finalize();
 
                 db.each("SELECT * FROM permissions_" +guild, (err, rows) => {
-                    console.log(rows);
                 })
             });
         }

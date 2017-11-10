@@ -71,7 +71,6 @@ exports.setup = function (b, l, s){
 	}
 
 	bot.on("guildCreate", (guild) => {
-		console.log(guild);
 		db.add(guild.id);
 	});
 
@@ -192,7 +191,7 @@ function commandSwitch(msg, _callback){
 		}
 
 		db.getPermissions(msg.guild.id, msg.command, (value) => {
-			console.log("------ " + msg.permissionLevel + "/" + value + " : " + msg.command);
+			//console.log("------ " + msg.permissionLevel + "/" + value + " : " + msg.command);
 			if (value == undefined || value == 0) return _callback(false);
 
 			if (msg.permissionLevel >= value){
