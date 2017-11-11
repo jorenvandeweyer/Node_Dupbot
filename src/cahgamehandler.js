@@ -72,8 +72,10 @@ function broadcastCahMessages(msg, array){
 			message = message.replace("%player", "<@" + data.id + ">");
 		}
 
-		message = createEmbed("purple", message.replace(/_/g, "\\_"));
-		send(msg, message);
+		if(data.description){
+			message = createEmbed("purple", message.replace(/_/g, "\\_"));
+			send(msg, message);			
+		}
 
 		if(data.private != undefined){
 			for(let j = 0; j < data.id_private.length; j++){
