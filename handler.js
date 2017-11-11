@@ -44,7 +44,10 @@ function isCommand(msg){
 		msg.params = msg.content.slice(1).split(" ");
 		msg.command = msg.params.shift();
 		msg.permissionLevel = serverManager.getPermissionLevel(msg);
-		return true;
+		if(msg.channel.type == "text"){
+			return true;
+		}
+		return false;
 	} else {
 		return false;;
 	}
