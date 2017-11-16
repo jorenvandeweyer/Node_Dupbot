@@ -127,27 +127,31 @@ module.exports = {
     },
     cstart: {
         description: "!cstart [-rounds n] [-cards n]",
-        defaultPermission: 0
+        defaultPermission: 1
     },
     cjoin: {
         description: "!cjoin",
-        defaultPermission: 0
+        defaultPermission: 1
     },
     cleave: {
         description: "!cleave",
-        defaultPermission: 0
+        defaultPermission: 1
     },
     c: {
         description: "!c <card>",
-        defaultPermission: 0
+        defaultPermission: 1
     },
     choose: {
         description: "!choose <card>",
-        defaultPermission: 0
+        defaultPermission: 1
     },
     creset: {
         description: "!creset",
-        defaultPermission: 0,
+        defaultPermission: 2,
         failPermission: "You can't reset the game"
+    },
+    cscoreboard: {
+        description: "!cscoreboard <player>",
+        defaultPermission: 1
     }
 }

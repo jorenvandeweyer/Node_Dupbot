@@ -55,7 +55,8 @@ module.exports = class Servers{
     }
 
     getOwner(msg){
-        return this.bot.guilds.get(msg.guild.id).ownerID;
+        let guild = msg.guild.id;
+        return this.bot.guilds.get(guild).ownerID;
     }
 
     getRoles(msg){
@@ -67,7 +68,8 @@ module.exports = class Servers{
 	}
 
 	isAdmin(msg){
-		return this.isOwner(msg) || msg.author.id == this.serverSettings.botOwner || this.getRoles(msg).includes(this.settings[msg.guild.id].adminRole);
+        let guild = msg.guild.id;
+		return this.isOwner(msg) || msg.author.id == this.serverSettings.botOwner || this.getRoles(msg).includes(this.settings[guild].adminRole);
 	}
 
     getPermissionLevel(msg){

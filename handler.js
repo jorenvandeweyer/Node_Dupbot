@@ -39,15 +39,13 @@ exports.recieveMessage = function(msg){
 }
 
 function isCommand(msg){
+	if(msg.channel.type !== "text") return false;
 	//if(serverSettings.ownerOnlyGuilds.indexOf(msg.guild.id.toString()) && msg.author.id !== serverSettings.botOwner) return false;
 	if(msg.author.id != bot.user.id && msg.content[0] == serverManager.prefix){
 		msg.params = msg.content.slice(1).split(" ");
 		msg.command = msg.params.shift();
 		msg.permissionLevel = serverManager.getPermissionLevel(msg);
-		if(msg.channel.type == "text"){
-			return true;
-		}
-		return false;
+		return true;
 	} else {
 		return false;;
 	}
@@ -187,6 +185,9 @@ function commandSwitch(msg, _callback){
 				break;
 			case "creset":
 				command = cahResetCommand;
+				break;
+			case "cscoreboard":
+				command = cahScoreboardCommand;
 				break;
 			default:
 				//send(msg.userID, "No command");
@@ -1598,4 +1599,8 @@ function cahChooseCommand(msg){
 
 function cahResetCommand(msg){
 	cah.reset(msg);
+}
+
+function cahScoreboardCommand(msg){
+	cah.scoreboard(msg);
 }
