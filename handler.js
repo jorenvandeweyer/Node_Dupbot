@@ -1,15 +1,13 @@
-var https = require('https');
-//var cheerio = require("cheerio");
-var fs = require('fs');
-var ytdl = require('ytdl-core');
+const https = require('https');
+const fs = require('fs');
+const ytdl = require('ytdl-core');
 const streamOptions = { seek: 0, volume: 1 };
-var google = require('googleapis');
+const google = require('googleapis');
 
 const Servers = require("./src/server");
 const commands = require("./src/commands/commands");
-//const permissions = require("./src/permissions");
 const db = require("./src/database");
-var cah = require("./src/cahgamehandler");
+const cah = require("./src/cahgamehandler");
 
 /**************/
 /*****VARS*****/
@@ -189,6 +187,11 @@ function commandSwitch(msg, _callback){
 			case "cscoreboard":
 				command = cahScoreboardCommand;
 				break;
+			case "join":
+				return _callback(joinVoiceChannel(msg, console.log));
+				break;
+			case "leave":
+				return _callback(leaveVoiceChannel(msg));
 			default:
 				//send(msg.userID, "No command");
 				return _callback(false);
@@ -796,19 +799,10 @@ function playSong(msg){
 		});
 	}
 
-   	const stream = ytdl('https://www.youtube.com/watch?v=' + videoID, {  });
-   	const dispatcher = connection.playStream(stream, streamOptions);
+   	let stream = ytdl('https://www.youtube.com/watch?v=' + videoID, {  });
+   	let dispatcher = connection.playStream(stream, streamOptions);
 
-	dispatcher.on('end', function() {
-		if(serverManager.stats[msg.guild.id] == undefined) {
-			serverManager.stats[msg.guild.id] = {};
-			serverManager.stats[msg.guild.id].songsPlayed = 0;
-		}
-		serverManager.stats[msg.guild.id].songsPlayed ++;
-		serverManager.saveStats();
-		if(serverManager.collectors[msg.guild.id]){
-			serverManager.collectors[msg.guild.id].stop();
-		}
+	dispatcher.on('end', () => {
 		if(video.type == "song"){
 			serverManager.songQueue[msg.guild.id].shift();
 		} else if (video.type == "playlist"){

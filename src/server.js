@@ -1,4 +1,5 @@
 const fs = require('fs');
+const db = require("../src/database");
 
 module.exports = class Servers{
     constructor(bot, serverSettings){
@@ -9,7 +10,6 @@ module.exports = class Servers{
 
         this.getSettings();
         this.getUsers();
-        this.getStats();
     }
 
     getSettings(){
@@ -28,14 +28,6 @@ module.exports = class Servers{
         }
     }
 
-    getStats(){
-        try {
-            this.stats = JSON.parse(fs.readFileSync("./data/stats.json", "utf8"));
-        } catch(e) {
-            this.users = {};
-        }
-    }
-
     saveSettings(_callback){
         fs.writeFile(__dirname + "/../data/settings.json", JSON.stringify(this.settings), "utf8", function(err){
             (typeof _callback === 'function') ? _callback(err) : null;
@@ -44,12 +36,6 @@ module.exports = class Servers{
 
     saveUsers(_callback){
         fs.writeFile(__dirname + "/../data/users.json", JSON.stringify(this.users), "utf8", function(err){
-            (typeof _callback === 'function') ? _callback(err) : null;
-        });
-    }
-
-    saveStats(_callback){
-        fs.writeFile(__dirname + "/../data/stats.json", JSON.stringify(this.stats), "utf8", function(err){
             (typeof _callback === 'function') ? _callback(err) : null;
         });
     }
