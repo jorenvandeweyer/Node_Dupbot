@@ -803,7 +803,6 @@ function playSong(msg){
    	let dispatcher = connection.playStream(stream, streamOptions);
 
 	dispatcher.on('end', () => {
-		console.log("on end");
 		// if(serverManager.stats[msg.guild.id] == undefined) {
 		// 	serverManager.stats[msg.guild.id] = {};
 		// 	serverManager.stats[msg.guild.id].songsPlayed = 0;
@@ -826,12 +825,10 @@ function playSong(msg){
 		}
 
 		if(serverManager.songQueue[msg.guild.id].length > 0){
-			console.log("next");
 			setTimeout(function(){
 				playSong(msg);
 			},1000);
 		} else {
-			console.log("finished");
 			leaveVoiceChannel(msg);
 			sendChannel(msg, serverManager.settings[msg.guild.id].musicChannel, createEmbed("info", "Queue finished"));
 		}
