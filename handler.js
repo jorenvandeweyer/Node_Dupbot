@@ -803,6 +803,16 @@ function playSong(msg){
    	let dispatcher = connection.playStream(stream, streamOptions);
 
 	dispatcher.on('end', () => {
+		console.log("on end");
+		// if(serverManager.stats[msg.guild.id] == undefined) {
+		// 	serverManager.stats[msg.guild.id] = {};
+		// 	serverManager.stats[msg.guild.id].songsPlayed = 0;
+		// }
+		// serverManager.stats[msg.guild.id].songsPlayed ++;
+		// serverManager.saveStats();
+		if(serverManager.collectors[msg.guild.id]){
+			serverManager.collectors[msg.guild.id].stop();
+		}
 		if(video.type == "song"){
 			serverManager.songQueue[msg.guild.id].shift();
 		} else if (video.type == "playlist"){
@@ -816,10 +826,12 @@ function playSong(msg){
 		}
 
 		if(serverManager.songQueue[msg.guild.id].length > 0){
+			console.log("next");
 			setTimeout(function(){
 				playSong(msg);
 			},1000);
 		} else {
+			console.log("finished");
 			leaveVoiceChannel(msg);
 			sendChannel(msg, serverManager.settings[msg.guild.id].musicChannel, createEmbed("info", "Queue finished"));
 		}
