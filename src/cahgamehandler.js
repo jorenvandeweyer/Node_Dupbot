@@ -256,7 +256,6 @@ class gameHandler{
 
 	scoreboard(msg){
 		let guildid = msg.guild.id;
-		let guildStats = this.stats[guildid];
 
 		if(msg.params.length >= 1){
 			db.getStats_cah(guildid, msg.mentions.users.first().id, (row) => {
