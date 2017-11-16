@@ -187,11 +187,12 @@ function commandSwitch(msg, _callback){
 			case "cscoreboard":
 				command = cahScoreboardCommand;
 				break;
-			case "join":
-				return _callback(joinVoiceChannel(msg, console.log));
-				break;
-			case "leave":
-				return _callback(leaveVoiceChannel(msg));
+			// case "join":
+			// 	return _callback(joinVoiceChannel(msg, console.log));
+			// 	break;
+			// case "leave":
+			// 	return _callback(leaveVoiceChannel(msg));
+			// 	break;
 			default:
 				//send(msg.userID, "No command");
 				return _callback(false);
