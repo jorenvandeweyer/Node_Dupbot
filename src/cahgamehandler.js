@@ -163,11 +163,8 @@ class gameHandler{
             }
 
 			let guildid = msg.guild.id;
-			if(this.stats[guildid] == undefined){
-				this.stats[guildid] = {};
-			}
 
-            this.holder[id] = new CAH(msg.author.id, this.stats[msg.guild.id], cards, rounds);
+            this.holder[id] = new CAH(msg.author.id, cards, rounds);
 
             let message = createEmbed("purple", "CAH Game started, type !cjoin to join!");
             send(msg, message);
