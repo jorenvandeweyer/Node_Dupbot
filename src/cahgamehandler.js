@@ -76,7 +76,7 @@ function broadcastCahMessages(msg, array){
 					if(row){
 						points+= row.points;
 					}
-					message = message.replace("%points", 1);
+					message = message.replace("%points", points);
 					message = createEmbed("purple", message);
 					send(msg, message);
 				});
@@ -161,10 +161,17 @@ class gameHandler{
             } else {
                 rounds = 5;
             }
+			let packs;
+			if(args.includes("-packs")){
+				let index = args.indexOf("-packs");
+				packs = args[index+1].split(",");
+			} else {
+				packs = ["Base"];
+			}
 
 			let guildid = msg.guild.id;
 
-            this.holder[id] = new CAH(msg.author.id, cards, rounds);
+            this.holder[id] = new CAH(msg.author.id, cards, rounds, packs);
 
             let message = createEmbed("purple", "CAH Game started, type !cjoin to join!");
             send(msg, message);
