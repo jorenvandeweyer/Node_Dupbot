@@ -1,16 +1,15 @@
 const sqlite3 = require('sqlite3').verbose();
 const db = new sqlite3.Database(__dirname + '/../data/database');
-const commands = require('./commands/commands');
 const settings = require(__dirname + '/../data/default');
 
-exports.setup = function(guilds){
+exports.setup = function(self, guilds){
     for (let guild of guilds){
-        addGuild(guild[0]);
+        addGuild(self, guild[0]);
     }
 }
 
-exports.add = function(guild){
-    addGuild(guild);
+exports.add = function(self, guild){
+    addGuild(self, guild);
 }
 
 exports.getPermissions = function(guild, command, _callback){
@@ -30,8 +29,8 @@ exports.getPermissions = function(guild, command, _callback){
 }
 
 exports.setPermissions = function(guild, command, value){
-    if(command in commands && value >= 0 && value < 5){
         db.get("SELECT value FROM permissions_" + guild + " WHERE command='" + command + "'", (err, row) => {
+            if(row == undefined) return;
             if(row.value < 4){
                 db.run("UPDATE permissions_" + guild + " SET value=$value WHERE command=$command", {
                     $value: value,
@@ -40,8 +39,7 @@ exports.setPermissions = function(guild, command, value){
                     //console.log("update");
                 });
             }
-        })
-    }
+        });
 }
 
 exports.getSettings = function(guild, setting, _callback){
@@ -104,7 +102,7 @@ exports.setStats_cah = function(guild, player, points){
 
 }
 
-function addGuild(guild){
+function addGuild(self, guild){
     db.get("SELECT name FROM sqlite_master WHERE type='table' AND name='permissions_" + guild + "'", (err, row) => {
         if(row == undefined){
             db.serialize( () => {
@@ -112,8 +110,8 @@ function addGuild(guild){
 
                 let stmt = db.prepare("INSERT INTO permissions_" + guild + " VALUES (?,?)");
 
-                for (key in commands){
-                    stmt.run(key, commands[key].defaultPermission);
+                for (let command of self.bot().commands){
+                    stmt.run(command[0], command[1].defaultPermission);
                 }
 
                 stmt.finalize();
@@ -128,9 +126,10 @@ function addGuild(guild){
                         for(let i = 0; i < rows.length; i++){
                             db_commands.push(rows[i].command)
                         }
-                        for(command in commands){
-                            if (db_commands.indexOf(command) < 0){
-                                stmt.run(command, commands[command].defaultPermission);
+                        for (let command of self.bot().commands){
+                            if (!db_commands.includes(command[0])){
+                                console.log(command[0]);
+                                stmt.run(command[0], command[1].defaultPermission);
                             }
                         }
 

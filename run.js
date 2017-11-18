@@ -1,9 +1,11 @@
 #!/usr/bin/env nodejs
 
 const Discord = require('discord.js');
-const handler = require('./handler.js');
 const events = require("events");
 const fs = require("fs");
+const serverSettings = require("./serverSettings");
+
+let handler = require('./handler.js');
 
 /**************/
 /*****VARS*****/
@@ -11,7 +13,6 @@ const fs = require("fs");
 
 var client;// = new Discord.Client();
 const listener = new events.EventEmitter();
-const serverSettings = JSON.parse(fs.readFileSync('serverSettings.json', 'utf8'));
 
 /***************/
 /***Listeners***/
@@ -30,6 +31,8 @@ listener.on("reload", function(){
 
 function login(reboot, channelId, messageId){
 	client = new Discord.Client();
+	client.commands = new Discord.Collection();
+
 	if(__filename == serverSettings.filePath){
 		client.login(serverSettings.token); //dupbit
 	} else {
@@ -38,7 +41,7 @@ function login(reboot, channelId, messageId){
 
 	client.on('ready', () => {
 	    console.log("\n--" + client.user.username + " connected with ID: " + client.user.id + "\n");
-	    handler.setup(client, listener, serverSettings);
+	    handler.setup(client, listener);
 
 		if(reboot){
 			client.channels.get(channelId).fetchMessage(messageId).then(message => {message.edit({embed:{color:4193355, description:"Server updated."}})});
