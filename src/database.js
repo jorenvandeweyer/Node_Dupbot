@@ -4,7 +4,7 @@ const commands = require('./commands/commands');
 const settings = require(__dirname + '/../data/default');
 
 exports.setup = function(guilds){
-    for (guild of guilds){
+    for (let guild of guilds){
         addGuild(guild[0]);
     }
 }
@@ -60,12 +60,13 @@ exports.getSettings = function(guild, setting, _callback){
     }
 }
 
-exports.setSettings = function(guild, setting, value){
+exports.setSettings = function(guild, setting, value, _callback){
     if(setting in settings){
-        db.run("UPDATE settings_" + guild + " SET value=$value WHERE command=$command", {
+        db.run("UPDATE settings_" + guild + " SET value=$value WHERE setting=$setting", {
             $value: value,
             $setting: setting
         }, () => {
+            if (typeof _callback === "function") _callback();
             //console.log("update");
         });
     }
@@ -89,8 +90,6 @@ exports.getStats_cah = function(guild, player, _callback){
 
 exports.setStats_cah = function(guild, player, points){
     db.get("SELECT * FROM stats_cah_" + guild + " WHERE id='" + player + "'", (err, row) => {
-        console.log("-----row:");
-        console.log(row);
         if(row){
             db.run("UPDATE stats_cah_" + guild + " SET points=$points WHERE id=$player", {
                 $points: points + parseInt(row.points),
@@ -132,21 +131,8 @@ function addGuild(guild){
                         for(command in commands){
                             if (db_commands.indexOf(command) < 0){
                                 stmt.run(command, commands[command].defaultPermission);
-                                console.log(command);
                             }
                         }
-                        // for (command in commands){
-                        //     let addObject = true;
-                        //     for(let i = 0; i < rows.length ;i++){
-                        //         if(command == rows.command){
-                        //             addObject = false;
-                        //             break;
-                        //         }
-                        //     }
-                        //     if(addObject){
-                        //         stmt.run(command, commands[key].defaultPermission);
-                        //     }
-                        // }
 
                         stmt.finalize()
                     });
@@ -157,7 +143,7 @@ function addGuild(guild){
     db.get("SELECT name FROM sqlite_master WHERE type='table' AND name='settings_" + guild + "'", (err, row) => {
         if(row == undefined){
             db.serialize( () => {
-                db.run("CREATE TABLE settings_" + guild + " (settings TEXT PRIMARY KEY, value TEXT)");
+                db.run("CREATE TABLE settings_" + guild + " (setting TEXT PRIMARY KEY, value TEXT)");
 
                 let stmt = db.prepare("INSERT INTO settings_" + guild + " VALUES (?, ?)");
 

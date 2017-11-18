@@ -1,8 +1,9 @@
 module.exports = {
     adminrole: "",
+    warntime: 3,
     voiceChannel: "",
     musicChannel: "",
     deleteCommands: false,
     logchannel: "",
-    role: ""
+    iam_roles: ""
 }

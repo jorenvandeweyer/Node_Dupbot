@@ -67,6 +67,10 @@ module.exports = {
         description: "!help <command>",
         defaultPermission: 1
     },
+    settings: {
+        description: "!settings",
+        defaultPermission: 3
+    },
     permissions: {
         description: "!permissions",
         defaultPermission: 3
@@ -91,7 +95,7 @@ module.exports = {
         failPermission: "You can't nuke idiot :point_up:"
     },
     set: {
-        description: "!set <warntime, log, role, admin, deleteCommands, perm> <opt>",
+        description: "!set <warntime, log, role, admin, deleteCommands, perm, music, voice> <opt>",
         defaultPermission: 3,
         failPermission: "You can't edit the settings"
     },

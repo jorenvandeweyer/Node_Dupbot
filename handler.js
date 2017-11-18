@@ -9,43 +9,44 @@ const commands = require("./src/commands/commands");
 const db = require("./src/database");
 const cah = require("./src/cahgamehandler");
 
-/**************/
-/*****VARS*****/
-/**************/
+var bot, listener, serverSettings, youtube, serverManager;
 
-var youtube
-
-var bot, serverManager, listener, serverSettings;
 /***************/
 /****Exports****/
 /***************/
 
 exports.recieveMessage = function(msg){
-	if(isCommand(msg)){
-		commandSwitch(msg, (deleteMsg) => {
-			if(deleteMsg){
-				try{
-					if(serverManager.settings[msg.guild.id].deleteCommands){
-						msg.delete();
-					}
-				} catch(e){
-					//nothing
+	isCommand(msg, (isCmd) => {
+		if(isCmd){
+			commandSwitch(msg, (deleteMsg) => {
+				if(deleteMsg){
+					db.getSettings(msg.guild.id, "deleteCommands", (value) => {
+						if(parseInt(value)){
+							try{
+								msg.delete();
+							} catch(e){
+
+							}
+						}
+					});
 				}
-			}
-		});
-	}
+			});
+		}
+	});
 }
 
-function isCommand(msg){
+function isCommand(msg, _callback){
 	if(msg.channel.type !== "text") return false;
 	//if(serverSettings.ownerOnlyGuilds.indexOf(msg.guild.id.toString()) && msg.author.id !== serverSettings.botOwner) return false;
 	if(msg.author.id != bot.user.id && msg.content[0] == serverManager.prefix){
 		msg.params = msg.content.slice(1).split(" ");
 		msg.command = msg.params.shift();
-		msg.permissionLevel = serverManager.getPermissionLevel(msg);
-		return true;
+		db.getSettings(msg.guild.id, "adminrole", (role) => {
+			msg.permissionLevel = serverManager.getPermissionLevel(msg, role);
+			_callback(true);
+		});
 	} else {
-		return false;;
+		_callback(false);
 	}
 }
 
@@ -54,15 +55,20 @@ exports.setup = function (b, l, s){
 	bot = b;
 	listener = l;
 	serverSettings = s;
+
 	youtube = google.youtube({
 		version: 'v3',
 		auth: serverSettings.youtubeAuth
 	});
-	serverManager = new Servers(b, s);
+
+	serverManager = new Servers(b, s, bot.guilds);
+
 	db.setup(bot.guilds);
+
 	for(key of bot.guilds){
 		console.log("[*]connected to server: " + key);
 	}
+
 	if(bot.token == serverSettings.token){
 		serverManager.prefix = serverSettings.prefix;
 	} else {
@@ -128,6 +134,9 @@ function commandSwitch(msg, _callback){
 				break;
 			case "help":
 				command = helpCommand;
+				break;
+			case "settings":
+				command = settingsCommand;
 				break;
 			case "permissions":
 				command = permissionsCommand;
@@ -199,7 +208,7 @@ function commandSwitch(msg, _callback){
 		}
 
 		db.getPermissions(msg.guild.id, msg.command, (value) => {
-			//console.log("------ " + msg.permissionLevel + "/" + value + " : " + msg.command);
+			// console.log("------ " + msg.permissionLevel + "/" + value + " : " + msg.command);
 			if (value == undefined || value == 0) return _callback(false);
 
 			if (msg.permissionLevel >= value){
@@ -224,9 +233,11 @@ function commandSwitch(msg, _callback){
 /**************/
 
 function log(msg, userID, sort, reason, time){
-	var mod = msg.author.id
-	var presentNick = serverManager.getNick(msg, userID);
-	var username = serverManager.getUsername(msg, userID);
+	let mod = msg.author.id
+	let presentNick = serverManager.getNick(msg, userID);
+	let username = serverManager.getUsername(msg, userID);
+	let date = new Date().getTime();
+	let message = "";
 
 	if(serverManager.users[msg.guild.id] == undefined){
 		serverManager.users[msg.guild.id] = {};
@@ -249,11 +260,9 @@ function log(msg, userID, sort, reason, time){
 		}
 	}
 
-	var date = new Date().getTime();
 
-	message ="";
 
-	var file = serverManager.users[msg.guild.id][userID];
+	let file = serverManager.users[msg.guild.id][userID];
 
 	switch(sort){
 		case "warn":
@@ -323,9 +332,11 @@ function log(msg, userID, sort, reason, time){
 	}
 	message = createEmbed(sort, message, title);
 
-	if(serverManager.settings[msg.guild.id].logchannel){
-		sendChannel(msg, serverManager.settings[msg.guild.id].logchannel, message);
-	}
+	db.getSettings(msg.guild.id, "logchannel", (channelId) => {
+		if(channelId){
+			sendChannel(msg, channelId, message);
+		}
+	});
 
 	if(file.nick != presentNick){
 		file.nicks[date] = {
@@ -393,7 +404,7 @@ function createEmbed(colorName, info, title, fields, footer){
 }
 
 function convertYTDuration(duration) {
-    var a = duration.match(/\d+/g);
+    let a = duration.match(/\d+/g);
 
     if (duration.indexOf('M') >= 0 && duration.indexOf('H') == -1 && duration.indexOf('S') == -1) {
         a = [0, a[0], 0];
@@ -427,9 +438,9 @@ function convertYTDuration(duration) {
 
 function convertTimeToString(seconds) {
 	seconds = Number(seconds);
-	var hours = Math.floor(seconds / 3600);
-	var minutes = Math.floor(seconds % 3600 / 60);
-	var seconds = Math.floor(seconds % 3600 % 60);
+	let hours = Math.floor(seconds / 3600);
+	let minutes = Math.floor(seconds % 3600 / 60);
+	seconds = Math.floor(seconds % 3600 % 60);
 	return ((hours > 0 ? hours + ":" + (minutes < 10 ? "0" : "") : "") + minutes + ":" + (seconds < 10 ? "0" : "") + seconds);
 }
 
@@ -441,12 +452,12 @@ function clean(text) {
 }
 
 function splitter(str, l){
-    var strs = [];
+    let strs = [];
     while(str.length > l){
-        var pos = str.substring(0, l).lastIndexOf(' ');
+        let pos = str.substring(0, l).lastIndexOf(' ');
         pos = pos <= 0 ? l : pos;
         strs.push(str.substring(0, pos));
-        var i = str.indexOf(' ', pos)+1;
+        let i = str.indexOf(' ', pos)+1;
         if(i < pos || i > pos+l)
             i = pos;
         str = str.substring(i);
@@ -467,8 +478,8 @@ function send(msg, message, _callback){
 	});
 }
 
-function sendChannel(msg, channelID, message, _callback){
-	msg.guild.channels.get(channelID).send(message).then((message) => {
+function sendChannel(msg, channelId, message, _callback){
+	msg.guild.channels.get(channelId).send(message).then((message) => {
 		if (typeof _callback === "function"){
 			_callback(message);
 		}
@@ -522,48 +533,45 @@ function unSilence(msg, userID){
 }
 
 function warn(msg, userID, reason){
+	let warnings = {};
 	try{
-		var warnings = serverManager.users[msg.guild.id][userID].warnings;
-	} catch(e){
-		var warnings = {};
-	}
-	try{
-		var warntime = serverManager.settings[msg.guild.id].warntime;
-	} catch(e){
-		var warntime = 24;
-	}
-	if(warntime == undefined) {
-		warntime = 24;
-	}
+		warnings = serverManager.users[msg.guild.id][userID].warnings;
+	} catch(e){}
 
-	var today = new Date().getTime();
-	var active = 0;
-	for (key in warnings){
-		date = warnings[key].date;
-		if(today - date < warntime* 60 * 60 * 1000){
-			active++;
+	db.getSettings(msg.guild.id, "warntime", (value) => {
+		let warntime = 24;
+		if(value){
+			warntime = parseInt(value);
 		}
-	}
+		let today = new Date().getTime();
+		let active = 0;
+		for (key in warnings){
+			date = warnings[key].date;
+			if(today - date < warntime* 60 * 60 * 1000){
+				active++;
+			}
+		}
 
-	message = createEmbed("warn", reason);
+		message = createEmbed("warn", reason);
 
-	send(msg, message);
+		send(msg, message);
 
-	if (active >= 3){
-		messageKick = createEmbed("kick", "You have been automatically kicked after 3 (active) warnings.");
-		kick(msg, userID, messageKick);
-		log(msg, userID, "kick", "3 warnings");
-	}
+		if (active >= 3){
+			messageKick = createEmbed("kick", "You have been automatically kicked after 3 (active) warnings.");
+			kick(msg, userID, messageKick);
+			log(msg, userID, "kick", "3 warnings");
+		}
+	});
 }
 
 function see(msg, userID){
 	if(!userHasFile(msg, userID)) return;
-	var user = serverManager.users[msg.guild.id][msg.author.id];
-	var warnings = "";
-	var kicks = "";
-	var bans = "";
-	var unbans = ""
-	var nicks = "";
+	let user = serverManager.users[msg.guild.id][msg.author.id];
+	let warnings = "";
+	let kicks = "";
+	let bans = "";
+	let unbans = ""
+	let nicks = "";
 
 	for(key in user.warnings){
 		warnings += dateToString(user.warnings[key].date) + " - " + user.warnings[key].mod + " - " + user.warnings[key].reason + "\n";
@@ -586,7 +594,7 @@ function see(msg, userID){
 	}
 	if(nicks == "") nicks = "-";
 
-	var fields = [
+	let fields = [
 		{
 			name: "Warnings:",
 			value: warnings
@@ -605,11 +613,13 @@ function see(msg, userID){
 		}
 	];
 	message = createEmbed("info", "All events related to " + serverManager.getUsername(msg, userID), serverManager.getUsername(msg, userID), fields);
-	if(serverManager.settings[msg.guild.id].logchannel == undefined){
-		send(channelID, message);
-	} else {
-		sendChannel(msg, serverManager.settings[msg.guild.id].logchannel, message);
-	}
+	db.getSettings(msg.guild.id, "logchannel", (channelId) => {
+		if(channelId){
+			sendChannel(msg, channelId, message)
+		} else {
+			send(msg, message);
+		}
+	});
 }
 
 function getIdFromMention(mention){
@@ -620,23 +630,25 @@ function getIdFromMention(mention){
 function userHasFile(msg, userID){
 	if(serverManager.users[msg.guild.id] == undefined) return false;
 
-	var user = serverManager.users[msg.guild.id][userID];
+	let user = serverManager.users[msg.guild.id][userID];
 
 	if(user == undefined){
 		message = createEmbed("info", "User has no file!");
-		if(serverManager.settings[msg.author.id].logchannel == undefined){
-			send(channelID, message);
-		} else {
-			sendChannel(msg, serverManager.settings[msg.guild.id].logchannel, message);
-		}
+		db.getSettings(msg.guild.id, "logchannel", (channelId) => {
+			if(channelId){
+				sendChannel(msg, channelId, message);
+			} else {
+				send(channelId, message);
+			}
+		})
 		return false;
 	}
 	return true;
 }
 
 function broadcastNextSpeed(msg, market){
-	var speeds = [];
-	var str = "";
+	let speeds = [];
+	let str = "";
 	https.get("https://twspeeds.com/callhandler.php?action=discord&market=" + market, (res) => {
 		res.on('data', (chunk) => {
 			str += chunk;
@@ -663,8 +675,8 @@ function broadcastNextSpeed(msg, market){
 }
 
 function broadcastSpeed(msg, market){
-	var speeds = [];
-	var str = "";
+	let speeds = [];
+	let str = "";
 	https.get("https://twspeeds.com/callhandler.php?action=discord&market=" + market, (res) => {
 		res.on('data', (chunk) => {
 			str += chunk;
@@ -713,79 +725,45 @@ function removeFromRole(msg, userID, roleID){
 }
 
 function joinVoiceChannel(msg, _callback){
-	msg.guild.channels.get(serverManager.settings[msg.guild.id].voiceChannel).join().then(con => _callback(con));
+	db.getSettings(msg.guild.id, "voiceChannel", (value) => {
+		if(value){
+			msg.guild.channels.get(value).join().then(con => _callback(con));
+		}
+	});
 }
 
 function leaveVoiceChannel(msg){
-	msg.guild.channels.get(serverManager.settings[msg.guild.id].voiceChannel).leave();
+	db.getSettings(msg.guild.id, "voiceChannel", (value) => {
+		if(value){
+			msg.guild.channels.get(value).leave();
+		}
+	});
 }
 
 function playSong(msg){
-	var connection = bot.voiceConnections.get(msg.guild.id);
-	var video = serverManager.songQueue[msg.guild.id][0];
+	let connection = bot.voiceConnections.get(msg.guild.id);
+	let video = serverManager.songQueue[msg.guild.id][0];
 
 	if(video.type == "song"){
-		var videoID = video.videoID;
+		let videoID = video.videoID;
 
-		sendChannel(msg, serverManager.settings[msg.guild.id].musicChannel, {
-			embed: {
-				color: 0x5a00b1,
-				title: "=-=-=-=-=-=-= Song =-=-=-=-=-=-=",
-				fields: [
-					{
-						name: "Now Streaming",
-						value: video.title
-					},
-					{
-						name: "Duration",
-						value: video.duration
-					},
-					{
-						name: "Channel",
-						value: video.channel
-					}
-				],
-				footer: {
-					icon_url: "https://cdn.discordapp.com/avatars/" + video.userID + "/" + video.avatar + ".webp?size=1024",
-					text: "Requested by " + video.username
-				},
-				thumbnail: {
-					url: video.thumbnail
-				}
-			}
-		}, addSongFeedback);
-	} else if(video.type == "playlist"){
-		if(video.shuffle){
-			var shuffleValue = "on";
-			video.current = Math.floor(Math.random()*video.songs.length);
-		} else {
-			var shuffleValue = "off";
-			video.current = 0;
-		}
-
-		var videoID = video.songs[video.current].videoID;
-
-		YouTubeVideo(video.songs[video.current].videoID, function(obj){
-			sendChannel(msg, serverManager.settings[msg.guild.id].musicChannel, {
+		db.getSettings(msg.guild.id, "musicChannel", (channelId) => {
+			sendChannel(msg, channelId, {
 				embed: {
 					color: 0x5a00b1,
-					title: "=-=-=-=-=-=-= Playlist =-=-=-=-=-=-=",
+					title: "=-=-=-=-=-=-= Song =-=-=-=-=-=-=",
 					fields: [
 						{
-							name: video.title,
-							value: video.songs.length + " songs left in playlist || shuffle " + shuffleValue
-						},
-						{
 							name: "Now Streaming",
-							value: obj.title
+							value: video.title
 						},
 						{
 							name: "Duration",
-							value: obj.duration
+							value: video.duration
 						},
 						{
 							name: "Channel",
-							value: obj.channel
+							value: video.channel
 						}
 					],
 					footer: {
@@ -793,10 +771,56 @@ function playSong(msg){
 						text: "Requested by " + video.username
 					},
 					thumbnail: {
-						url: obj.thumbnail
+						url: video.thumbnail
 					}
 				}
 			}, addSongFeedback);
+		});
+	} else if(video.type == "playlist"){
+		let shuffleValue = "off";
+		video.current = 0;
+
+		if(video.shuffle){
+			shuffleValue = "on";
+			video.current = Math.floor(Math.random()*video.songs.length);
+		}
+
+		let videoID = video.songs[video.current].videoID;
+
+		YouTubeVideo(video.songs[video.current].videoID, function(obj){
+			db.getSettings(msg.guild.id, "musicChannel", (channelId) => {
+				sendChannel(msg, channelId, {
+					embed: {
+						color: 0x5a00b1,
+						title: "=-=-=-=-=-=-= Playlist =-=-=-=-=-=-=",
+						fields: [
+							{
+								name: video.title,
+								value: video.songs.length + " songs left in playlist || shuffle " + shuffleValue
+							},
+							{
+								name: "Now Streaming",
+								value: obj.title
+							},
+							{
+								name: "Duration",
+								value: obj.duration
+							},
+							{
+								name: "Channel",
+								value: obj.channel
+							}
+						],
+						footer: {
+							icon_url: "https://cdn.discordapp.com/avatars/" + video.userID + "/" + video.avatar + ".webp?size=1024",
+							text: "Requested by " + video.username
+						},
+						thumbnail: {
+							url: obj.thumbnail
+						}
+					}
+				}, addSongFeedback);
+			});
 		});
 	}
 
@@ -831,7 +855,9 @@ function playSong(msg){
 			},1000);
 		} else {
 			leaveVoiceChannel(msg);
-			sendChannel(msg, serverManager.settings[msg.guild.id].musicChannel, createEmbed("info", "Queue finished"));
+			db.getSettings(msg.guild.id, "musicChannel", (channelId) => {
+				sendChannel(msg, channelId, createEmbed("info", "Queue finished"));
+			});
 		}
 	});
 }
@@ -853,7 +879,7 @@ function addSongFeedback(msg){
 }
 
 function nextSong(msg){
-	if(!serverManager.isAdmin(msg)){
+	if(msg.permissionsLevel < 2){
 		if(serverManager.songQueue[msg.guild.id].length > 0){
 			if(serverManager.songQueue[msg.guild.id][0].userID != msg.author.id){
 				return;
@@ -874,7 +900,7 @@ function nextSong(msg){
 
 function addSongToQueue(msg, id){
 	YouTubeVideo(id, function(video){
-		var song = {
+		let song = {
 			type: "song",
 			userID: msg.author.id,
 			username: msg.author.username,
@@ -889,14 +915,16 @@ function addSongToQueue(msg, id){
 		if(serverManager.songQueue[msg.guild.id] == undefined) serverManager.songQueue[msg.guild.id] = [];
 		serverManager.songQueue[msg.guild.id].push(song);
 
-		var message = createEmbed("music");
+		let message = createEmbed("music");
 		message.embed.title = song.title;
 		message.embed.footer =  {
 			icon_url: song.avatar,
 			text: "Queued by " + song.username
 		}
 
-		sendChannel(msg, serverManager.settings[msg.guild.id].musicChannel, message);
+		db.getSettings(msg.guild.id, "musicChannel", (channelId) => {
+			sendChannel(msg, channelId, message);
+		})
 
 		if(!bot.voiceConnections.get(msg.guild.id)){
 			joinVoiceChannel(msg, function(con){
@@ -942,14 +970,16 @@ function addPlaylistToQueue(msg, id, shuffle){
 		if(serverManager.songQueue[msg.guild.id] == undefined) serverManager.songQueue[msg.guild.id] = [];
 		serverManager.songQueue[msg.guild.id].push(playlist);
 
-		var message = createEmbed("music");
+		let message = createEmbed("music");
 		message.embed.title = playlist.title;
 		message.embed.footer = {
 			icon_url: playlist.avatar,
 			text: "Queued by " + playlist.username
 		}
 
-		sendChannel(msg, serverManager.settings[msg.guild.id].musicChannel, message);
+		db.getSettings(msg.guild.id, "musicChannel", (channelId) => {
+			sendChannel(msg, channelId, message);
+		});
 
 		if(!bot.voiceConnections.get(msg.guild.id)){
 			joinVoiceChannel(msg, function(con){
@@ -969,7 +999,7 @@ function YouTubeSearch(search, _callback){
 	}, function (err, data) {
 		if (err) return console.error(err);
 
-		var videoSearch = data.items[0];
+		let videoSearch = data.items[0];
 		if(videoSearch == undefined) return;
 		_callback({
 			id: videoSearch.id.videoId,
@@ -986,7 +1016,7 @@ function YouTubeVideo(id, _callback){
 	}, function (err, data){
 		if (err) return console.error(err);
 
-		var videoResult = data.items[0];
+		let videoResult = data.items[0];
 		if(videoResult == undefined) return;
 
 		_callback({
@@ -1062,7 +1092,7 @@ function evalTCommand(msg){
 		require('child_process').exec(code, function(error, stdout, stderr){
 			msg.channel.send(">" + clean(code), {code:"xl"});
 			if(error !== null) msg.channel.send(`\`ERROR\` \`\`\`xl\n${clean(error)}\n\`\`\``);
-			var message = stdout;
+			let message = stdout;
 			if(message.length > 2000){
 				message = splitter(message, 2000);
 				while(message.length > 0){
@@ -1104,7 +1134,7 @@ function getrolesCommand(msg){
 
 function killCommand(msg){
 	if(msg.params.length == 0){
-		if(serverManager.isAdmin(msg)){
+		if(msg.permissionLevel >= 2){
 			message = createEmbed("info", "Admins are immortal");
 			send(msg, message);
 			return;
@@ -1113,7 +1143,7 @@ function killCommand(msg){
 		send(msg, message);
 		kick(msg, msg.author.id);
 	} else if (msg.params.length >= 1){
-		if(!serverManager.isAdmin(msg)){
+		if(msg.permissionLevel < 2){
 			message = createEmbed("info", "You can't kill people :point_up:");
 			send(msg, message);
 			return;
@@ -1126,11 +1156,11 @@ function killCommand(msg){
 
 function kickCommand(msg){
 	if (msg.params.length >= 1){
-		var targetID = serverManager.getMention(msg);
+		let targetID = serverManager.getMention(msg);
 		if(targetID){
 			if(msg.params.length >= 2){
-				var message = "You are kicked because: ";
-				var reason = "";
+				let message = "You are kicked because: ";
+				let reason = "";
 				for (i = 1; i<msg.params.length; i++){
 					reason += " " + msg.params[i];
 				}
@@ -1146,12 +1176,12 @@ function kickCommand(msg){
 
 function warnCommand(msg){
 	if (msg.params.length >= 1){
-		var targetID = serverManager.getMention(msg);
+		let targetID = serverManager.getMention(msg);
 		if(targetID){
-			var message = "<@" + targetID + "> warning! You got a warning for: ";
+			let message = "<@" + targetID + "> warning! You got a warning for: ";
 
 			if(msg.params.length >= 2){
-				var reason =  "";
+				let reason =  "";
 				for (i = 1; i<msg.params.length; i++){
 					reason += " " + msg.params[i];
 				}
@@ -1171,12 +1201,12 @@ function banCommand(msg){
 	if (msg.params.length >=1){
 		if(serverManager.getMention(msg)){
 			if(msg.params.length >= 2){
-				var message = "You are banned because:";
-				var reason = "";
+				let message = "You are banned because:";
+				let reason = "";
 				for (i = 1; i<msg.params.length; i++){
 					reason += " " + msg.params[i];
 				}
-				var targetID = serverManager.getMention(msg);
+				let targetID = serverManager.getMention(msg);
 				ban(msg, targetID, message + reason);
 				log(msg, targetID, "ban", reason);
 			} else {
@@ -1191,12 +1221,12 @@ function tempbanCommand(msg){
 	if (msg.params.length >= 1){
 		if(serverManager.getMention(msg)){
 			if(msg.params.length >= 3){
-				var message = "You are banned for " + msg.params[1] + " days, because: ";
-				var reason = "";
+				let message = "You are banned for " + msg.params[1] + " days, because: ";
+				let reason = "";
 				for (i = 2; i<msg.params.length; i++){
 					reason += " " + msg.params[i];
 				}
-				var targetID = serverManager.getMention(msg);
+				let targetID = serverManager.getMention(msg);
 				ban(msg, targetID, message + reason, msg.params[1]);
 				log(msg, targetID, "tempban", reason, msg.params[1]);
 			} else {
@@ -1216,12 +1246,14 @@ function unbanCommand(msg){
 	} else {
 		title = "Banned players:";
 		message = "";
-		var bans = serverManager.users[msg.guild.id].bans;
+		let bans = serverManager.users[msg.guild.id].bans;
 		for(key in bans){
 			message += "  * " + bans[key] + ": " + key + "\n";
 		}
 		message = createEmbed("info", message, title);
-		sendChannel(msg, serverManager.settings[msg.guild.id].logchannel, message);
+		db.getSettings(msg.guild.id, "logchannel", (channelId) => {
+			sendChannel(msg, channelId, message);
+		});
 	}
 }
 
@@ -1255,12 +1287,11 @@ function seeCommand(msg){
 function helpCommand(msg){
 	if(msg.guild.id == "110373943822540800") return; //mute help command for specific guilds Discord Bots
 	if (msg.params.length >= 1){
+		let helpmsg = "No command";
 		try{
-			var helpmsg = commands[msg.params[0]].description;
-			//var help = GLOBAL[msg.params[0] + "Command"].help;
-		} catch (e){
-			var helpmsg = "No command";
-		}
+			 helpmsg = commands[msg.params[0]].description;
+			//let help = GLOBAL[msg.params[0] + "Command"].help;
+		} catch (e){}
 		message = createEmbed("info", helpmsg);
 		send(msg, message);
 	} else {
@@ -1276,11 +1307,23 @@ function helpCommand(msg){
 			value: "!cstart, !cjoin, !cleave, !c, !choose, !creset",
 		},{
 			name: "Admin only",
-			value: "!kick, !warn, !ban, !tempban, !unban, !setrole, !delrole,\n!set, !say, !silence, !unsilence, !see, !reload, !nuke"
+			value: "!kick, !warn, !ban, !tempban, !unban, !setrole, !delrole,\n!set, !say, !silence, !unsilence, !see, !reload, !nuke\n!settings, !permissions"
 		}
 		]);
 		send(msg, message);
 	}
+}
+
+function settingsCommand(msg){
+	db.getSettings(msg.guild.id, "allSettings", (settings) => {
+		let message = "Settings	- Value";
+		for(let i = 0; i < settings.length; i++){
+			message += "\n" + settings[i].setting + ": " + settings[i].value;
+		}
+
+		messsage = createEmbed("info", message, "Settings for this server");
+		send(msg, message);
+	});
 }
 
 function permissionsCommand(msg){
@@ -1365,107 +1408,106 @@ function nukeCommand(msg){
 }
 
 function setCommand(msg){
-	if(serverManager.settings[msg.guild.id] == undefined){
-		serverManager.settings[msg.guild.id] = {};
-	}
-
 	if(msg.params.length >= 1){
 		switch(msg.params[0]){
 			case "log":
-				serverManager.settings[msg.guild.id].logchannel = msg.channel.id;
-				message = createEmbed("succes", "Logchannel set.");
-				send(msg, message);
+				db.setSettings(msg.guild.id, "logchannel", msg.channel.id, () => {
+					message = createEmbed("succes", "Logchannel set.");
+					send(msg, message);
+				});
 				break;
-
 			case "warntime":
 				if(msg.params.length >= 2){
-					serverManager.settings[msg.guild.id].warntime = msg.params[1];
-					message = createEmbed("succes", "Warntime set to " + msg.params[1] + " hours.");
-					send(msg, message);
+					db.setSettings(msg.guild.id, "warntime", msg.params[1], () => {
+						message = createEmbed("succes", "Warntime set to " + msg.params[1] + " hours.");
+						send(msg, message);
+					});
 				} else {
 					message = createEmbed("info", "!set warntime <hours>");
 					send(msg, message);
 				}
 				break;
-
 			case "role":
 				if(msg.params.length >= 2){
-					if(serverManager.settings[msg.guild.id].role == undefined) serverManager.settings[msg.guild.id].role = {};
+					let role = serverManager.getMentionRole(msg);
+					let roles = [];
+					db.getSettings(msg.guild.id, "iam_roles", (value) => {
+						if(value){
+							roles = value.split(",");
 
-					roleID = serverManager.getMentionRole(msg);
-
-					if(roleID){
-						var role = serverManager.settings[msg.guild.id].role;
-
-						if(roleID in role){
-							delete role[roleID];
+							let index = roles.indexOf(role.id.toString());
+							if( index >= 0){
+								roles.splice(index, 2);
+							} else {
+								roles.push(role.id);
+								roles.push(role.name);
+							}
 						} else {
-							role[roleID] = roleID;
+							roles = [role.id, role.name];
 						}
 
-						allRoles = [];
+						db.setSettings(msg.guild.id, "iam_roles", roles.join(","), () => {
+							let allRoles = [];
+							for (let i = 1; i < roles.length; i+=2){
+								allRoles.push(roles[i]);
+							}
 
-						for(key in role){
-							allRoles.push("<@&" + role[key] + ">");
-						}
+							message = createEmbed("info", allRoles.join(", "), "All assignable roles:");
+							send(msg, message);
+						});
 
-						message = createEmbed("info", allRoles.join(", "), "All assignable roles:");
-						send(msg, message);
-					}
+					});
+
 				} else {
 					message = createEmbed("info", "!set role <@Role>");
 					send(msg, message);
 				}
 				break;
-
 			case "admin":
 				if(msg.params.length >= 2){
-					roleID = serverManager.getMentionRole(msg);
+					roleID = serverManager.getMentionRole(msg).id;
 					if(roleID){
-						serverManager.settings[msg.guild.id].adminRole = roleID;
-						message = createEmbed("succes", "Adminrole set to <@&" + roleID + ">");
-						send(msg, message);
+						db.setSettings(msg.guild.id, "adminrole", roleID, () => {
+							message = createEmbed("succes", "Adminrole set to <@&" + roleID + ">");
+							send(msg, message);
+						});
 					}
 				} else {
 					message = createEmbed("info", "!set admin @Role");
 					send(msg, message);
 				}
 				break;
-
 			case "voice":
-				if(msg.params.length >=2){
-					channelID = msg.params[1];
-					if(serverManager.isVoiceChannel(msg, channelID)){
-						serverManager.settings[msg.guild.id].voiceChannel = channelID;
-						message = createEmbed("succes", "Voice channel set to <#" + channelID + ">");
+				let voiceChannel = msg.member.voiceChannelID;
+				if(voiceChannel){
+					db.setSettings(msg.guild.id, "voiceChannel", voiceChannel, () => {
+						message = createEmbed("succes", "Voice channel set to <#" + voiceChannel + ">");
 						send(msg, message);
-					} else {
-						message = createEmbed("fail", "Not a voice channel");
-						send(msg, message);
-					}
+					});
 				} else {
-					message = createEmbed("info", "!set voice plainChannelID");
+					message = createEmbed("info", "Go in a voice channel before using this command.");
 					send(msg, message);
 				}
 				break;
-
 			case "music":
-				serverManager.settings[msg.guild.id].musicChannel = msg.channel.id;
-				message = createEmbed("succes", "Music channel set.");
-				send(msg, message);
+				db.setSettings(msg.guild.id, "musicChannel", msg.channel.id, () => {
+					message = createEmbed("succes", "Music channel set.");
+					send(msg, message);
+				});
 				break;
-
 			case "deleteCommands":
-				if(serverManager.settings[msg.guild.id].deleteCommands){
-					serverManager.settings[msg.guild.id].deleteCommands = false;
-					message = createEmbed("succes", "Commands won't be deleted anymore.");
-				} else {
-					serverManager.settings[msg.guild.id].deleteCommands = true;
-					message = createEmbed("succes", "Commands will be deleted.");
-				}
-				send(msg, message);
+				db.getSettings(msg.guild.id, "deleteCommands", (value) => {
+					let val = !parseInt(value);
+					db.setSettings(msg.guild.id, "deleteCommands", val, () => {
+						if(val){
+							message = createEmbed("succes", "Commands will be deleted.");
+						} else {
+							message = createEmbed("succes", "Commands won't be deleted anymore.");
+						}
+						send(msg, message);
+					});
+				});
 				break;
-
 			case "perm":
 				if(msg.params.length >= 3){
 					let command = msg.params[1];
@@ -1474,43 +1516,43 @@ function setCommand(msg){
 					db.setPermissions(msg.guild.id, command, value);
 				}
 				break;
-
 			default:
-				message = createEmbed("info", setCommand.help);
+				message = createEmbed("info", commands["set"].description);
 				send(msg, message);
 				break;
 		}
 	} else {
-		message = createEmbed("info", setCommand.help);
+		message = createEmbed("info", commands["set"].description);
 		send(msg, message);
 	}
 
-	serverManager.saveSettings();
 }
 
 function iamCommand(msg){
-	if(serverManager.settings[msg.guild.id] == undefined || serverManager.settings[msg.guild.id].musicChannel == undefined || serverManager.settings[msg.guild.id].voiceChannel == undefined){
-		var message = createEmbed("warn", "Please ask your Admin to set iam roles before you can use them.");
-		send(msg, message);
-		return
-	}
-	if (msg.params.length >= 1){
-		roleID = serverManager.getMentionRole(msg);
+	db.getSettings(msg.guild.id, "iam_roles", (value) => {
+		let roles = value.split(",");
+		if(msg.params.length >= 1){
+			let role = msg.params[0];
+			let index = roles.indexOf(role);
+			if(index >= 0){
+				let roleId = roles[index-1];
 
-		if(serverManager.getRoles(msg).indexOf(roleID) == -1){
-			addToRole(msg, msg.author.id, roleID);
+				if(serverManager.getRoles(msg).indexOf(roleId) == -1){
+					addToRole(msg, msg.author.id, roleId);
+				} else {
+					removeFromRole(msg, msg.author.id, roleId);
+				}
+			}
 		} else {
-			removeFromRole(msg, msg.author.id, roleID);
+			let allRoles = [];
+			for (let i = 1; i < roles.length; i+=2){
+				allRoles.push(roles[i]);
+			}
+
+			let message = createEmbed("info", allRoles.join(", "), "All assignable roles:");
+			send(msg, message);
 		}
-	} else {
-		allRoles = [];
-		var role = serverManager.settings[msg.guild.id].role;
-		for(key in role){
-			allRoles.push("<@&" + role[key] + ">");
-		}
-		message = createEmbed("info", allRoles.join(", "), "You can assign yourself these roles:");
-		send(msg, message);
-	}
+	});
 }
 
 function setroleCommand(msg){
@@ -1533,30 +1575,38 @@ function delroleCommand(msg){
 function playCommand(msg){
 	if(msg.params.length > 0){
 		if(serverManager.songQueue[msg.guild.id] == undefined) serverManager.songQueue[msg.guild.id]= [];
-		if(serverManager.settings[msg.guild.id] == undefined || serverManager.settings[msg.guild.id].musicChannel == undefined || serverManager.settings[msg.guild.id].voiceChannel == undefined){
-			var message = createEmbed("warn", "Please ask your Admin to set the music channel [text] and the voice channel [voice] for the bot");
-			send(msg, message);
-			return
-		}
-		if(serverManager.songQueue[msg.guild.id].length >= 100){
-			return;
-		}
 
-		if(msg.params[0].indexOf("watch?v=") != -1){
-			addSongToQueue(msg, msg.params[0].split("watch?v=")[1].split("&")[0]);
-		} else if(msg.params[0].indexOf("playlist?list=") != -1){
-			shuffle = false;
-			if(msg.params.length > 1){
-				if(msg.params[1] == "shuffle"){
-					shuffle = true;
+		db.getSettings(msg.guild.id, "voiceChannel", (channelId) => {
+			let voiceChannelUser = msg.member.voiceChannelID;
+			if(voiceChannelUser == undefined){
+				let message = createEmbed("warn", "Go in a voiceChannel first");
+				send(msg, message);
+			} else if(channelId && voiceChannelUser != channelId){
+				let message = createEmbed("warn", "This server has a dedicated music channel <#" + channelId + "> go there please.");
+				send(msg, message);
+			} else {
+				if(serverManager.songQueue[msg.guild.id].length >= 100){
+					return;
+				}
+
+				if(msg.params[0].indexOf("watch?v=") != -1){
+					addSongToQueue(msg, msg.params[0].split("watch?v=")[1].split("&")[0]);
+				} else if(msg.params[0].indexOf("playlist?list=") != -1){
+					shuffle = false;
+					if(msg.params.length > 1){
+						if(msg.params[1] == "shuffle"){
+							shuffle = true;
+						}
+					}
+					addPlaylistToQueue(msg, msg.params[0].split("playlist?list=")[1].split("&")[0], shuffle);
+				} else {
+					YouTubeSearch(msg.params.join(" "), function(video){
+						addSongToQueue(msg, video.id);
+					});
 				}
 			}
-			addPlaylistToQueue(msg, msg.params[0].split("playlist?list=")[1].split("&")[0], shuffle);
-		} else {
-			YouTubeSearch(msg.params.join(" "), function(video){
-				addSongToQueue(msg, video.id);
-			});
-		}
+		});
+
 	}
 }
 
@@ -1570,15 +1620,20 @@ function queueCommand(msg){
 	message = "";
 	if(serverManager.songQueue[msg.guild.id] == undefined) serverManager.songQueue[msg.guild.id]= [];
 	for(song in serverManager.songQueue[msg.guild.id]){
+		let playlist = "";
 		if(serverManager.songQueue[msg.guild.id][song].type == "playlist"){
-			var playlist = " | Playlist " + serverManager.songQueue[msg.guild.id][song].songs.length + " songs left";
-		} else {
-			var playlist = "";
+			playlist = " | Playlist " + serverManager.songQueue[msg.guild.id][song].songs.length + " songs left";
 		}
 		message += song + ": " + serverManager.songQueue[msg.guild.id][song].title + playlist + "\n";
 	}
-	message = createEmbed("music", message, "Song queue");
-	sendChannel(msg, serverManager.settings[msg.guild.id].musicChannel, message);
+	db.getSettings(msg.guild.id, "musicChannel", (channelId) => {
+		message = createEmbed("music", message, "Song queue");
+		if(channelId){
+			sendChannel(msg, channelId, message);
+		} else {
+			send(msg, message);
+		}
+	});
 }
 
 function inviteCommand(msg){

@@ -1,17 +1,17 @@
 #!/usr/bin/env nodejs
 
 const Discord = require('discord.js');
-var handler = require('./handler.js');
-var events = require("events");
-var fs = require("fs");
+const handler = require('./handler.js');
+const events = require("events");
+const fs = require("fs");
 
 /**************/
 /*****VARS*****/
 /**************/
 
 var client;// = new Discord.Client();
-var listener = new events.EventEmitter();
-var serverSettings = JSON.parse(fs.readFileSync('serverSettings.json', 'utf8'));
+const listener = new events.EventEmitter();
+const serverSettings = JSON.parse(fs.readFileSync('serverSettings.json', 'utf8'));
 
 /***************/
 /***Listeners***/
@@ -19,8 +19,8 @@ var serverSettings = JSON.parse(fs.readFileSync('serverSettings.json', 'utf8'));
 login();
 
 listener.on("reload", function(){
-	var channelId = client.user.lastMessage.channel.id;
-	var messageId = client.user.lastMessage.id;
+	let channelId = client.user.lastMessage.channel.id;
+	let messageId = client.user.lastMessage.id;
 	client.destroy();
 	console.log("\n[*]reloading files\n");
 	delete require.cache[require.resolve('./handler.js')];

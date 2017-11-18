@@ -2,22 +2,14 @@ const fs = require('fs');
 const db = require("../src/database");
 
 module.exports = class Servers{
-    constructor(bot, serverSettings){
+    constructor(bot, serverSettings, guilds){
         this.bot = bot;
         this.serverSettings = serverSettings;
         this.songQueue = {};
         this.collectors = {};
+        this.adminRole = {};
 
-        this.getSettings();
         this.getUsers();
-    }
-
-    getSettings(){
-        try {
-            this.settings = JSON.parse(fs.readFileSync('./data/settings.json', 'utf8'));
-        } catch(e) {
-            this.settings = {};
-        }
     }
 
     getUsers(){
@@ -26,12 +18,6 @@ module.exports = class Servers{
         } catch(e) {
             this.users = {};
         }
-    }
-
-    saveSettings(_callback){
-        fs.writeFile(__dirname + "/../data/settings.json", JSON.stringify(this.settings), "utf8", function(err){
-            (typeof _callback === 'function') ? _callback(err) : null;
-        });
     }
 
     saveUsers(_callback){
@@ -53,17 +39,16 @@ module.exports = class Servers{
 		return msg.author.id == this.getOwner(msg);
 	}
 
-	isAdmin(msg){
-        let guild = msg.guild.id;
-		return this.isOwner(msg) || msg.author.id == this.serverSettings.botOwner || this.getRoles(msg).includes(this.settings[guild].adminRole);
+	isAdmin(msg, adminRole){
+            return this.isOwner(msg) || msg.author.id == this.serverSettings.botOwner || this.getRoles(msg).includes(adminRole);
 	}
 
-    getPermissionLevel(msg){
+    getPermissionLevel(msg, adminRole){
         if(msg.author.id == this.serverSettings.botOwner){
             return 4;
         } else if(this.isOwner(msg)){
             return 3;
-        } else if(this.isAdmin(msg)){
+        } else if(this.isAdmin(msg, adminRole)){
             return 2;
         } else {
             return 1;
@@ -80,7 +65,7 @@ module.exports = class Servers{
 
 	getMentionRole(msg){
 		if (msg.mentions.roles.first()){
-			return msg.mentions.roles.first().id;
+			return msg.mentions.roles.first();
 		} else {
 			return false;
 		}
