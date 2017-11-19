@@ -631,6 +631,8 @@ function joinVoiceChannel(msg, _callback){
 	db.getSettings(msg.guild.id, "voiceChannel", (value) => {
 		if(value){
 			msg.guild.channels.get(value).join().then(con => _callback(con));
+		} else {
+			msg.member.voiceChannel.join().then(con => _callback(con));
 		}
 	});
 }
