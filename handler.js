@@ -42,7 +42,7 @@ function recieveMessage(msg){
 					command.execute(this, msg);
 				} else {
 					db.getPermissions(msg.guild.id, msg.command, (value) => {
-						console.log("------ " + msg.permissionLevel + "/" + value + " : " + msg.command);
+						// console.log("------ " + msg.permissionLevel + "/" + value + " : " + msg.command);
 						if (value == undefined || value == 0) return;
 
 						if(msg.permissionLevel >= value){

@@ -6,7 +6,6 @@ module.exports = {
     args: 0,
     guildOnly: true,
     execute(self, msg){
-        console.log(self.cah);
         self.cah.start(msg);
     }
 };
