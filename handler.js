@@ -638,11 +638,12 @@ function joinVoiceChannel(msg, _callback){
 }
 
 function leaveVoiceChannel(msg){
-	db.getSettings(msg.guild.id, "voiceChannel", (value) => {
-		if(value){
-			msg.guild.channels.get(value).leave();
-		}
-	});
+	msg.guild.voiceConnection.channel.leave()
+	// db.getSettings(msg.guild.id, "voiceChannel", (value) => {
+	// 	if(value){
+	// 		msg.guild.channels.get(value).leave();
+	// 	}
+	// });
 }
 
 function playSong(msg){
