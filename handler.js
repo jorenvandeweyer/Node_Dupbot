@@ -652,33 +652,35 @@ function playSong(msg){
 		videoID = video.videoID;
 
 		db.getSettings(msg.guild.id, "musicChannel", (channelId) => {
-			sendChannel(msg, channelId, {
-				embed: {
-					color: 0x5a00b1,
-					title: "=-=-=-=-=-=-= Song =-=-=-=-=-=-=",
-					fields: [
-						{
-							name: "Now Streaming",
-							value: video.title
+			if(channelId){
+				sendChannel(msg, channelId, {
+					embed: {
+						color: 0x5a00b1,
+						title: "=-=-=-=-=-=-= Song =-=-=-=-=-=-=",
+						fields: [
+							{
+								name: "Now Streaming",
+								value: video.title
+							},
+							{
+								name: "Duration",
+								value: video.duration
+							},
+							{
+								name: "Channel",
+								value: video.channel
+							}
+						],
+						footer: {
+							icon_url: "https://cdn.discordapp.com/avatars/" + video.userID + "/" + video.avatar + ".webp?size=1024",
+							text: "Requested by " + video.username
 						},
-						{
-							name: "Duration",
-							value: video.duration
-						},
-						{
-							name: "Channel",
-							value: video.channel
+						thumbnail: {
+							url: video.thumbnail
 						}
-					],
-					footer: {
-						icon_url: "https://cdn.discordapp.com/avatars/" + video.userID + "/" + video.avatar + ".webp?size=1024",
-						text: "Requested by " + video.username
-					},
-					thumbnail: {
-						url: video.thumbnail
 					}
-				}
-			}, addSongFeedback);
+				}, addSongFeedback);
+			}
 		});
 	} else if(video.type == "playlist"){
 		let shuffleValue = "off";
@@ -693,37 +695,39 @@ function playSong(msg){
 
 		YouTubeVideo(video.songs[video.current].videoID, function(obj){
 			db.getSettings(msg.guild.id, "musicChannel", (channelId) => {
-				sendChannel(msg, channelId, {
-					embed: {
-						color: 0x5a00b1,
-						title: "=-=-=-=-=-=-= Playlist =-=-=-=-=-=-=",
-						fields: [
-							{
-								name: video.title,
-								value: video.songs.length + " songs left in playlist || shuffle " + shuffleValue
+				if(channelId){
+					sendChannel(msg, channelId, {
+						embed: {
+							color: 0x5a00b1,
+							title: "=-=-=-=-=-=-= Playlist =-=-=-=-=-=-=",
+							fields: [
+								{
+									name: video.title,
+									value: video.songs.length + " songs left in playlist || shuffle " + shuffleValue
+								},
+								{
+									name: "Now Streaming",
+									value: obj.title
+								},
+								{
+									name: "Duration",
+									value: obj.duration
+								},
+								{
+									name: "Channel",
+									value: obj.channel
+								}
+							],
+							footer: {
+								icon_url: "https://cdn.discordapp.com/avatars/" + video.userID + "/" + video.avatar + ".webp?size=1024",
+								text: "Requested by " + video.username
 							},
-							{
-								name: "Now Streaming",
-								value: obj.title
-							},
-							{
-								name: "Duration",
-								value: obj.duration
-							},
-							{
-								name: "Channel",
-								value: obj.channel
+							thumbnail: {
+								url: obj.thumbnail
 							}
-						],
-						footer: {
-							icon_url: "https://cdn.discordapp.com/avatars/" + video.userID + "/" + video.avatar + ".webp?size=1024",
-							text: "Requested by " + video.username
-						},
-						thumbnail: {
-							url: obj.thumbnail
 						}
-					}
-				}, addSongFeedback);
+					}, addSongFeedback);
+				}
 			});
 		});
 	}
@@ -760,7 +764,9 @@ function playSong(msg){
 		} else {
 			leaveVoiceChannel(msg);
 			db.getSettings(msg.guild.id, "musicChannel", (channelId) => {
-				sendChannel(msg, channelId, createEmbed("info", "Queue finished"));
+				if(channelId){
+					sendChannel(msg, channelId, createEmbed("info", "Queue finished"));
+				}
 			});
 		}
 	});
@@ -827,7 +833,9 @@ function addSongToQueue(msg, id){
 		}
 
 		db.getSettings(msg.guild.id, "musicChannel", (channelId) => {
-			sendChannel(msg, channelId, message);
+			if(channelId){
+				sendChannel(msg, channelId, message);
+			}
 		})
 
 		if(!bot.voiceConnections.get(msg.guild.id)){
@@ -882,7 +890,9 @@ function addPlaylistToQueue(msg, id, shuffle){
 		}
 
 		db.getSettings(msg.guild.id, "musicChannel", (channelId) => {
-			sendChannel(msg, channelId, message);
+			if(channelId){
+				sendChannel(msg, channelId, message);
+			}
 		});
 
 		if(!bot.voiceConnections.get(msg.guild.id)){
