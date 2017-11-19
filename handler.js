@@ -792,7 +792,7 @@ function addSongFeedback(msg){
 }
 
 function nextSong(msg){
-	if(msg.permissionsLevel < 2){
+	if(msg.permissionLevel < 2){
 		if(serverManager.songQueue[msg.guild.id].length > 0){
 			if(serverManager.songQueue[msg.guild.id][0].userID != msg.author.id){
 				return;
@@ -801,7 +801,6 @@ function nextSong(msg){
 			return;
 		}
 	}
-
 	if(msg.params.length > 0){
 		if(msg.params[0] == "playlist"){
 			serverManager.songQueue[msg.guild.id][0].type = "skipPlaylist";
@@ -838,6 +837,8 @@ function addSongToQueue(msg, id){
 		db.getSettings(msg.guild.id, "musicChannel", (channelId) => {
 			if(channelId){
 				sendChannel(msg, channelId, message);
+			} else {
+				send(msg, message);
 			}
 		})
 
@@ -895,6 +896,8 @@ function addPlaylistToQueue(msg, id, shuffle){
 		db.getSettings(msg.guild.id, "musicChannel", (channelId) => {
 			if(channelId){
 				sendChannel(msg, channelId, message);
+			} else {
+				send(msg, message);
 			}
 		});
 
