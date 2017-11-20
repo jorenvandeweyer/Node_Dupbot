@@ -101,7 +101,6 @@ function isCommand(msg, _callback){
 				words.splice(index, 1);
 			}
 			msg.input_ai = words.join(" ");
-			console.log(msg.input_ai);
 			db.getSettings(msg.guild.id, "adminrole", (role) => {
 				msg.permissionLevel = serverManager.getPermissionLevel(msg, role);
 				_callback();
