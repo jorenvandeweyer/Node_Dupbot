@@ -91,16 +91,17 @@ function isCommand(msg, _callback){
 			_callback();
 		}
 	} else {
-		if(msg.content.includes("dupbot")) {
+		if(msg.content.toLowerCase().includes(msg.client.user.username.toLowerCase())) {
 			msg.interact = true;
 
 			let words = msg.content.split(" ");
-			let index = words.indexOf("dupbot");
+
+			let index = words.map(y => y.toLowerCase()).indexOf(msg.client.user.username.toLowerCase());
 			if(index == 0 || index == words.length - 1){
 				words.splice(index, 1);
 			}
 			msg.input_ai = words.join(" ");
-
+			console.log(msg.input_ai);
 			db.getSettings(msg.guild.id, "adminrole", (role) => {
 				msg.permissionLevel = serverManager.getPermissionLevel(msg, role);
 				_callback();
