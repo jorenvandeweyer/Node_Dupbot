@@ -152,6 +152,27 @@ function addGuild(self, guild){
 
                 stmt.finalize();
             });
+        } else {
+            db.all("SELECT * FROM settings_" + guild, (err, rows) => {
+                if(rows){
+                    db.serialize( () => {
+                        let stmt = db.prepare("INSERT INTO settings_" + guild + " VALUES (?,?)");
+
+                        let db_settings = [];
+                        for(let i = 0; i < rows.length; i++){
+                            db_settings.push(rows[i].setting)
+                        }
+                        for(setting in settings){
+                            if(!db_settings.includes(setting)){
+                                console.log(setting);
+                                stmt.run(setting, settings[setting]);
+                            }
+                        }
+
+                        stmt.finalize();
+                    });
+                }
+            });
         }
     });
     db.get("SELECT name FROM sqlite_master WHERE type='table' AND name='stats_cah_" + guild + "'", (err, row) => {

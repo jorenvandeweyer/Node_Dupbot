@@ -4,6 +4,7 @@ module.exports = {
     voiceChannel: "",
     musicChannel: "",
     deleteCommands: false,
+    ai: false,
     logchannel: "",
     iam_roles: ""
 }

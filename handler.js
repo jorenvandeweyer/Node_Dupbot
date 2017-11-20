@@ -7,6 +7,8 @@ const google = require('googleapis');
 const Servers = require("./src/server");
 const db = require("./src/database");
 const cah = require("./src/cahgamehandler");
+const ai = require("./src/ai");
+const cleverbot = require("./src/cleverbot");
 const serverSettings = require("./serverSettings.json");
 var bot, listener, youtube, serverManager;
 
@@ -15,69 +17,97 @@ var bot, listener, youtube, serverManager;
 /***************/
 
 function recieveMessage(msg){
-	isCommand(msg, (isCmd) => {
-		if(isCmd){
-
-			let command = bot.commands.get(msg.command);
-			if(!command) return;
-
-			if(command.guildOnly && msg.channel.type !== "text"){
-				return msg.reply("No no no! Don't use this in DM's :scream:");
-			}
-
-			if (command.args && !msg.params.length) {
-				let reply = `You are using this command wrong :expressionless:, ${msg.author}!`;
-
-				if (command.usage) {
-					reply += `\nTry this: \`${serverManager.prefix}${command.name} ${command.usage}\``;
+	isCommand(msg, () => {
+		if(msg.isCommand){
+			command.call(this, msg);
+		}else if(msg.interact){
+			db.getSettings(msg.guild.id, "ai", (value) => {
+				if(parseInt(value)){
+					ai.get(this, msg);
 				} else {
-					reply += `\nTry this: \`${serverManager.prefix}${command.name}\``;
+					cleverbot.get(this, msg);
 				}
-
-				return msg.channel.send(reply);
-			}
-
-			try {
-				if(!command.guildOnly && msg.channel.type !== "text"){
-					command.execute(this, msg);
-				} else {
-					db.getPermissions(msg.guild.id, msg.command, (value) => {
-						// console.log("------ " + msg.permissionLevel + "/" + value + " : " + msg.command);
-						if (value == undefined || value == 0) return;
-
-						if(msg.permissionLevel >= value){
-							command.execute(this, msg);
-						} else {
-							if(command.failPermission !== undefined){
-								let message = createEmbed("info", command.failPermission);
-								send(msg, message);
-							}
-						}
-					});
-				}
-			}
-			catch (error) {
-				console.error(error);
-				msg.reply(":bomb: :boom: That didn't work out :neutral_face:");
-			}
+			});
 		}
 	});
 }
+
+function command(msg){
+	let command = bot.commands.get(msg.command);
+	if(!command) return;
+
+	if(command.guildOnly && msg.channel.type !== "text"){
+		return msg.reply("No no no! Don't use this in DM's :scream:");
+	}
+
+	if (command.args && !msg.params.length) {
+		let reply = `You are using this command wrong :expressionless:, ${msg.author}!`;
+
+		if (command.usage) {
+			reply += `\nTry this: \`${serverManager.prefix}${command.name} ${command.usage}\``;
+		} else {
+			reply += `\nTry this: \`${serverManager.prefix}${command.name}\``;
+		}
+
+		return msg.channel.send(reply);
+	}
+
+	try {
+		if(!command.guildOnly && msg.channel.type !== "text"){
+			command.execute(this, msg);
+		} else {
+			db.getPermissions(msg.guild.id, msg.command, (value) => {
+				// console.log("------ " + msg.permissionLevel + "/" + value + " : " + msg.command);
+				if (value == undefined || value == 0) return;
+
+				if(msg.permissionLevel >= value){
+					command.execute(this, msg);
+				} else {
+					if(command.failPermission !== undefined){
+						let message = createEmbed("info", command.failPermission);
+						send(msg, message);
+					}
+				}
+			});
+		}
+	}
+	catch (error) {
+		console.error(error);
+		msg.reply(":bomb: :boom: That didn't work out :neutral_face:");
+	}
+};
 
 function isCommand(msg, _callback){
 	if(msg.author.id != bot.user.id && msg.content[0] == serverManager.prefix){
 		msg.params = msg.content.slice(1).split(" ");
 		msg.command = msg.params.shift().toLowerCase();
+		msg.isCommand = true;
 		if(msg.channel.type == "text"){
 			db.getSettings(msg.guild.id, "adminrole", (role) => {
 				msg.permissionLevel = serverManager.getPermissionLevel(msg, role);
-				_callback(true);
+				_callback();
 			});
 		} else {
-			_callback(true);
+			_callback();
 		}
 	} else {
-		_callback(false);
+		if(msg.content.includes("dupbot")) {
+			msg.interact = true;
+
+			let words = msg.content.split(" ");
+			let index = words.indexOf("dupbot");
+			if(index == 0 || index == words.length - 1){
+				words.splice(index, 1);
+			}
+			msg.input_ai = words.join(" ");
+
+			db.getSettings(msg.guild.id, "adminrole", (role) => {
+				msg.permissionLevel = serverManager.getPermissionLevel(msg, role);
+				_callback();
+			});
+		} else {
+			_callback();
+		}
 	}
 }
 
@@ -991,6 +1021,8 @@ function YouTubePlaylist(object, _callback){
 module.exports = {
 	bot: getBot,
 
+	command: command,
+
 	serverManager: getServerManager,
 	listener: getListener,
 
@@ -1030,4 +1062,4 @@ module.exports = {
 	YouTubeSearch: YouTubeSearch,
 	YouTubeVideo: YouTubeVideo,
 	YouTubePlaylist: YouTubePlaylist
-}
+};

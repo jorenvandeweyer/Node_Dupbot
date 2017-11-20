@@ -115,7 +115,20 @@ module.exports = {
     					self.db.setPermissions(msg.guild.id, command, value);
     				}
     				break;
-    			default:
+                case "ai":
+                    self.db.getSettings(msg.guild.id, "ai", (value) => {
+                        let val = !parseInt(value);
+                        self.db.setSettings(msg.guild.id, "ai", val, () => {
+                            if(val){
+                                message = self.createEmbed("succes", "You enabled the AI(beta) function");
+                            } else {
+                                message = self.createEmbed("succes", "You disabled the AI function, Cleverbot will take over :)");
+                            }
+                            self.send(msg, message);
+                        });
+                    });
+                    break;
+                default:
     				message = self.createEmbed("info", msg.client.commands.get("set").description);
     				self.send(msg, message);
     				break;
