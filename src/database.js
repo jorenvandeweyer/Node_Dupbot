@@ -103,20 +103,13 @@ exports.setStats_cah = function(guild, player, points){
 }
 
 function addGuild(self, guild){
-    db.get("SELECT name FROM sqlite_master WHERE type='table' AND name='permissions_" + guild + "'", (err, row) => {
-        if(row == undefined){
-            db.serialize( () => {
-                db.run("CREATE TABLE permissions_" + guild + " (command TEXT PRIMARY KEY, value INT)");
+    db.all("SELECT name FROM sqlite_master WHERE type='table' AND name LIKE '%_" + guild + "'", (err, rows) => {
+        let db_tables = [];
+        for( let i = 0; i < rows.length; i++){
+            db_tables.push(rows[i].name);
+        }
 
-                let stmt = db.prepare("INSERT INTO permissions_" + guild + " VALUES (?,?)");
-
-                for (let command of self.bot().commands){
-                    stmt.run(command[0], command[1].defaultPermission);
-                }
-
-                stmt.finalize();
-            });
-        } else {
+        if(db_tables.includes("permissions_" + guild)){
             db.all("SELECT * FROM permissions_" + guild, (err, rows) => {
                 if(rows){
                     db.serialize( () => {
@@ -137,22 +130,21 @@ function addGuild(self, guild){
                     });
                 }
             });
-        }
-    });
-    db.get("SELECT name FROM sqlite_master WHERE type='table' AND name='settings_" + guild + "'", (err, row) => {
-        if(row == undefined){
+        } else {
             db.serialize( () => {
-                db.run("CREATE TABLE settings_" + guild + " (setting TEXT PRIMARY KEY, value TEXT)");
+                db.run("CREATE TABLE permissions_" + guild + " (command TEXT PRIMARY KEY, value INT)");
 
-                let stmt = db.prepare("INSERT INTO settings_" + guild + " VALUES (?, ?)");
+                let stmt = db.prepare("INSERT INTO permissions_" + guild + " VALUES (?,?)");
 
-                for (key in settings){
-                    stmt.run(key, settings[key]);
+                for (let command of self.bot().commands){
+                    stmt.run(command[0], command[1].defaultPermission);
                 }
 
                 stmt.finalize();
             });
-        } else {
+        }
+
+        if(db_tables.includes("settings_" + guild)){
             db.all("SELECT * FROM settings_" + guild, (err, rows) => {
                 if(rows){
                     db.serialize( () => {
@@ -173,14 +165,26 @@ function addGuild(self, guild){
                     });
                 }
             });
+        } else {
+            db.serialize( () => {
+                db.run("CREATE TABLE settings_" + guild + " (setting TEXT PRIMARY KEY, value TEXT)");
+
+                let stmt = db.prepare("INSERT INTO settings_" + guild + " VALUES (?, ?)");
+
+                for (key in settings){
+                    stmt.run(key, settings[key]);
+                }
+
+                stmt.finalize();
+            });
         }
-    });
-    db.get("SELECT name FROM sqlite_master WHERE type='table' AND name='stats_cah_" + guild + "'", (err, row) => {
-        if(row == undefined){
+
+        if(!db_tables.includes("stats_cah_" + guild)){
             db.serialize( () => {
                 db.run("CREATE TABLE stats_cah_" + guild + " (id TEXT PRIMARY KEY, points INT)");
             });
         }
+
     });
 }
 
