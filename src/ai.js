@@ -26,10 +26,12 @@ function get(self, msg){
 
         if(response.result.action == "input.unknown"){
             cleverbot.get(self, msg);
-        } else {
+        } else if(response.result.fulfillment.speech){
             self.send(msg, convertBack(response.result.fulfillment.speech), () => {
                 self.command.call(self, msg);
             });
+        } else {
+            self.command.call(self, msg);
         }
     });
 
