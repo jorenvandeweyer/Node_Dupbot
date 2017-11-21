@@ -1,3 +1,5 @@
+src/commands/join.js
+src/commands/leave.js
 serverSettings.json
 upload.sh
 settings.json
