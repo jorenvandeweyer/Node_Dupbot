@@ -61,13 +61,18 @@ function command(msg){
 				// console.log("------ " + msg.permissionLevel + "/" + value + " : " + msg.command);
 				if (value == undefined || value == 0) return;
 
-				if(msg.permissionLevel >= value){
-					command.execute(this, msg);
-				} else {
-					if(command.failPermission !== undefined){
-						let message = createEmbed("info", command.failPermission);
-						send(msg, message);
+				try{
+					if(msg.permissionLevel >= value){
+						command.execute(this, msg);
+					} else {
+						if(command.failPermission !== undefined){
+							let message = createEmbed("info", command.failPermission);
+							send(msg, message);
+						}
 					}
+				} catch(e){
+					let message = createEmbed("info", "The bot owner didn't setup the server correctly");
+					send(msg, message);
 				}
 			});
 		}
@@ -1031,7 +1036,7 @@ module.exports = {
 	db: db,
 	cah: cah,
 	graphs: graphs,
-	
+
 	clean: clean,
 	splitter: splitter,
 	log: log,

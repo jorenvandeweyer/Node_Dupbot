@@ -106,10 +106,6 @@ function bars(x, y, _callback){
         if (error) return console.log (error);
         _callback(imageStream);
     });
-    // var graphOptions = {layout: layout, filename: "axes-labels", fileopt: "overwrite"};
-    // plotly.plot(data, graphOptions, function (err, msg) {
-    //     console.log(msg);
-    // });
 }
 
 function get(self, msg){
@@ -138,8 +134,6 @@ function get(self, msg){
             y_green.push(1);
         }
     }
-    console.log(x_green);
-    console.log(y_green);
     createImage(x_1, y_1, (stream) => {
         let attachment = new Discord.Attachment(stream);
         self.send(msg, attachment);
