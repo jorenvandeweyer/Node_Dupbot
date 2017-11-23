@@ -12,6 +12,7 @@ const cleverbot = require("./src/cleverbot");
 const serverSettings = require("./serverSettings.json");
 var bot, listener, youtube, serverManager;
 
+const graphs = require("./src/graphs");
 /***************/
 /****Exports****/
 /***************/
@@ -1029,7 +1030,8 @@ module.exports = {
 	createEmbed: createEmbed,
 	db: db,
 	cah: cah,
-
+	graphs: graphs,
+	
 	clean: clean,
 	splitter: splitter,
 	log: log,
