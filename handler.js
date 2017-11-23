@@ -20,13 +20,22 @@ const graphs = require("./src/graphs");
 function recieveMessage(msg){
 	isCommand(msg, () => {
 		if(msg.isCommand){
+			db.getSettings(msg.guild.id, "deleteCommands", (value) => {
+				if(parseInt(value)){
+					msg.delete();
+				}
+			});
 			command.call(this, msg);
 		}else if(msg.interact){
-			db.getSettings(msg.guild.id, "ai", (value) => {
+			db.getSettings(msg.guild.id, "talk", (value) => {
 				if(parseInt(value)){
-					ai.get(this, msg);
-				} else {
-					cleverbot.get(this, msg);
+					db.getSettings(msg.guild.id, "ai", (value) => {
+						if(parseInt(value)){
+							ai.get(this, msg);
+						} else {
+							cleverbot.get(this, msg);
+						}
+					});
 				}
 			});
 		}

@@ -128,6 +128,19 @@ module.exports = {
                         });
                     });
                     break;
+                case "talk":
+                    self.db.getSettings(msg.guild.id, "talk", (value) => {
+                        let val = !parseInt(value);
+                        self.db.setSettings(msg.guild.id, "talk", val, () => {
+                            if(val){
+                                message = self.createEmbed("succes", "Bot will respond one messages that include it's name");
+                            } else {
+                                message = self.createEmbed("succes", "Bot won't respond to messages that includes it's name anymore.")
+                            }
+                            self.send(msg, message);
+                        })
+                    })
+                    break;
                 default:
     				message = self.createEmbed("info", msg.client.commands.get("set").description);
     				self.send(msg, message);
