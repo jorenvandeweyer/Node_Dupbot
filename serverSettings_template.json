@@ -7,5 +7,8 @@
     "botOwner":  "261634894428372992",
     "ownerOnlyGuilds" : ["110373943822540800"],
     "youtubeAuth": "YoutTube Auth key",
-    "apiai": "api.ai key /diagflow"
+    "apiai": "api.ai key /diagflow",
+    "cleverbot": "apikey",
+    "plotly_username": "username",
+    "plotly_apikey": "apikey"
 }
