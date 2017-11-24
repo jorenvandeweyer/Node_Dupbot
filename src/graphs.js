@@ -112,7 +112,8 @@ function get(self, msg){
     let creationTime = msg.guild.createdTimestamp;
     let members = msg.guild.members;
 
-    members = members.sort(function(a, b){return a.joinedTimestamp-b.joinedTimestamp})
+    members = members.sort(function(a, b){return a.joinedTimestamp-b.joinedTimestamp});
+    members.delete(members.firstKey());
     let x_1 = [];
     let y_1 = [];
     let x_green = [];
@@ -121,6 +122,7 @@ function get(self, msg){
     let y_red = [];
 
     let count = 0;
+
     for(key of members){
         count++;
         x_1.push(key[1].joinedAt.toISOString().replace("T", " ").split(".")[0]);
