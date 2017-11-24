@@ -7,5 +7,6 @@ module.exports = {
     ai: false,
     logchannel: "",
     iam_roles: "",
-    talk: true
+    talk: true,
+    support: true
 }

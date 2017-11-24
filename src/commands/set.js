@@ -138,8 +138,21 @@ module.exports = {
                                 message = self.createEmbed("succes", "Bot won't respond to messages that includes it's name anymore.")
                             }
                             self.send(msg, message);
-                        })
-                    })
+                        });
+                    });
+                    break;
+                case "support":
+                    self.db.getSettings(msg.guild.id, "support", (value) => {
+                        let val = !parseInt(value);
+                        self.db.setSettings(msg.guild.id, "support", val, () => {
+                            if(val){
+                                message = self.createEmbed("succes", "Bot admin support enabled");
+                            } else {
+                                message = self.createEmbed("succes", "Bot admin support disabled");
+                            }
+                            self.send(msg, message);
+                        });
+                    });
                     break;
                 default:
     				message = self.createEmbed("info", msg.client.commands.get("set").description);

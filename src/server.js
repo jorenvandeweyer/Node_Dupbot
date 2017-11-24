@@ -43,8 +43,8 @@ module.exports = class Servers{
             return this.isOwner(msg) || msg.author.id == serverSettings.botOwner || this.getRoles(msg).includes(adminRole);
 	}
 
-    getPermissionLevel(msg, adminRole){
-        if(msg.author.id == serverSettings.botOwner){
+    getPermissionLevel(msg, adminRole, support){
+        if(msg.author.id == serverSettings.botOwner && support == true){
             return 4;
         } else if(this.isOwner(msg)){
             return 3;
