@@ -110,40 +110,42 @@ function bars(x, y, _callback){
 
 function get(self, msg){
     let creationTime = msg.guild.createdTimestamp;
-    let members = msg.guild.members;
+    msg.guild.fetchMembers().then( (guild) => {
+        let members = guild.members.sort(function(a, b){return a.joinedTimestamp-b.joinedTimestamp});
+        members.delete(members.firstKey());
+        
+        let x_1 = [];
+        let y_1 = [];
+        let x_green = [];
+        let y_green = [];
+        let x_red = [];
+        let y_red = [];
 
-    members = members.sort(function(a, b){return a.joinedTimestamp-b.joinedTimestamp});
-    members.delete(members.firstKey());
-    let x_1 = [];
-    let y_1 = [];
-    let x_green = [];
-    let y_green = [];
-    let x_red = [];
-    let y_red = [];
+        let count = 0;
 
-    let count = 0;
+        for(key of members){
+            count++;
+            x_1.push(key[1].joinedAt.toISOString().replace("T", " ").split(".")[0]);
+            y_1.push(count);
 
-    for(key of members){
-        count++;
-        x_1.push(key[1].joinedAt.toISOString().replace("T", " ").split(".")[0]);
-        y_1.push(count);
-
-        if(x_green.includes(key[1].joinedAt.toISOString().split("T")[0])){
-            let index = x_green.indexOf(key[1].joinedAt.toISOString().split("T")[0]);
-            y_green[index]++;
-        } else {
-            x_green.push(key[1].joinedAt.toISOString().split("T")[0]);
-            y_green.push(1);
+            if(x_green.includes(key[1].joinedAt.toISOString().split("T")[0])){
+                let index = x_green.indexOf(key[1].joinedAt.toISOString().split("T")[0]);
+                y_green[index]++;
+            } else {
+                x_green.push(key[1].joinedAt.toISOString().split("T")[0]);
+                y_green.push(1);
+            }
         }
-    }
-    createImage(x_1, y_1, (stream) => {
-        let attachment = new Discord.Attachment(stream);
-        self.send(msg, attachment);
+        createImage(x_1, y_1, (stream) => {
+            let attachment = new Discord.Attachment(stream);
+            self.send(msg, attachment);
+        });
+        bars(x_green, y_green, (stream) => {
+            let attachment = new Discord.Attachment(stream);
+            self.send(msg, attachment);
+        });
     });
-    bars(x_green, y_green, (stream) => {
-        let attachment = new Discord.Attachment(stream);
-        self.send(msg, attachment);
-    });
+
 }
 
 module.exports = {
