@@ -1077,6 +1077,7 @@ module.exports = {
 	addSongFeedback: addSongFeedback,
 	nextSong: nextSong,
 	addSongToQueue: addSongToQueue,
+	addPlaylistToQueue: addPlaylistToQueue,
 	YouTubeSearch: YouTubeSearch,
 	YouTubeVideo: YouTubeVideo,
 	YouTubePlaylist: YouTubePlaylist
