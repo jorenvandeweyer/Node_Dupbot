@@ -686,11 +686,6 @@ function joinVoiceChannel(msg, _callback){
 
 function leaveVoiceChannel(msg){
 	msg.guild.voiceConnection.channel.leave()
-	// db.getSettings(msg.guild.id, "voiceChannel", (value) => {
-	// 	if(value){
-	// 		msg.guild.channels.get(value).leave();
-	// 	}
-	// });
 }
 
 function playSong(msg){
@@ -825,15 +820,21 @@ function playSong(msg){
 function addSongFeedback(msg){
 	msg.react("❌");
 	//msg.react("✅");
-	const collector = msg.createReactionCollector(
-	 (reaction, user) => reaction.emoji.name == "❌" || reaction.emoji.name == "✅",
-	 { time: 60 * 60 * 1000 }
-	);
+	const collector = msg.createReactionCollector( (reaction, user) => {
+		return reaction.emoji.name == "❌" || reaction.emoji.name == "✅";
+	}, {
+		time: 60 * 60 * 100
+	});
 	serverManager.collectors[msg.guild.id] = collector;
 
-	collector.on('collect', r => {
-		if(r.emoji.name == "❌" && r.users.size > bot.voiceConnections.get(msg.guild.id).channel.members.size / 2){
-			bot.voiceConnections.get(msg.guild.id).dispatcher.end();
+	collector.on('collect', (r) => {
+		if(r.emoji.name == "❌"){
+			let users = r.users.filter((value) => {
+				return msg.guild.members.get(value.id).voiceChannelID == msg.guild.voiceConnection.channel.id;
+			});
+			if(users.size > bot.voiceConnections.get(msg.guild.id).channel.members.size / 2){
+				bot.voiceConnections.get(msg.guild.id).dispatcher.end();
+			}
 		}
 	});
 }
