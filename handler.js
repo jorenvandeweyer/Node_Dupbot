@@ -100,8 +100,16 @@ function isCommand(msg, _callback){
 		if(msg.channel.type == "text"){
 			db.getSettings(msg.guild.id, "adminrole", (role) => {
 				db.getSettings(msg.guild.id, "support", (support) => {
-					msg.permissionLevel = serverManager.getPermissionLevel(msg, role, support);
-					_callback();
+					if(msg.member == null){
+						msg.guild.fetchMember(msg.author.id).then((member) => {
+							msg.member = member;
+							msg.permissionLevel = serverManager.getPermissionLevel(msg, role, support);
+							_callback();
+						});
+					} else {
+						msg.permissionLevel = serverManager.getPermissionLevel(msg, role, support);
+						_callback();
+					}
 				});
 			});
 		} else {
