@@ -67,7 +67,13 @@ module.exports = class Servers{
 		if (msg.mentions.roles.first()){
 			return msg.mentions.roles.first();
 		} else {
-			return false;
+            if(msg.content.includes("<@&")){
+                console.log(msg.content.split("<@&")[1].split(">")[0])
+                return {id: msg.content.split("<@&")[1].split(">")[0]};
+
+            } else {
+                return false;
+            }
 		}
 	}
 
