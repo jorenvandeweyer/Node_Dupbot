@@ -8,5 +8,6 @@ module.exports = {
     logchannel: "",
     iam_roles: "",
     talk: true,
-    support: true
+    support: true,
+    prefix: ""
 }

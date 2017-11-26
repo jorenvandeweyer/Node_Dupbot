@@ -93,47 +93,54 @@ function command(msg){
 };
 
 function isCommand(msg, _callback){
-	if(msg.author.id != bot.user.id && msg.content[0] == serverManager.prefix){
-		msg.params = msg.content.slice(1).split(" ");
-		msg.command = msg.params.shift().toLowerCase();
-		msg.isCommand = true;
-		if(msg.channel.type == "text"){
-			db.getSettings(msg.guild.id, "adminrole", (role) => {
-				db.getSettings(msg.guild.id, "support", (support) => {
-					if(msg.member == null){
-						msg.guild.fetchMember(msg.author.id).then((member) => {
-							msg.member = member;
+	db.getSettings(msg.guild.id, "prefix", (pref) => {
+		let prefix = pref;
+		if(prefix == "") {
+			prefix = serverManager.prefix;
+		}
+		if(msg.author.id != bot.user.id && msg.content.slice(0, prefix.length) == prefix){
+			msg.params = msg.content.slice(prefix.length).split(" ");
+			msg.command = msg.params.shift().toLowerCase();
+			msg.isCommand = true;
+			if(msg.channel.type == "text"){
+				db.getSettings(msg.guild.id, "adminrole", (role) => {
+					db.getSettings(msg.guild.id, "support", (support) => {
+						if(msg.member == null){
+							msg.guild.fetchMember(msg.author.id).then((member) => {
+								msg.member = member;
+								msg.permissionLevel = serverManager.getPermissionLevel(msg, role, support);
+								_callback();
+							});
+						} else {
 							msg.permissionLevel = serverManager.getPermissionLevel(msg, role, support);
 							_callback();
-						});
-					} else {
-						msg.permissionLevel = serverManager.getPermissionLevel(msg, role, support);
-						_callback();
-					}
+						}
+					});
 				});
-			});
-		} else {
-			_callback();
-		}
-	} else {
-		if(msg.content.toLowerCase().includes(msg.client.user.username.toLowerCase())) {
-			msg.interact = true;
-
-			let words = msg.content.split(" ");
-
-			let index = words.map(y => y.toLowerCase()).indexOf(msg.client.user.username.toLowerCase());
-			if(index == 0 || index == words.length - 1){
-				words.splice(index, 1);
-			}
-			msg.input_ai = words.join(" ");
-			db.getSettings(msg.guild.id, "adminrole", (role) => {
-				msg.permissionLevel = serverManager.getPermissionLevel(msg, role);
+			} else {
 				_callback();
-			});
+			}
 		} else {
-			_callback();
+			if(msg.content.toLowerCase().includes(msg.client.user.username.toLowerCase())) {
+				msg.interact = true;
+
+				let words = msg.content.split(" ");
+
+				let index = words.map(y => y.toLowerCase()).indexOf(msg.client.user.username.toLowerCase());
+				if(index == 0 || index == words.length - 1){
+					words.splice(index, 1);
+				}
+				msg.input_ai = words.join(" ");
+				db.getSettings(msg.guild.id, "adminrole", (role) => {
+					msg.permissionLevel = serverManager.getPermissionLevel(msg, role);
+					_callback();
+				});
+			} else {
+				_callback();
+			}
 		}
-	}
+	});
+
 }
 
 function setup(b, l){

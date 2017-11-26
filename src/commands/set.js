@@ -1,7 +1,7 @@
 module.exports = {
     name: "set",
-    description: "!set <warntime, log, role, admin, deleteCommands, perm, music, voice> <opt>",
-    usage: "<warntime, log, role, admin, deleteCommands, perm, music, voice> <opt>",
+    description: "!set <warntime, log, role, admin, deleteCommands, perm, music, voice, prefix> <opt>",
+    usage: "<warntime, log, role, admin, deleteCommands, perm, music, voice, prefix> <opt>",
     defaultPermission: 3,
     failPermission: "You can't edit the settings",
     args: 0,
@@ -113,6 +113,8 @@ module.exports = {
     					let value = msg.params[2];
 
     					self.db.setPermissions(msg.guild.id, command, value);
+                        let message = self.createEmbed("info", "Permission for `" + command + "` set to `" + value +"`");
+                        self.send(msg, message);
     				}
     				break;
                 case "ai":
@@ -153,6 +155,13 @@ module.exports = {
                             self.send(msg, message);
                         });
                     });
+                    break;
+                case "prefix":
+                    if(msg.params.length >= 2){
+                        self.db.setSettings(msg.guild.id, "prefix", msg.params[1]);
+                        let message = self.createEmbed("info", "Prefix set to `" + msg.params[1] + "`");
+                        self.send(msg, message);
+                    }
                     break;
                 default:
     				message = self.createEmbed("info", msg.client.commands.get("set").description);
