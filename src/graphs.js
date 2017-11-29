@@ -44,8 +44,8 @@ function createImage(x, y, _callback){
 
     var imgOpts = {
         format: 'png',
-        width: 1000,
-        height: 500
+        width: 3000,
+        height: 1500
     };
 
     plotly.getImage(figure, imgOpts, function (error, imageStream) {
@@ -99,8 +99,8 @@ function bars(x1, y1, x2, y2, _callback){
     var figure = { 'data': [trace1, trace2], 'layout': layout};
     var imgOpts = {
         format: 'png',
-        width: 1000,
-        height: 500
+        width: 3000,
+        height: 1500
     };
     plotly.getImage(figure, imgOpts, function (error, imageStream) {
         if (error) return console.log (error);

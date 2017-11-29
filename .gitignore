@@ -7,3 +7,5 @@ users.json
 stats.json
 data/database
 node_modules/
+package-lock.json
+.com.apple.timemachine.supported
