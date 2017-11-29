@@ -20,11 +20,13 @@ const graphs = require("./src/graphs");
 function recieveMessage(msg){
 	isCommand(msg, () => {
 		if(msg.isCommand){
-			db.getSettings(msg.guild.id, "deleteCommands", (value) => {
-				if(parseInt(value)){
-					msg.delete();
-				}
-			});
+			if(msg.channel.type == "text"){
+				db.getSettings(msg.guild.id, "deleteCommands", (value) => {
+					if(parseInt(value)){
+						msg.delete();
+					}
+				});
+			}
 			command.call(this, msg);
 		}else if(msg.interact){
 			db.getSettings(msg.guild.id, "talk", (value) => {
@@ -92,12 +94,20 @@ function command(msg){
 	}
 };
 
+function getPrefix(msg, _callback){
+	let prefix = serverManager.prefix;
+	if(msg.channel.type == "text"){
+		db.getSettings(msg.guild.id, "prefix", (pref) => {
+			if(pref !== "") prefix = pref;
+			_callback(prefix);
+		});
+	} else {
+		_callback(prefix);
+	}
+}
+
 function isCommand(msg, _callback){
-	db.getSettings(msg.guild.id, "prefix", (pref) => {
-		let prefix = pref;
-		if(prefix == "") {
-			prefix = serverManager.prefix;
-		}
+	getPrefix(msg, (prefix) => {
 		if(msg.author.id != bot.user.id && msg.content.slice(0, prefix.length) == prefix){
 			msg.params = msg.content.slice(prefix.length).split(" ");
 			msg.command = msg.params.shift().toLowerCase();
