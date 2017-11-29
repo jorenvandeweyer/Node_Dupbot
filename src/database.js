@@ -102,6 +102,22 @@ exports.setStats_cah = function(guild, player, points){
 
 }
 
+exports.getServerStats = function(guild, type, _callback){
+    db.all("SELECT * FROM serverStats_" + guild + " WHERE type='" + type + "'", (err, rows) => {
+        _callback(rows);
+    });
+}
+
+exports.setServerStats = function(guild, type, value){
+    db.run("INSERT INTO serverStats_" + guild + " VALUES ($type, $timestamp, $value)", {
+        $type: type,
+        $timestamp: + new Date(),
+        $value: value
+    }, () => {
+        console.log(type);
+    });
+}
+
 function addGuild(self, guild){
     db.all("SELECT name FROM sqlite_master WHERE type='table' AND name LIKE '%_" + guild + "'", (err, rows) => {
         let db_tables = [];
@@ -182,6 +198,12 @@ function addGuild(self, guild){
         if(!db_tables.includes("stats_cah_" + guild)){
             db.serialize( () => {
                 db.run("CREATE TABLE stats_cah_" + guild + " (id TEXT PRIMARY KEY, points INT)");
+            });
+        }
+
+        if(!db_tables.includes("serverStats_" + guild)){
+            db.serialize( () => {
+                db.run("CREATE TABLE serverStats_" + guild + " (type TEXT, timestamp TEXT, value TEXT)");
             });
         }
 
