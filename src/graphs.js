@@ -114,39 +114,20 @@ function get(self, msg){
         let members = guild.members.sort(function(a, b){return a.joinedTimestamp-b.joinedTimestamp});
         members.delete(members.firstKey());
 
-        let x_1 = [];
-        let y_1 = [];
         let x_green = [];
         let y_green = [];
         let x_red = [];
         let y_red = [];
 
-        let count = 0;
-
-        for(key of members){
-            count++;
-            x_1.push(key[1].joinedAt.toISOString().replace("T", " ").split(".")[0]);
-            y_1.push(count);
-
-            // let time = key[1].joinedAt.toISOString().split("T")[0]
-            // if(x_green.includes(time)){
-            //     let index = x_green.indexOf(time);
-            //     y_green[index]++;
-            // } else {
-            //     x_green.push(time);
-            //     y_green.push(1);
-            // }
-        }
-
-
-        createImage(x_1, y_1, (stream) => {
-            let attachment = new Discord.Attachment(stream);
-            self.send(msg, attachment);
-        });
+        let x_total = [];
+        let y_total = [];
 
         self.db.getServerStats(msg.guild.id, "guildMemberAdd", (rows) => {
 
-            let firstRecord = rows[0].timestamp;
+            let firstRecord = Infinity;
+            if(rows){
+                firstRecord = rows[0].timestamp;
+            }
 
 
             for(key of members){
@@ -161,41 +142,77 @@ function get(self, msg){
                     x_green.push(time);
                     y_green.push(1);
                 }
+
+                // if(x_total.includes(time)){
+                //     let index = x_total.indexOf(time);
+                //     y_total[index]++;
+                // } else {
+                //     x_total.push(time);
+                //     y_total.push(1);
+                // }
             }
 
-            for(let i = 0; i<rows.length; i++){
-                let row = rows[i];
-                let time = new Date(parseInt(row.timestamp));
-                time = time.toISOString().split("T")[0];
+            if(rows){
+                for(let i = 0; i<rows.length; i++){
+                    let row = rows[i];
+                    let time = new Date(parseInt(row.timestamp));
+                    time = time.toISOString().split("T")[0];
 
-                if(x_green.includes(time)){
-                    let index = x_green.indexOf(time);
-                    y_green[index]++;
-                } else {
-                    x_green.push(time);
-                    y_green.push(-1);
+                    if(x_green.includes(time)){
+                        let index = x_green.indexOf(time);
+                        y_green[index]++;
+                    } else {
+                        x_green.push(time);
+                        y_green.push(1);
+                    }
                 }
             }
+
+            x_total = x_green.slice(0);
+            y_total = y_green.slice(0);
 
             self.db.getServerStats(msg.guild.id, "guildMemberRemove", (rows) => {
 
-                for (let i = 0; i<rows.length; i++){
-                    let row = rows[i];
+                if(rows){
+                    for (let i = 0; i<rows.length; i++){
+                        let row = rows[i];
 
-                    let time = new Date(parseInt(row.timestamp))
-                    time = time.toISOString().split("T")[0];
+                        let time = new Date(parseInt(row.timestamp))
+                        time = time.toISOString().split("T")[0];
 
-                    if(x_red.includes(time)){
-                        let index = x_red.indexOf(time);
-                        y_red[index]--;
-                    } else {
-                        x_red.push(time);
-                        y_red.push(-1);
+                        if(x_red.includes(time)){
+                            let index = x_red.indexOf(time);
+                            y_red[index]--;
+                        } else {
+                            x_red.push(time);
+                            y_red.push(-1);
+                        }
+
+                        if(x_total.includes(time)){
+                            let index = x_total.indexOf(time);
+                            y_total[index]--;
+                        } else {
+                            x_total.push(time);
+                            y_total.push(-1);
+                        }
+
                     }
-
                 }
 
+                let y_total_cum = [0];
+
+                for(let i = 0; i < x_total.length; i++){
+                    y_total_cum[i+1] = y_total[i] + y_total_cum[i];
+                }
+
+                y_total_cum = y_total_cum.slice(1);
+
                 bars(x_green, y_green, x_red, y_red, (stream) => {
+                    let attachment = new Discord.Attachment(stream);
+                    self.send(msg, attachment);
+                });
+
+                createImage(x_total, y_total_cum, (stream) => {
                     let attachment = new Discord.Attachment(stream);
                     self.send(msg, attachment);
                 });
