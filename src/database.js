@@ -103,7 +103,7 @@ exports.setStats_cah = function(guild, player, points){
 }
 
 exports.getServerStats = function(guild, type, _callback){
-    db.all("SELECT * FROM serverStats_" + guild + " WHERE type='" + type + "'", (err, rows) => {
+    db.all("SELECT * FROM serverStats_" + guild + " WHERE type='" + type + "' ORDER BY timestamp ASC", (err, rows) => {
         _callback(rows);
     });
 }

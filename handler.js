@@ -182,7 +182,11 @@ function setup(b, l){
 	bot.on("guildBanRemove", (guild, user) => {
 		db.setServerStats(guild.id, "guildBanRemove", user.id);
 	});
-	
+
+	bot.on("guildMemberAdd", (member) => {
+		db.setServerStats(member.guild.id, "guildMemberAdd", member.id);
+	});
+
 	let commandFiles = fs.readdirSync('./src/commands');
 
 	for (let file of commandFiles) {

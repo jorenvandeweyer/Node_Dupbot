@@ -128,14 +128,14 @@ function get(self, msg){
             x_1.push(key[1].joinedAt.toISOString().replace("T", " ").split(".")[0]);
             y_1.push(count);
 
-            let time = key[1].joinedAt.toISOString().split("T")[0]
-            if(x_green.includes(time)){
-                let index = x_green.indexOf(time);
-                y_green[index]++;
-            } else {
-                x_green.push(time);
-                y_green.push(1);
-            }
+            // let time = key[1].joinedAt.toISOString().split("T")[0]
+            // if(x_green.includes(time)){
+            //     let index = x_green.indexOf(time);
+            //     y_green[index]++;
+            // } else {
+            //     x_green.push(time);
+            //     y_green.push(1);
+            // }
         }
 
 
@@ -144,27 +144,61 @@ function get(self, msg){
             self.send(msg, attachment);
         });
 
-        self.db.getServerStats(msg.guild.id, "guildMemberRemove", (rows) => {
+        self.db.getServerStats(msg.guild.id, "guildMemberAdd", (rows) => {
 
-            for (let i = 0; i<rows.length; i++){
-                let row = rows[i];
+            let firstRecord = rows[0].timestamp;
 
-                let time = new Date(parseInt(row.timestamp))
-                time = time.toISOString().split("T")[0];
 
-                if(x_red.includes(time)){
-                    let index = x_red.indexOf(time);
-                    y_red[index]--;
+            for(key of members){
+                let time = key[1].joinedAt.toISOString().split("T")[0];
+
+                if(key[1].joinedTimestamp >= firstRecord) break;
+
+                if(x_green.includes(time)){
+                    let index = x_green.indexOf(time);
+                    y_green[index]++;
                 } else {
-                    x_red.push(time);
-                    y_red.push(-1);
+                    x_green.push(time);
+                    y_green.push(1);
                 }
-
             }
 
-            bars(x_green, y_green, x_red, y_red, (stream) => {
-                let attachment = new Discord.Attachment(stream);
-                self.send(msg, attachment);
+            for(let i = 0; i<rows.length; i++){
+                let row = rows[i];
+                let time = new Date(parseInt(row.timestamp));
+                time = time.toISOString().split("T")[0];
+
+                if(x_green.includes(time)){
+                    let index = x_green.indexOf(time);
+                    y_green[index]++;
+                } else {
+                    x_green.push(time);
+                    y_green.push(-1);
+                }
+            }
+
+            self.db.getServerStats(msg.guild.id, "guildMemberRemove", (rows) => {
+
+                for (let i = 0; i<rows.length; i++){
+                    let row = rows[i];
+
+                    let time = new Date(parseInt(row.timestamp))
+                    time = time.toISOString().split("T")[0];
+
+                    if(x_red.includes(time)){
+                        let index = x_red.indexOf(time);
+                        y_red[index]--;
+                    } else {
+                        x_red.push(time);
+                        y_red.push(-1);
+                    }
+
+                }
+
+                bars(x_green, y_green, x_red, y_red, (stream) => {
+                    let attachment = new Discord.Attachment(stream);
+                    self.send(msg, attachment);
+                });
             });
         });
     });
