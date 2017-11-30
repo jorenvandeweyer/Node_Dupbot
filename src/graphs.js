@@ -208,7 +208,6 @@ function createGraphs(self, msg, start, end){
             });
         });
     });
-
 }
 
 function getData(self, msg, _callback){
@@ -234,7 +233,7 @@ function get(self, msg){
     let end = Infinity;
     if(msg.params.length >= 2){
         start = Date.parse(msg.params[0]);
-        end = Date.parse(msg.params[1]);
+        end = Date.parse(msg.params[1]) + 1*24*60*60*1000;
 
         if(start == NaN){
             start = 0;
