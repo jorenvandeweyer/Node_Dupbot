@@ -59,13 +59,15 @@ function bars(x1, y1, x2, y2, _callback){
         x: x1,
         y: y1,
         type: "bar",
-        name: "Members Joined"
+        name: "Members Joined",
+        marker: {color: "rgb(35, 178, 54)"}
     };
     var trace2 = {
         x: x2,
         y: y2,
         type: "bar",
-        name: "Members Left"
+        name: "Members Left",
+        marker: {color: "#db5a44"}
     };
     var layout = {
         xaxis: {
@@ -94,7 +96,8 @@ function bars(x1, y1, x2, y2, _callback){
             },
             exponentformat: "e",
             showexponent: "All"
-        }
+        },
+        barmode: "stack"
     };
     var figure = { 'data': [trace1, trace2], 'layout': layout};
     var imgOpts = {
