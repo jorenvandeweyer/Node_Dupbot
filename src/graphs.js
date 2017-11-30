@@ -97,7 +97,7 @@ function bars(x1, y1, x2, y2, _callback){
             exponentformat: "e",
             showexponent: "All"
         },
-        barmode: "stack"
+        barmode: "overlay"
     };
     var figure = { 'data': [trace1, trace2], 'layout': layout};
     var imgOpts = {
