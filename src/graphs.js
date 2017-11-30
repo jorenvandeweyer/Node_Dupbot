@@ -172,10 +172,10 @@ function createGraphs(self, msg, start, end){
 
                     if(x_red.includes(time)){
                         let index = x_red.indexOf(time);
-                        y_red[index]--;
+                        y_red[index]++;
                     } else {
                         x_red.push(time);
-                        y_red.push(-1);
+                        y_red.push(1);
                     }
 
                     if(x_total.includes(time)){

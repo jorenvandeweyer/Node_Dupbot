@@ -114,7 +114,7 @@ exports.setServerStats = function(guild, type, value){
         $timestamp: + new Date(),
         $value: value
     }, () => {
-        console.log(type);
+        // console.log(type);
     });
 }
 
