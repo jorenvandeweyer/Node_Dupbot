@@ -112,8 +112,6 @@ function get(self, msg){
     let creationTime = msg.guild.createdTimestamp;
     msg.guild.fetchMembers().then( (guild) => {
         let members = guild.members.sort(function(a, b){return a.joinedTimestamp-b.joinedTimestamp});
-        // members.delete(members.firstKey());
-        // members.delete(members.firstKey());
 
         let x_green = [];
         let y_green = [];
@@ -207,10 +205,10 @@ function getData(self, msg, _callback){
     self.db.getServerStats(msg.guild.id, "guildMemberAdd", (joins) => {
         self.db.getServerStats(msg.guild.id, "guildMemberRemove", (leaves) => {
             let firstRecord = Infinity;
-            if(joins){
+            if(joins !== undefined && joins.length){
                 firstRecord = joins[0].timestamp;
             }
-            if(leaves){
+            if(leaves !== undefined && leaves.length){
                 let timestamp = leaves[0].timestamp;
                 if(timestamp < firstRecord){
                     firstRecord = timestamp;
