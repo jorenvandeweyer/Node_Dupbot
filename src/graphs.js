@@ -112,7 +112,8 @@ function get(self, msg){
     let creationTime = msg.guild.createdTimestamp;
     msg.guild.fetchMembers().then( (guild) => {
         let members = guild.members.sort(function(a, b){return a.joinedTimestamp-b.joinedTimestamp});
-        members.delete(members.firstKey());
+        // members.delete(members.firstKey());
+        // members.delete(members.firstKey());
 
         let x_green = [];
         let y_green = [];
@@ -122,17 +123,11 @@ function get(self, msg){
         let x_total = [];
         let y_total = [];
 
-        self.db.getServerStats(msg.guild.id, "guildMemberAdd", (rows) => {
-
-            let firstRecord = Infinity;
-            if(rows){
-                firstRecord = rows[0].timestamp;
-            }
-
-
+        getData(self, msg, (joins, leaves, firstRecord) => {
             for(key of members){
                 let time = key[1].joinedAt.toISOString().split("T")[0];
 
+                if(key[1].joinedTimestamp < creationTime) continue;
                 if(key[1].joinedTimestamp >= firstRecord) break;
 
                 if(x_green.includes(time)){
@@ -142,20 +137,11 @@ function get(self, msg){
                     x_green.push(time);
                     y_green.push(1);
                 }
-
-                // if(x_total.includes(time)){
-                //     let index = x_total.indexOf(time);
-                //     y_total[index]++;
-                // } else {
-                //     x_total.push(time);
-                //     y_total.push(1);
-                // }
             }
 
-            if(rows){
-                for(let i = 0; i<rows.length; i++){
-                    let row = rows[i];
-                    let time = new Date(parseInt(row.timestamp));
+            if(joins){
+                for(let i = 0; i<joins.length; i++){
+                    let time = new Date(parseInt(joins[i].timestamp));
                     time = time.toISOString().split("T")[0];
 
                     if(x_green.includes(time)){
@@ -171,55 +157,68 @@ function get(self, msg){
             x_total = x_green.slice(0);
             y_total = y_green.slice(0);
 
-            self.db.getServerStats(msg.guild.id, "guildMemberRemove", (rows) => {
+            if(leaves){
+                for (let i = 0; i<leaves.length; i++){
+                    let time = new Date(parseInt(leaves[i].timestamp))
+                    time = time.toISOString().split("T")[0];
 
-                if(rows){
-                    for (let i = 0; i<rows.length; i++){
-                        let row = rows[i];
-
-                        let time = new Date(parseInt(row.timestamp))
-                        time = time.toISOString().split("T")[0];
-
-                        if(x_red.includes(time)){
-                            let index = x_red.indexOf(time);
-                            y_red[index]--;
-                        } else {
-                            x_red.push(time);
-                            y_red.push(-1);
-                        }
-
-                        if(x_total.includes(time)){
-                            let index = x_total.indexOf(time);
-                            y_total[index]--;
-                        } else {
-                            x_total.push(time);
-                            y_total.push(-1);
-                        }
-
+                    if(x_red.includes(time)){
+                        let index = x_red.indexOf(time);
+                        y_red[index]--;
+                    } else {
+                        x_red.push(time);
+                        y_red.push(-1);
                     }
+
+                    if(x_total.includes(time)){
+                        let index = x_total.indexOf(time);
+                        y_total[index]--;
+                    } else {
+                        x_total.push(time);
+                        y_total.push(-1);
+                    }
+
                 }
+            }
 
-                let y_total_cum = [0];
+            let y_total_cum = [0];
 
-                for(let i = 0; i < x_total.length; i++){
-                    y_total_cum[i+1] = y_total[i] + y_total_cum[i];
-                }
+            for(let i = 0; i < x_total.length; i++){
+                y_total_cum[i+1] = y_total[i] + y_total_cum[i];
+            }
 
-                y_total_cum = y_total_cum.slice(1);
+            y_total_cum = y_total_cum.slice(1);
 
-                bars(x_green, y_green, x_red, y_red, (stream) => {
-                    let attachment = new Discord.Attachment(stream);
-                    self.send(msg, attachment);
-                });
+            bars(x_green, y_green, x_red, y_red, (stream) => {
+                let attachment = new Discord.Attachment(stream);
+                self.send(msg, attachment);
+            });
 
-                createImage(x_total, y_total_cum, (stream) => {
-                    let attachment = new Discord.Attachment(stream);
-                    self.send(msg, attachment);
-                });
+            createImage(x_total, y_total_cum, (stream) => {
+                let attachment = new Discord.Attachment(stream);
+                self.send(msg, attachment);
             });
         });
     });
 
+}
+
+function getData(self, msg, _callback){
+    self.db.getServerStats(msg.guild.id, "guildMemberAdd", (joins) => {
+        self.db.getServerStats(msg.guild.id, "guildMemberRemove", (leaves) => {
+            let firstRecord = Infinity;
+            if(joins){
+                firstRecord = joins[0].timestamp;
+            }
+            if(leaves){
+                let timestamp = leaves[0].timestamp;
+                if(timestamp < firstRecord){
+                    firstRecord = timestamp;
+                }
+            }
+            _callback(joins, leaves, firstRecord);
+        });
+    });
 }
 
 module.exports = {
