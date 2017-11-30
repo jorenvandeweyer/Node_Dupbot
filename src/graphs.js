@@ -3,7 +3,7 @@ const Discord = require("discord.js");
 
 var plotly = require('plotly')(plotly_username, plotly_apikey);
 
-function createImage(x, y, _callback){
+function lines(x, y, _callback){
     var trace1 = {
         x: x,
         y: y,
@@ -108,7 +108,7 @@ function bars(x1, y1, x2, y2, _callback){
     });
 }
 
-function get(self, msg){
+function createGraphs(self, msg, start, end){
     let creationTime = msg.guild.createdTimestamp;
     msg.guild.fetchMembers().then( (guild) => {
         let members = guild.members.sort(function(a, b){return a.joinedTimestamp-b.joinedTimestamp});
@@ -125,8 +125,9 @@ function get(self, msg){
             for(key of members){
                 let time = key[1].joinedAt.toISOString().split("T")[0];
 
-                if(key[1].joinedTimestamp < creationTime) continue;
-                if(key[1].joinedTimestamp >= firstRecord) break;
+                let timestamp = key[1].joinedTimestamp;
+                if(timestamp < creationTime || timestamp < start || timestamp > end) continue;
+                if(timestamp >= firstRecord) break;
 
                 if(x_green.includes(time)){
                     let index = x_green.indexOf(time);
@@ -139,7 +140,10 @@ function get(self, msg){
 
             if(joins){
                 for(let i = 0; i<joins.length; i++){
-                    let time = new Date(parseInt(joins[i].timestamp));
+                    let timestamp = parseInt(joins[i].timestamp);
+                    if(timestamp < start || timestamp > end) continue;
+
+                    let time = new Date(timestamp);
                     time = time.toISOString().split("T")[0];
 
                     if(x_green.includes(time)){
@@ -157,7 +161,10 @@ function get(self, msg){
 
             if(leaves){
                 for (let i = 0; i<leaves.length; i++){
-                    let time = new Date(parseInt(leaves[i].timestamp))
+                    let timestamp = parseInt(leaves[i].timestamp);
+                    if(timestamp < start || timestamp > end) continue;
+
+                    let time = new Date(timestamp);
                     time = time.toISOString().split("T")[0];
 
                     if(x_red.includes(time)){
@@ -192,7 +199,7 @@ function get(self, msg){
                 self.send(msg, attachment);
             });
 
-            createImage(x_total, y_total_cum, (stream) => {
+            lines(x_total, y_total_cum, (stream) => {
                 let attachment = new Discord.Attachment(stream);
                 self.send(msg, attachment);
             });
@@ -217,6 +224,23 @@ function getData(self, msg, _callback){
             _callback(joins, leaves, firstRecord);
         });
     });
+}
+
+function get(self, msg){
+    let start = 0;
+    let end = Infinity;
+    if(msg.params.length >= 2){
+        start = Date.parse(msg.params[0]);
+        end = Date.parse(msg.params[1]);
+
+        if(start == NaN){
+            start = 0;
+        }
+        if(end == NaN){
+            end = Infinity;
+        }
+    }
+    createGraphs(self, msg, start, end);
 }
 
 module.exports = {
