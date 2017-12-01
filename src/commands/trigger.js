@@ -3,7 +3,7 @@ module.exports = {
     description: "!trigger",
     usage: "@user",
     defaultPermission: 1,
-    args: 1,
+    args: 0,
     execute(self, msg){
         let avatarURL = msg.author.avatarURL;
 
