@@ -2,6 +2,7 @@ module.exports = {
     name: "help",
     description: "!help <command>",
     defaultPermission: 1,
+    usage: "<command>",
     args: 0,
     execute(self, msg){
         self.db.getSettings(msg.guild.id, "prefix", (pref) => {
@@ -24,7 +25,7 @@ module.exports = {
         		message = self.createEmbed("info", "All available commands, more info " + prefix + "help <command>", "Commands", [
         		{
         			name: "Everyone",
-        			value: prefix + "ping, " + prefix + "getroles, " + prefix + "kill, " + prefix + "help, " + prefix + "iam"
+        			value: prefix + "ping, " + prefix + "getroles, " + prefix + "kill, " + prefix + "help, " + prefix + "iam, " + prefix + "graphs"
         		},{
         			name: "Music",
         			value: prefix + "play, " + prefix + "skip, " + prefix + "queue"

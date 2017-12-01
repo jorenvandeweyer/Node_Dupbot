@@ -258,6 +258,41 @@ class gameHandler{
         }])
     }
 
+	skip(msg){
+		let id = msg.channel.id;
+		if(this.holder[id] == undefined){
+            let message = createEmbed("purple", "No CAH Game playing, type !cstart to start a game!");
+            send(msg, message);
+        } else {
+			let data = this.holder[id].skip();
+			for(let i = 0; i <data.length; i++){
+				if(data[i].status == "finished") delete this.holder[id];
+			}
+			broadcastCahMessages(msg, data);
+		}
+	}
+
+	kick(msg){
+		let id = msg.channel.id;
+		let userids = msg.mentions.users.keyArray();
+		if(this.holder[id] == undefined){
+			let message = createEmbed("purple", "No CAH Game playing.");
+			send(msg, message);
+		} else {
+			while(userids.length){
+				let userid = userids.shift();
+				console.log(userid);
+				let data = this.holder[id].kick(userid);
+
+				for(let i = 0; i < data.length; i++){
+					if(data[i].status == "finished") delete this.holder[id];
+				}
+
+				broadcastCahMessages(msg, data);
+			}
+		}
+	}
+
 	scoreboard(msg){
 		let guildid = msg.guild.id;
 
@@ -304,6 +339,14 @@ exports.choose = function(msg){
 
 exports.reset = function(msg){
     game.reset(msg);
+}
+
+exports.skip = function(msg){
+	game.skip(msg);
+}
+
+exports.kick = function(msg){
+	game.kick(msg);
 }
 
 exports.scoreboard = function(msg){
