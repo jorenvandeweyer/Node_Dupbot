@@ -29,17 +29,22 @@ function recieveMessage(msg){
 			}
 			command.call(this, msg);
 		}else if(msg.interact){
-			db.getSettings(msg.guild.id, "talk", (value) => {
-				if(parseInt(value)){
-					db.getSettings(msg.guild.id, "ai", (value) => {
-						if(parseInt(value)){
-							ai.get(this, msg);
-						} else {
-							cleverbot.get(this, msg);
-						}
-					});
-				}
-			});
+			if(msg.channel.type == "text"){
+				db.getSettings(msg.guild.id, "talk", (value) => {
+					if(parseInt(value)){
+						db.getSettings(msg.guild.id, "ai", (value) => {
+							if(parseInt(value)){
+								ai.get(this, msg);
+							} else {
+								cleverbot.get(this, msg);
+							}
+						});
+					}
+				});
+			} else {
+				cleverbot.get(this, msg);
+			}
+
 		}
 	});
 }
@@ -141,10 +146,15 @@ function isCommand(msg, _callback){
 					words.splice(index, 1);
 				}
 				msg.input_ai = words.join(" ");
-				db.getSettings(msg.guild.id, "adminrole", (role) => {
-					msg.permissionLevel = serverManager.getPermissionLevel(msg, role);
+				if(msg.channel.type == "text"){
+					db.getSettings(msg.guild.id, "adminrole", (role) => {
+						msg.permissionLevel = serverManager.getPermissionLevel(msg, role);
+						_callback();
+					});
+				} else {
 					_callback();
-				});
+				}
+
 			} else {
 				_callback();
 			}
@@ -1085,7 +1095,7 @@ module.exports = {
 	serverManager: getServerManager,
 	listener: getListener,
 	getPrefix: getPrefix,
-	
+
 	createEmbed: createEmbed,
 	db: db,
 	cah: cah,
