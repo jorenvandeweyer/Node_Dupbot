@@ -1084,7 +1084,8 @@ module.exports = {
 
 	serverManager: getServerManager,
 	listener: getListener,
-
+	getPrefix: getPrefix,
+	
 	createEmbed: createEmbed,
 	db: db,
 	cah: cah,

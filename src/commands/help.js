@@ -5,10 +5,7 @@ module.exports = {
     usage: "<command>",
     args: 0,
     execute(self, msg){
-        self.db.getSettings(msg.guild.id, "prefix", (pref) => {
-            let prefix = pref;
-            if(prefix == "") prefix = self.serverManager().prefix;
-
+        self.getPrefix(msg, (prefix) => {
             if (msg.params.length >= 1){
         		let helpmsg = "No command";
                 let command = msg.client.commands.get(msg.params[0]);
