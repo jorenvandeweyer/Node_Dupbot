@@ -135,7 +135,7 @@ function isCommand(msg, _callback){
 			} else {
 				_callback();
 			}
-		} else {
+		} else if(msg.author.id != bot.user.id){
 			if(msg.content.toLowerCase().includes(msg.client.user.username.toLowerCase())) {
 				msg.interact = true;
 
@@ -155,7 +155,9 @@ function isCommand(msg, _callback){
 					_callback();
 				}
 
-			} else {
+			} else if(msg.channel.type == "dm"){
+				msg.interact = true;
+				msg.input_ai = msg.content;
 				_callback();
 			}
 		}
