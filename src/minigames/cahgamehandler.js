@@ -1,6 +1,6 @@
 const CAH = require("cah_game");
 const fs = require("fs");
-const db = require("../src/database");
+const db = require("../../src/database");
 
 function createEmbed(colorName, info, title, fields, footer){
 	switch(colorName){

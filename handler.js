@@ -6,7 +6,7 @@ const google = require('googleapis');
 
 const Servers = require("./src/server");
 const db = require("./src/database");
-const cah = require("./src/cahgamehandler");
+const cah = require("./src/minigames/cahgamehandler");
 const ai = require("./src/ai");
 const cleverbot = require("./src/cleverbot");
 const serverSettings = require("./serverSettings.json");
