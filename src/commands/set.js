@@ -1,7 +1,7 @@
 module.exports = {
     name: "set",
-    description: "!set <warntime, log, role, admin, deleteCommands, perm, music, voice, prefix> <opt>",
-    usage: "<warntime, log, role, admin, deleteCommands, perm, music, voice, prefix> <opt>",
+    description: "!set <warntime, log, iamrole, maxiamroles, admin, deleteCommands, perm, music, voice, dj, prefix> <opt>",
+    usage: "<warntime, log, iamrole, maxiamroles, admin, deleteCommands, perm, music, voice, dj, prefix> <opt>",
     defaultPermission: 3,
     failPermission: "You can't edit the settings",
     args: 0,
@@ -26,7 +26,7 @@ module.exports = {
     					self.send(msg, message);
     				}
     				break;
-    			case "role":
+    			case "iamrole":
     				if(msg.params.length >= 2){
     					let role = self.serverManager().getMentionRole(msg);
     					let roles = [];
@@ -51,7 +51,7 @@ module.exports = {
     								allRoles.push(roles[i]);
     							}
 
-    							message = self.createEmbed("info", allRoles.join(", "), "All assignable roles:");
+    							let message = self.createEmbed("info", allRoles.join(", "), "All assignable roles:");
     							self.send(msg, message);
     						});
 
@@ -62,6 +62,14 @@ module.exports = {
     					self.send(msg, message);
     				}
     				break;
+                case "maxiamroles":
+                    if(msg.params.length >= 2){
+                        self.db.setSettings(msg.guild.id, "max_iam_roles", parseInt(msg.params[1]), () => {
+                            let message = self.createEmbed("info", "Max assignable roles set to: " + parseInt(msg.params[1]));
+                            self.send(msg, message);
+                        });
+                    }
+                    break;
     			case "admin":
     				if(msg.params.length >= 2){
     					roleID = self.serverManager().getMentionRole(msg).id;
@@ -94,6 +102,17 @@ module.exports = {
     					self.send(msg, message);
     				});
     				break;
+                case "dj":
+                    if(msg.params.length >= 2){
+                        roleID = self.serverManager().getMentionRole(msg).id;
+                        if(roleID){
+                            self.db.setSettings(msg.guild.id, "djrole", roleID, () => {
+                                message = self.createEmbed("succes", "DJ role set to <@&" + roleID + ">");
+                                self.send(msg, message);
+                            });
+                        }
+                    }
+                    break;
     			case "deleteCommands":
     				self.db.getSettings(msg.guild.id, "deleteCommands", (value) => {
     					let val = !parseInt(value);
