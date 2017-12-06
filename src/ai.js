@@ -22,8 +22,6 @@ function get(self, msg){
             msg.command = response.result.action;
         }
 
-        console.log(msg.command, msg.params);
-
         if(response.result.action == "input.unknown"){
             cleverbot.get(self, msg);
         } else if(response.result.fulfillment.speech){
