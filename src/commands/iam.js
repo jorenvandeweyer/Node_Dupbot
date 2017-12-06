@@ -12,11 +12,11 @@ module.exports = {
                 if(max < 0) max = Infinity;
 
                 let roles = value.split(",");
-
+                roles = roles.map(x => x.toLowerCase());
                 let message;
 
                 if(msg.params.length >= 1){
-                    let role = msg.params[0];
+                    let role = msg.params[0].toLowerCase();
                     let index = roles.indexOf(role);
                     if(index >= 0){
                         let roleId = roles[index-1];

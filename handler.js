@@ -10,6 +10,8 @@ const cah = require("./src/minigames/cahgamehandler");
 const ai = require("./src/ai");
 const cleverbot = require("./src/cleverbot");
 const serverSettings = require("./serverSettings.json");
+const blackList = require("./blackList.json");
+
 var bot, listener, youtube, serverManager;
 
 const graphs = require("./src/graphs");
@@ -21,6 +23,7 @@ function recieveMessage(msg){
 	isCommand(msg, () => {
 		if(msg.isCommand){
 			if(msg.channel.type == "text"){
+				// console.log(msg.guild.id, msg.author.id, msg.command);
 				db.getSettings(msg.guild.id, "deleteCommands", (value) => {
 					if(parseInt(value)){
 						msg.delete();
@@ -113,7 +116,7 @@ function getPrefix(msg, _callback){
 
 function isCommand(msg, _callback){
 	getPrefix(msg, (prefix) => {
-		if(msg.author.id != bot.user.id && msg.content.slice(0, prefix.length) == prefix){
+		if(msg.author.id != bot.user.id && !msg.author.bot && msg.content.slice(0, prefix.length) == prefix){
 			msg.params = msg.content.slice(prefix.length).split(" ");
 			msg.command = msg.params.shift().toLowerCase();
 			msg.isCommand = true;
@@ -135,7 +138,7 @@ function isCommand(msg, _callback){
 			} else {
 				_callback();
 			}
-		} else if(msg.author.id != bot.user.id){
+		} else if(msg.author.id != bot.user.id && !msg.author.bot ){
 			if(msg.content.toLowerCase().includes(msg.client.user.username.toLowerCase())) {
 				msg.interact = true;
 
@@ -180,7 +183,14 @@ function setup(b, l){
 	db.setup(this, bot.guilds);
 
 	for(key of bot.guilds){
-		console.log("[*]connected to server: " + key);
+		if(blackList.guilds.includes(key[0])){
+			key[1].leave().then( () => {
+				console.log("[+]Left guild on blacklist: " + key);
+			});
+		} else {
+			console.log("[*]connected to server: " + key);
+
+		}
 	}
 
 	if(bot.token == serverSettings.token){
@@ -190,7 +200,13 @@ function setup(b, l){
 	}
 
 	bot.on("guildCreate", (guild) => {
-		db.add(this, guild.id);
+		if(blackList.guilds.includes(guild.id)){
+			key[1].leave().then( () => {
+				console.log("[+]Left guild on blacklist: " + key);
+			});
+		} else {
+			db.add(this, guild.id);
+		}
 	});
 
 	bot.on("guildMemberRemove", (member) => {
