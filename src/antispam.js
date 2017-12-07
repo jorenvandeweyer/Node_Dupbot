@@ -26,7 +26,7 @@ class Antispam {
     }
 
     check(self, msg, _callback){
-        if(this.keys.filter(x => x === msg.author.id + "," + msg.command).length > 5){
+        if(this.keys.filter(x => x === msg.author.id + "," + msg.command).length > 6){
             this.ignore.push(msg.author.id);
         } else {
             this.keys.push(msg.author.id + "," + msg.command);
