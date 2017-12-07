@@ -11,6 +11,7 @@ const ai = require("./src/ai");
 const cleverbot = require("./src/cleverbot");
 const serverSettings = require("./serverSettings.json");
 const blackList = require("./blackList.json");
+const antispam = require("./src/antispam");
 
 var bot, listener, youtube, serverManager;
 
@@ -21,34 +22,38 @@ const graphs = require("./src/graphs");
 
 function recieveMessage(msg){
 	isCommand(msg, () => {
-		if(msg.isCommand){
-			if(msg.channel.type == "text"){
-				// console.log(msg.guild.id, msg.author.id, msg.command);
-				db.getSettings(msg.guild.id, "deleteCommands", (value) => {
-					if(parseInt(value)){
-						msg.delete();
-					}
-				});
-			}
-			command.call(this, msg);
-		}else if(msg.interact){
-			if(msg.channel.type == "text"){
-				db.getSettings(msg.guild.id, "talk", (value) => {
-					if(parseInt(value)){
-						db.getSettings(msg.guild.id, "ai", (value) => {
-							if(parseInt(value)){
-								ai.get(this, msg);
-							} else {
-								cleverbot.get(this, msg);
-							}
-						});
-					}
-				});
+		antispam.check(this, msg, () => {
+			if(msg.isCommand){
+				if(msg.channel.type == "text"){
+					// console.log(msg.guild.id, msg.author.id, msg.command);
+					db.getSettings(msg.guild.id, "deleteCommands", (value) => {
+						if(parseInt(value)){
+							msg.delete();
+						}
+					});
+				}
+				command.call(this, msg);
+			}else if(msg.interact){
+				if(msg.channel.type == "text"){
+					db.getSettings(msg.guild.id, "talk", (value) => {
+						if(parseInt(value)){
+							db.getSettings(msg.guild.id, "ai", (value) => {
+								if(parseInt(value)){
+									ai.get(this, msg);
+								} else {
+									cleverbot.get(this, msg);
+								}
+							});
+						}
+					});
+				} else {
+					cleverbot.get(this, msg);
+				}
 			} else {
-				cleverbot.get(this, msg);
+				return;
 			}
-
-		}
+		});
+		console.log(msg.author.id, msg.command, msg.interact);
 	});
 }
 
