@@ -17,11 +17,14 @@ module.exports = {
                     title: "=-=-=-=-=-=-= Dupbot =-=-=-=-=-=-=",
                     fields: [
                         {
-                            name: "Numbers of guilds",
+                            name: "Guilds",
                             value: msg.client.guilds.size
                         }, {
-                            name: "Numbers of members",
+                            name: "Members",
                             value: members
+                        }, {
+                            name: "Messages seen",
+                            value: "coming soon"
                         }
                     ],
                     footer: {
