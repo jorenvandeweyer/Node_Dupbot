@@ -55,6 +55,7 @@ function recieveMessage(msg){
 		});
 		console.log(msg.author.id, msg.command, msg.interact);
 	});
+	db.setBotStats("messages", 1);
 }
 
 function command(msg){

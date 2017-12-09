@@ -54,7 +54,7 @@ exports.getSettings = function(guild, setting, _callback){
             } else {
                 _callback(undefined);
             }
-        })
+        });
     }
 }
 
@@ -115,6 +115,22 @@ exports.setServerStats = function(guild, type, value){
         $value: value
     }, () => {
         // console.log(type);
+    });
+}
+
+exports.getBotStats = function(stat, _callback){
+    db.get("SELECT value FROM botStats WHERE stat='" + stat + "'", (err, row) => {
+        if(row){
+            _callback(row.value);
+        } else {
+            _callback(undefined);
+        }
+    });
+}
+
+exports.setBotStats = function(stat, value){
+    db.run("UPDATE botStats SET value=value+1 WHERE stat='" + stat + "'", () => {
+        //nothing
     });
 }
 
@@ -213,3 +229,18 @@ function addGuild(self, guild){
 exports.close = function(){
     db.close();
 }
+
+function startUp(){
+    db.get("SELECT name FROM sqlite_master WHERE type='table' AND name='botStats'", (err, row) => {
+        if(row == undefined){
+            db.serialize( () => {
+                db.run("CREATE TABLE botStats (stat TEXT PRIMARY KEY, value INT)");
+                let stmt = db.prepare("INSERT INTO botStats VALUES (?, ?)");
+                stmt.run("messages", 0);
+                stmt.finalize();
+            });
+        }
+    });
+}
+
+startUp();
