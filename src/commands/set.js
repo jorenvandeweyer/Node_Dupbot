@@ -182,6 +182,19 @@ module.exports = {
                         self.send(msg, message);
                     }
                     break;
+                case "botupdates":
+                    self.db.getSettings(msg.guild.id, "botupdates", (value) => {
+                        let val = !parseInt(value);
+                        self.db.setSettings(msg.guild.id, "botupdates", val, () => {
+                            if(val){
+                                message = self.createEmbed("succes", "Bot updates are back on.");
+                            } else {
+                                message = self.createEmbed("succes", "There will be no bot updates anymore.");
+                            }
+                            self.send(msg, message);
+                        })
+                    });
+                    break;
                 default:
     				message = self.createEmbed("info", msg.client.commands.get("set").description);
     				self.send(msg, message);

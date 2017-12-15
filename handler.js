@@ -96,7 +96,7 @@ function command(msg){
 						}
 					}
 				} catch(e){
-					let message = createEmbed("info", "The bot owner didn't setup the server correctly");
+					let message = createEmbed("info", ":bomb: :boom: That didn't work out :neutral_face:");
 					send(msg, message);
 				}
 			});
@@ -195,7 +195,6 @@ function setup(b, l){
 			});
 		} else {
 			console.log("[*]connected to server: " + key);
-
 		}
 	}
 
