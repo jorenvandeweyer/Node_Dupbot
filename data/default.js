@@ -11,5 +11,6 @@ module.exports = {
     max_iam_roles: -1,
     talk: true,
     support: true,
-    prefix: ""
+    prefix: "",
+    botupdates: true
 }
