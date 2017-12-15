@@ -6,9 +6,9 @@ module.exports = {
     guildOnly: true,
     execute(self, msg){
         self.db.getSettings(msg.guild.id, "allSettings", (settings) => {
-    		let message = "Settings	- Value";
+    		let message = "";
     		for(let i = 0; i < settings.length; i++){
-    			message += "\n" + settings[i].setting + ": " + settings[i].value;
+    			message += "\n`" + settings[i].setting + ": " + settings[i].value + "`";
     		}
 
     		messsage = self.createEmbed("info", message, "Settings for this server");

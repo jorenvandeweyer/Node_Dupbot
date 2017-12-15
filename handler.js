@@ -792,7 +792,7 @@ function playSong(msg){
 							}
 						],
 						footer: {
-							icon_url: "https://cdn.discordapp.com/avatars/" + video.userID + "/" + video.avatar + ".webp?size=1024",
+							icon_url: msg.author.avatarURL,
 							text: "Requested by " + video.username
 						},
 						thumbnail: {

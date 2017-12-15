@@ -34,6 +34,7 @@ module.exports = {
 
     			}
     		}
+            
     		message = self.createEmbed("info", "Permissions of all commands", "Permissions", [
     			{
     				name: "Disabled",
