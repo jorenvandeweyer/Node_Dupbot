@@ -53,7 +53,7 @@ function recieveMessage(msg){
 				return;
 			}
 		});
-		console.log(msg.author.id, msg.command, msg.interact);
+		console.log(new Date().toISOString() ,msg.author.id, msg.command, msg.params, msg.interact);
 	});
 	db.setBotStats("messages", 1);
 }
