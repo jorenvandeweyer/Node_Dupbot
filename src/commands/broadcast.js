@@ -36,12 +36,23 @@ module.exports = {
             }
         } else {
             messages = [];
-
+            let guilds = msg.client.guilds;
             for(let guild of msg.client.guilds){
                 self.db.getSettings(guild[1].id, "botupdates", (value) => {
                     if(parseInt(value)){
+
+                        let channels = guild[1].channels.filter((channel) => {
+                            if(channel.type == "text"){
+                                return channel.permissionsFor(msg.client.user).has("SEND_MESSAGES");
+                            }
+                            return false;
+                        });
+
+                        let channel = channels.find(val => val.name.toLowerCase() == "general" || val.name.toLowerCase() == "chat");
+                        if(channel == null) channel = channels.first();
+                        if(channel == null) return;
                         try{
-                            guild[1].channels.first().send(self.createEmbed("info", msg.params.join(" "))).then((message) => {
+                            channel.send(self.createEmbed("info", msg.params.join(" "))).then((message) => {
                                 messages.push(message);
                             });
                         } catch(e){

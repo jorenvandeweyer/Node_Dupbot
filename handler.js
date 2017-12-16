@@ -502,6 +502,7 @@ function getBot(){
 /***************/
 
 function send(msg, message, _callback){
+	if(!msg.channel.permissionsFor(msg.client.user).has("SEND_MESSAGES")) return;
 	msg.channel.send(message).then((message) => {
 		if (typeof _callback === "function"){
 			_callback(message);
@@ -510,6 +511,7 @@ function send(msg, message, _callback){
 }
 
 function sendChannel(msg, channelId, message, _callback){
+	if(!msg.guild.channels.get(channelId).permissionsFor(msg.client.user).has("SEND_MESSAGES")) return;
 	msg.guild.channels.get(channelId).send(message).then((message) => {
 		if (typeof _callback === "function"){
 			_callback(message);
