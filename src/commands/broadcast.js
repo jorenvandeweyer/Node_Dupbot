@@ -40,9 +40,14 @@ module.exports = {
             for(let guild of msg.client.guilds){
                 self.db.getSettings(guild[1].id, "botupdates", (value) => {
                     if(parseInt(value)){
-                        guild[1].channels.first().send(self.createEmbed("info", msg.params.join(" "))).then((message) => {
-                            messages.push(message);
-                        });
+                        try{
+                            guild[1].channels.first().send(self.createEmbed("info", msg.params.join(" "))).then((message) => {
+                                messages.push(message);
+                            });
+                        } catch(e){
+                            console.log(e);
+                        }
+
                     }
                 });
             }
