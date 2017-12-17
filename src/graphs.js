@@ -196,7 +196,7 @@ function createGraphs(self, msg, start, end){
             }
 
             y_total_cum = y_total_cum.slice(1);
-
+            
             bars(x_green, y_green, x_red, y_red, (stream) => {
                 let attachment = new Discord.Attachment(stream);
                 self.send(msg, attachment);
@@ -214,10 +214,10 @@ function getData(self, msg, _callback){
     self.db.getServerStats(msg.guild.id, "guildMemberAdd", (joins) => {
         self.db.getServerStats(msg.guild.id, "guildMemberRemove", (leaves) => {
             let firstRecord = Infinity;
-            if(joins !== undefined && joins.length){
+            if(joins.length){
                 firstRecord = joins[0].timestamp;
             }
-            if(leaves !== undefined && leaves.length){
+            if(leaves.length){
                 let timestamp = leaves[0].timestamp;
                 if(timestamp < firstRecord){
                     firstRecord = timestamp;
