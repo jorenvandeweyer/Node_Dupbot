@@ -1,13 +1,13 @@
 const mysql = require('mysql');
 const settings = require(__dirname + '/../data/default');
-const {mysql_host, mysql_user, mysql_pswd, mysql_db} = require("../serverSettings.json")
+const {mysql_host, mysql_user, mysql_pswd, mysql_db} = require("../serverSettings.json");
+
 const con = mysql.createConnection({
   host: mysql_host,
   user: mysql_user,
   password: mysql_pswd,
   database: mysql_db
 });
-
 
 function setup(self, guilds){
     con.connect(function(err) {
