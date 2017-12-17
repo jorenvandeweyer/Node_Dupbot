@@ -24,16 +24,16 @@ module.exports = {
                         if(self.serverManager().getRoles(msg).indexOf(roleId) == -1){
                             if(!exceededRoleLimit(self, msg, roles, max)){
                                 self.addToRole(msg, msg.author.id, roleId);
-                                message = self.createEmbed("succes", "You assign succesfully the role <@&" + roleId + "> to yourself.");
+                                message = self.createEmbed("succes", "You succesfully assigned the role <@&" + roleId + "> to yourself.");
                             } else {
                                 message = self.createEmbed("fail", "Exceeded iam role limit");
                             }
                         } else {
                             self.removeFromRole(msg, msg.author.id, roleId);
-                            message = self.createEmbed("succes", "You removed the role <@&" + roleId + "> succesfully from yourself");
+                            message = self.createEmbed("succes", "You succesfully removed the role <@&" + roleId + "> from yourself");
                         }
                     } else {
-                        message= self.createEmbed("fail", "This is not a role or you can't assign yourself this role.");
+                        message= self.createEmbed("fail", "`" + role + "` isn't a valid role or you are not allowed to assign the role `" + role + "` to yourself.");
                     }
                 } else {
                     let allRoles = [];
