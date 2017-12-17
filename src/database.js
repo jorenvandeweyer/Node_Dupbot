@@ -20,7 +20,7 @@ function setup(self, guilds){
 }
 
 function startUp(){
-    con.query("SELECT table_name FROM information_schema.tables where table_schema='dupbot' and table_name='botStats'", (err, result) => {
+    con.query("SELECT table_name FROM information_schema.tables where table_schema='" + mysql_db + "' and table_name='botStats'", (err, result) => {
         if(err) throw err;
         if(result[0] == undefined){
             con.query("CREATE TABLE botStats (stat CHAR(64) PRIMARY KEY, value BIGINT(255))", (err, result) => {
@@ -31,7 +31,7 @@ function startUp(){
 }
 
 function addGuild(self, guild){
-    con.query("SELECT table_name FROM information_schema.tables WHERE table_schema='dupbot' AND table_name LIKE '%_" + guild + "'", (err, result) => {
+    con.query("SELECT table_name FROM information_schema.tables WHERE table_schema='" + mysql_db + "' AND table_name LIKE '%_" + guild + "'", (err, result) => {
         let db_tables = [];
         if(result.length){
             for(let i = 0; i < result.length; i++){

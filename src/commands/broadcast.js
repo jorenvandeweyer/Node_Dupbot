@@ -27,7 +27,11 @@ module.exports = {
                 self.db.getSettings(guild[1].id, "botupdates", (value) => {
                     self.getPrefix({channel: {type: "text"}, guild: {id: guild[1].id}}, (prefix) => {
                         if(parseInt(value)){
-                            guild[1].owner.send(self.createEmbed("info", msg.params.join(" ") + `\n\nThese updates and broadcasts can be disabled by using the set command \`${prefix}set botupdates\` inside you server.`)).then((message) => {
+                            let message = self.createEmbed("info", msg.params.join(" ") + `\n\nThese updates and broadcasts can be disabled by using the set command \`${prefix}set botupdates\` inside you server.`);
+                            if(self.currentEmbed !== undefined && msg.params.includes("--embed")){
+                                message = self.currentEmbed;
+                            }
+                            guild[1].owner.send(message).then((message) => {
                                 messages.push(message);
                             });
                         }
@@ -52,7 +56,11 @@ module.exports = {
                         if(channel == null) channel = channels.first();
                         if(channel == null) return;
                         try{
-                            channel.send(self.createEmbed("info", msg.params.join(" "))).then((message) => {
+                            let message = self.createEmbed("info", msg.params.join(" "));
+                            if(self.currentEmbed !== undefined && msg.params.includes("--embed")){
+                                message = self.currentEmbed;
+                            }
+                            channel.send(message).then((message) => {
                                 messages.push(message);
                             });
                         } catch(e){
