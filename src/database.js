@@ -1,57 +1,151 @@
-const sqlite3 = require('sqlite3').verbose();
-const db = new sqlite3.Database(__dirname + '/../data/database');
+const mysql = require('mysql');
 const settings = require(__dirname + '/../data/default');
-const db2 = require("./database2");
-exports.setup = function(self, guilds){
-    for (let guild of guilds){
+
+const con = mysql.createConnection({
+  host: "localhost",
+  user: "dupbot",
+  password: "L0ngPasswordsAreMuchBetter",
+  database: "dupbot"
+});
+
+con.connect(function(err) {
+  if (err) throw err;
+  startUp();
+});
+
+function setup(self, guilds){
+    for(let guild of guilds){
         addGuild(self, guild[0]);
-        copyGuild(self, guild[0]);
     }
 }
 
-exports.add = function(self, guild){
-    addGuild(self, guild);
+function startUp(){
+    con.query("SELECT table_name FROM information_schema.tables where table_schema='dupbot' and table_name='botStats'", (err, result) => {
+        if(err) throw err;
+        if(result[0] == undefined){
+            con.query("CREATE TABLE botStats (stat CHAR(64) PRIMARY KEY, value BIGINT(255))", (err, result) => {
+                con.query("INSERT INTO botStats VALUE ('messages', 0)");
+            });
+        }
+    });
 }
 
-exports.getPermissions = function(guild, command, _callback){
-    if(command == "allPermissions"){
-        db.all("SELECT * FROM permissions_" + guild, (err, rows) => {
-            _callback(rows);
-        });
-    } else {
-        db.get("SELECT value FROM permissions_" + guild + " WHERE command='" + command + "'", (err, row) => {
-            if(row){
-                _callback(row.value);
-            } else {
-                _callback(undefined);
+function addGuild(self, guild){
+    con.query("SELECT table_name FROM information_schema.tables WHERE table_schema='dupbot' AND table_name LIKE '%_" + guild + "'", (err, result) => {
+        let db_tables = [];
+        if(result.length){
+            for(let i = 0; i < result.length; i++){
+                db_tables.push(result[i].table_name);
             }
-        });
-    }
-}
+        }
+        if(db_tables.includes("permissions_" + guild)){
+            con.query("SELECT * FROM permissions_" + guild, (err, result) => {
+                let sql = "INSERT INTO permissions_" + guild + " VALUES ?";
+                let values = [];
 
-exports.setPermissions = function(guild, command, value){
-        db.get("SELECT value FROM permissions_" + guild + " WHERE command='" + command + "'", (err, row) => {
-            if(row == undefined) return;
-            if(row.value < 4){
-                db.run("UPDATE permissions_" + guild + " SET value=$value WHERE command=$command", {
-                    $value: value,
-                    $command: command
-                }, () => {
-                    //console.log("update");
+                let db_commands = [];
+
+                if(result.length){
+                    for(let i = 0; i < result.length; i++){
+                        db_commands.push(result[i].command);
+                    }
+                }
+
+                for(let command of self.bot().commands){
+                    if(!db_commands.includes(command[0])){
+                        console.log("[db]" + command[0]);
+                        values.push([command[0], command[1].defaultPermission]);
+                    }
+                }
+                if(values.length){
+                    con.query(sql, [values], (err, result) => {
+                        if (err) throw err;
+                        console.log("[db]Number of records inserted: " + result.affectedRows);
+                    });
+                }
+            });
+        } else {
+            con.query("CREATE TABLE permissions_" + guild + " (command CHAR(64) PRIMARY KEY, value INT(3))", (err, result) => {
+                let sql = "INSERT INTO permissions_" + guild + " VALUES ?";
+                let values = [];
+
+                for(let command of self.bot().commands){
+                    values.push([command[0], command[1].defaultPermission]);
+                }
+
+                con.query(sql, [values], (err, result) => {
+                    if(err) throw err;
+                    console.log("[db]Number of records inserted: " + result.affectedRows);
                 });
-            }
-        });
+            });
+        }
+
+        if(db_tables.includes("settings_" + guild)){
+            con.query("SELECT * FROM settings_" + guild, (err, result) => {
+                let sql = "INSERT INTO settings_" + guild + " VALUES ?";
+                let db_settings = [];
+                let values = [];
+
+                if(result.length){
+                    for(let i = 0; i < result.length; i++){
+                        db_settings.push(result[i].setting);
+                    }
+                }
+
+                for(setting in settings){
+                    if(!db_settings.includes(setting)){
+                        console.log("[db]" + setting);
+                        values.push([setting, settings[setting]]);
+                    }
+                }
+                if(values.length){
+                    con.query(sql, [values], (err, result) => {
+                        if(err) throw err;
+                        console.log("[db]Number of records inserted: " + result.affectedRows);
+                    });
+                }
+            });
+        } else {
+            con.query("CREATE TABLE settings_" + guild + " (setting CHAR(64) PRIMARY KEY, value TEXT)", (err, result) => {
+                let sql = "INSERT INTO settings_" + guild + " VALUES ?";
+                let values = [];
+
+                for(let setting in settings){
+                    values.push([setting, settings[setting]]);
+                }
+
+                con.query(sql, [values], (err, result) => {
+                    if(err) throw err;
+                    console.log("[db]Number of records inserted: " + result.affectedRows);
+                });
+            });
+        }
+
+        if(!db_tables.includes("stats_cah_" + guild)){
+            con.query("CREATE TABLE stats_cah_" + guild + "(id INT(32), points INT(16))", (err, result) => {
+                //nothing
+            });
+        }
+
+        if(!db_tables.includes("serverStats_" + guild)){
+            con.query("CREATE TABLE serverStats_" + guild + " (type CHAR(64), timestamp char(32), value char(32))", (err, result) => {
+                //nothing
+            });
+        }
+    });
 }
 
-exports.getSettings = function(guild, setting, _callback){
-    if(setting == "allSettings"){
-        db.all("SELECT * FROM settings_" + guild, (err, rows) => {
-            _callback(rows);
+function getPermissions(guild, command, _callback){
+    if(command == "allPermissions"){
+        con.query("SELECT * FROM permissions_" + guild, (err, result) => {
+            if(err) throw err;
+            _callback(result);
         });
     } else {
-        db.get("SELECT value FROM settings_" + guild + " WHERE setting='" + setting + "'", (err, row) => {
-            if(row){
-                _callback(row.value);
+        con.query("SELECT value FROM permissions_" + guild + " WHERE command='" + command +"'", (err, result) => {
+            if(err) throw err;
+            if(result.length){
+                _callback(result[0].value);
             } else {
                 _callback(undefined);
             }
@@ -59,27 +153,57 @@ exports.getSettings = function(guild, setting, _callback){
     }
 }
 
-exports.setSettings = function(guild, setting, value, _callback){
-    if(setting in settings){
-        db.run("UPDATE settings_" + guild + " SET value=$value WHERE setting=$setting", {
-            $value: value,
-            $setting: setting
-        }, () => {
-            if (typeof _callback === "function") _callback();
-            //console.log("update");
+function setPermissions(guild, command, value){
+    con.query("SELECT value FROM permissions_" + guild + " WHERE command='" + command + "'", (err, result) => {
+        if(err) throw err;
+        if(result.length == 0) return;
+        if(result[0].value < 4){
+            con.query("UPDATE permissions_" + guild + " SET value=" + value + " WHERE command='" + command + "'", (err, result) => {
+                if(err) throw err;
+                console.log("update");
+            });
+        }
+    });
+}
+
+function getSettings(guild, setting, _callback){
+    if(setting == "allSettings"){
+        con.query("SELECT * FROM settings_" + guild, (err, result) => {
+            if(err) throw err;
+            _callback(result);
+        });
+    } else {
+        con.query("SELECT * FROM settings_" + guild + " WHERE setting='" + setting + "'", (err, result) => {
+            if(err) throw err;
+            if(result.length){
+                _callback(result[0].value);
+            } else {
+                _callback(undefined);
+            }
         });
     }
 }
 
-exports.getStats_cah = function(guild, player, _callback){
+function setSettings(guild, setting, value, _callback){
+    if(setting in settings){
+        con.query("UPDATE settings_" + guild + " SET value='" + value + "' WHERE setting='" + setting + "'", (err, result) => {
+            if(err) throw err;
+            if(typeof _callback === "function") _callback();
+        });
+    }
+}
+
+function getStats_cah(guild, player, _callback){
     if(player == "top25"){
-        db.all("SELECT * FROM stats_cah_" + guild + " ORDER BY points DESC LIMIT 25", (err, rows) => {
-            _callback(rows);
+        con.query("SELECT * FROM stats_cah_" + guild + " ORDER BY points DESC LIMIT 25", (err, result) => {
+            if(err) throw err;
+            _callback(result);
         });
     } else {
-        db.get("SELECT * FROM stats_cah_" + guild + " WHERE id='" + player + "'", (err, row) => {
-            if(row){
-                _callback(row);
+        con.query("SELECT * FROM stats_cah_" + guild + " WHERE id=" + player, (err, result) => {
+            if(err) throw err;
+            if(result.length){
+                _callback(result[0]);
             } else {
                 _callback(false);
             }
@@ -87,225 +211,84 @@ exports.getStats_cah = function(guild, player, _callback){
     }
 }
 
-exports.setStats_cah = function(guild, player, points){
-    db.get("SELECT * FROM stats_cah_" + guild + " WHERE id='" + player + "'", (err, row) => {
-        if(row){
-            db.run("UPDATE stats_cah_" + guild + " SET points=$points WHERE id=$player", {
-                $points: points + parseInt(row.points),
-                $player: player,
-            }, () => {
-                //console.log("update");
-            })
+function setStats_cah(guild, player, points){
+    con.query("SELECT * FROM stats_cah_" + guild + " WHERE id='" + player + "'", (err, result) => {
+        if(err) throw err;
+        if(result.length){
+            con.query("UPDATE stats_cah_" + guild + " SET points=points+" + points + " WHERE id=" +player, (err, result) => {
+                if(err) throw err;
+                console.log("update stats_cah");
+            });
         } else {
-            db.run("INSERT INTO stats_cah_" + guild + " VALUES ('" + player + "', 1)");
+            con.query("INSERT INTO stats_cah_" + guild + " SET ?", {
+                id: player,
+                points: points
+            }, (err, result) => {
+                if(err) throw err;
+                console.log("update stats_cah");
+            });
         }
-    });
-
+    })
 }
 
-exports.getServerStats = function(guild, type, _callback){
-    db.all("SELECT * FROM serverStats_" + guild + " WHERE type='" + type + "' ORDER BY timestamp ASC", (err, rows) => {
-        _callback(rows);
-    });
-}
-
-exports.setServerStats = function(guild, type, value){
-    db.run("INSERT INTO serverStats_" + guild + " VALUES ($type, $timestamp, $value)", {
-        $type: type,
-        $timestamp: + new Date(),
-        $value: value
-    }, () => {
-        // console.log(type);
+function getServerStats(guild, type, _callback){
+    con.query("SELECT * FROM serverStats_" + guild + " WHERE type='" + type + "' ORDER BY timestamp ASC", (err, result) => {
+        if(err) throw err;
+        console.log("type:", type, result);
+        _callback(result);
     });
 }
 
-exports.getBotStats = function(stat, _callback){
-    db.get("SELECT value FROM botStats WHERE stat='" + stat + "'", (err, row) => {
-        if(row){
-            _callback(row.value);
+function setServerStats(guild, type, value){
+    let timestamp = new Date().getTime();
+    console.log(timestamp);
+    con.query("INSERT INTO serverStats_" + guild + " SET ?", {
+        type: type,
+        timestamp: timestamp.toString(),
+        value: value
+    }, (err, result) => {
+        if(err) throw err;
+        console.log(type);
+    });
+}
+
+function getBotStats(stat, _callback){
+    con.query("SELECT value FROM botStats WHERE stat='" + stat + "'", (err, result) => {
+        if(err) throw err;
+        if(result.length){
+            _callback(result[0].value);
         } else {
             _callback(undefined);
         }
     });
 }
 
-exports.setBotStats = function(stat, value){
-    db.run("UPDATE botStats SET value=value+1 WHERE stat='" + stat + "'", () => {
+function setBotStats(stat, value){
+    con.query("UPDATE botStats SET value=value+1 WHERE stat='" + stat + "'", (err, result) => {
+        if(err) throw err;
         //nothing
     });
 }
 
-function addGuild(self, guild){
-    db.all("SELECT name FROM sqlite_master WHERE type='table' AND name LIKE '%_" + guild + "'", (err, rows) => {
-        db.serialize(() => {
-
-            let db_tables = [];
-            for( let i = 0; i < rows.length; i++){
-                db_tables.push(rows[i].name);
-            }
-
-            if(db_tables.includes("permissions_" + guild)){
-                db.all("SELECT * FROM permissions_" + guild, (err, rows) => {
-                    if(rows){
-                        db.serialize( () => {
-                            let stmt = db.prepare("INSERT INTO permissions_" + guild + " VALUES (?,?)");
-
-                            let db_commands = [];
-                            for(let i = 0; i < rows.length; i++){
-                                db_commands.push(rows[i].command)
-                            }
-                            for (let command of self.bot().commands){
-                                if (!db_commands.includes(command[0])){
-                                    console.log(command[0]);
-                                    stmt.run(command[0], command[1].defaultPermission);
-                                }
-                            }
-
-                            stmt.finalize()
-                        });
-                    }
-                });
-            } else {
-                db.serialize( () => {
-                    db.run("CREATE TABLE permissions_" + guild + " (command TEXT PRIMARY KEY, value INT)");
-
-                    let stmt = db.prepare("INSERT INTO permissions_" + guild + " VALUES (?,?)");
-
-                    for (let command of self.bot().commands){
-                        stmt.run(command[0], command[1].defaultPermission);
-                    }
-
-                    stmt.finalize();
-                });
-            }
-
-            if(db_tables.includes("settings_" + guild)){
-                db.all("SELECT * FROM settings_" + guild, (err, rows) => {
-                    if(rows){
-                        db.serialize( () => {
-                            let stmt = db.prepare("INSERT INTO settings_" + guild + " VALUES (?,?)");
-
-                            let db_settings = [];
-                            for(let i = 0; i < rows.length; i++){
-                                db_settings.push(rows[i].setting);
-                            }
-                            for(setting in settings){
-                                if(!db_settings.includes(setting)){
-                                    console.log(setting);
-                                    stmt.run(setting, settings[setting]);
-                                }
-                            }
-
-                            stmt.finalize();
-                        });
-                    }
-                });
-            } else {
-                db.serialize( () => {
-                    db.run("CREATE TABLE settings_" + guild + " (setting TEXT PRIMARY KEY, value TEXT)");
-
-                    let stmt = db.prepare("INSERT INTO settings_" + guild + " VALUES (?, ?)");
-
-                    for (key in settings){
-                        stmt.run(key, settings[key]);
-                    }
-
-                    stmt.finalize();
-                });
-            }
-
-            if(!db_tables.includes("stats_cah_" + guild)){
-                db.serialize( () => {
-                    db.run("CREATE TABLE stats_cah_" + guild + " (id TEXT PRIMARY KEY, points INT)");
-                });
-            }
-
-            if(!db_tables.includes("serverStats_" + guild)){
-                db.serialize( () => {
-                    db.run("CREATE TABLE serverStats_" + guild + " (type TEXT, timestamp TEXT, value TEXT)");
-                });
-            }
-        });
+function executeStatement(statement, opts){
+    con.query(statement, [opts], (err, result) => {
+        if(err) throw err;
+        console.log("[db]Number of records inserted: " + result.affectedRows);
     });
 }
 
-exports.close = function(){
-    db.close();
-}
-
-function startUp(){
-    db.get("SELECT name FROM sqlite_master WHERE type='table' AND name='botStats'", (err, row) => {
-        if(row == undefined){
-            db.serialize( () => {
-                db.run("CREATE TABLE botStats (stat TEXT PRIMARY KEY, value INT)");
-                let stmt = db.prepare("INSERT INTO botStats VALUES (?, ?)");
-                stmt.run("messages", 0);
-                stmt.finalize();
-            });
-        }
-    });
-}
-
-startUp();
-
-function copyGuild(self, guild){
-    db.all("SELECT name FROM sqlite_master WHERE type='table' AND name LIKE '%_" + guild + "'", (err, rows) => {
-        let db_tables = [];
-        for( let i = 0; i < rows.length; i++){
-            db_tables.push(rows[i].name);
-        }
-        console.log(db_tables);
-
-        if(db_tables.includes("permissions_" + guild)){
-            db.all("SELECT * FROM permissions_" + guild, (err, rows) => {
-                if(rows){
-                    let db_commands = [];
-                    for(let i = 0; i < rows.length; i++){
-                        db_commands.push([rows[i].command, rows[i].value])
-                    }
-
-                    db2.executeStatement("INSERT INTO permissions_" + guild + " VALUES ?", db_commands);
-                }
-            });
-        }
-
-        if(db_tables.includes("settings_" + guild)){
-            db.all("SELECT * FROM settings_" + guild, (err, rows) => {
-                if(rows){
-                    let db_settings = [];
-                    for(let i = 0; i < rows.length; i++){
-                        db_settings.push([rows[i].setting, rows[i].value]);
-                    }
-
-                    db2.executeStatement("INSERT INTO settings_" + guild + " VALUES ?", db_settings);
-                }
-            });
-        }
-
-        // if(db_tables.includes("stats_cah_" + guild)){
-        //     db.all("SELECT * FROM stats_cah_" + guild, (err, rows) => {
-        //         if(rows){
-        //             let db_stats_cah = [];
-        //             for(let i = 0; i < rows.length; i++){
-        //                 // db_stats_cah.push([parseInt(rows[i].id), parseInt(rows[i].points)]);
-        //                 db2.setStats_cah(guild, rows[i].id, rows[i].points);
-        //             }
-        //
-        //             // db2.executeStatement("INSERT INTO stats_cah_" + guild + " VALUES ?", db_stats_cah);
-        //         }
-        //     });
-        // }
-        //
-        // if(db_tables.includes("serverStats_" + guild)){
-        //     db.all("SELECT * FROM serverStats_" + guild, (err, rows) => {
-        //         if(rows){
-        //             let db_serverStats = [];
-        //             for(let i = 0; i < rows.length; i++){
-        //                 db_serverStats.push([rows[i].type, rows[i].timestamp, rows[i].value]);
-        //             }
-        //             db2.executeStatement("INSERT INTO serverStats_" + guild + " VALUES ?", db_serverStats);
-        //         }
-        //     });
-        // }
-    });
-}
+module.exports = {
+    executeStatement: executeStatement,
+    setup: setup,
+    addGuild: addGuild,
+    getPermissions: getPermissions,
+    setPermissions: setPermissions,
+    getSettings: getSettings,
+    setSettings: setSettings,
+    getStats_cah: getStats_cah,
+    setStats_cah: setStats_cah,
+    getServerStats: getServerStats,
+    setServerStats: setServerStats,
+    getBotStats: getBotStats,
+    setBotStats: setBotStats
+};

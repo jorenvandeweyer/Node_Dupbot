@@ -5,6 +5,6 @@ module.exports = {
     args: 0,
     guildOnly: true,
     execute(self, msg){
-        self.cah.join(msg);
+        self.cah.join(self, msg);
     }
 };
