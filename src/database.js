@@ -1,22 +1,22 @@
 const mysql = require('mysql');
 const settings = require(__dirname + '/../data/default');
-
+const {mysql_host, mysql_user, mysql_pswd, mysql_db} = require("../serverSettings.json")
 const con = mysql.createConnection({
-  host: "localhost",
-  user: "dupbot",
-  password: "L0ngPasswordsAreMuchBetter",
-  database: "dupbot"
+  host: mysql_host,
+  user: mysql_user,
+  password: mysql_pswd,
+  database: mysql_db
 });
 
-con.connect(function(err) {
-  if (err) throw err;
-  startUp();
-});
 
 function setup(self, guilds){
-    for(let guild of guilds){
-        addGuild(self, guild[0]);
-    }
+    con.connect(function(err) {
+        if (err) throw err;
+        startUp();
+        for(let guild of guilds){
+            addGuild(self, guild[0]);
+        }
+    });
 }
 
 function startUp(){

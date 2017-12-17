@@ -10,5 +10,9 @@
     "apiai": "api.ai key /diagflow",
     "cleverbot": "apikey",
     "plotly_username": "username",
-    "plotly_apikey": "apikey"
+    "plotly_apikey": "apikey",
+    "mysql_host": "localhost",
+    "mysql_user": "dupbot",
+    "mysql_pswd": "password",
+    "mysql_db": "dupbot"
 }
