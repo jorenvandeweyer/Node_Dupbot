@@ -1,5 +1,4 @@
 const fs = require('fs');
-const db = require("../src/database");
 const serverSettings = require("../serverSettings.json");
 
 module.exports = class Servers{
