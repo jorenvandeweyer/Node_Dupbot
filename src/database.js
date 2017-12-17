@@ -282,30 +282,30 @@ function copyGuild(self, guild){
             });
         }
 
-        if(db_tables.includes("stats_cah_" + guild)){
-            db.all("SELECT * FROM stats_cah_" + guild, (err, rows) => {
-                if(rows){
-                    let db_stats_cah = [];
-                    for(let i = 0; i < rows.length; i++){
-                        // db_stats_cah.push([parseInt(rows[i].id), parseInt(rows[i].points)]);
-                        db2.setStats_cah(guild, rows[i].id, rows[i].points);
-                    }
-
-                    // db2.executeStatement("INSERT INTO stats_cah_" + guild + " VALUES ?", db_stats_cah);
-                }
-            });
-        }
-
-        if(db_tables.includes("serverStats_" + guild)){
-            db.all("SELECT * FROM serverStats_" + guild, (err, rows) => {
-                if(rows){
-                    let db_serverStats = [];
-                    for(let i = 0; i < rows.length; i++){
-                        db_serverStats.push([rows[i].type, rows[i].timestamp, rows[i].value]);
-                    }
-                    db2.executeStatement("INSERT INTO serverStats_" + guild + " VALUES ?", db_serverStats);
-                }
-            });
-        }
+        // if(db_tables.includes("stats_cah_" + guild)){
+        //     db.all("SELECT * FROM stats_cah_" + guild, (err, rows) => {
+        //         if(rows){
+        //             let db_stats_cah = [];
+        //             for(let i = 0; i < rows.length; i++){
+        //                 // db_stats_cah.push([parseInt(rows[i].id), parseInt(rows[i].points)]);
+        //                 db2.setStats_cah(guild, rows[i].id, rows[i].points);
+        //             }
+        //
+        //             // db2.executeStatement("INSERT INTO stats_cah_" + guild + " VALUES ?", db_stats_cah);
+        //         }
+        //     });
+        // }
+        //
+        // if(db_tables.includes("serverStats_" + guild)){
+        //     db.all("SELECT * FROM serverStats_" + guild, (err, rows) => {
+        //         if(rows){
+        //             let db_serverStats = [];
+        //             for(let i = 0; i < rows.length; i++){
+        //                 db_serverStats.push([rows[i].type, rows[i].timestamp, rows[i].value]);
+        //             }
+        //             db2.executeStatement("INSERT INTO serverStats_" + guild + " VALUES ?", db_serverStats);
+        //         }
+        //     });
+        // }
     });
 }
