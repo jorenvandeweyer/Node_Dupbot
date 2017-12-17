@@ -27,7 +27,7 @@ module.exports = {
                 self.db.getSettings(guild[1].id, "botupdates", (value) => {
                     self.getPrefix({channel: {type: "text"}, guild: {id: guild[1].id}}, (prefix) => {
                         if(parseInt(value)){
-                            let message = self.createEmbed("info", msg.params.join(" ") + `\n\nThese updates and broadcasts can be disabled by using the set command \`${prefix}set botupdates\` inside you server.`);
+                            let message = self.createEmbed("info", msg.params.join(" ") + `\n\nThese updates and broadcasts can be disabled by using the set command \`${prefix}set botupdates\` inside your server.`);
                             if(self.currentEmbed !== undefined && msg.params.includes("--embed")){
                                 message = self.currentEmbed;
                             }
