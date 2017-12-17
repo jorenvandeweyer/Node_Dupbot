@@ -5,8 +5,7 @@ const streamOptions = { seek: 0, volume: 1 };
 const google = require('googleapis');
 
 const Servers = require("./src/server");
-const db2 = require("./src/database");
-const db = require("./src/database2");
+const db = require("./src/database");
 const cah = require("./src/minigames/cahgamehandler");
 const ai = require("./src/ai");
 const cleverbot = require("./src/cleverbot");
@@ -188,7 +187,6 @@ function setup(b, l){
 	serverManager = new Servers(b, bot.guilds);
 
 	db.setup(this, bot.guilds);
-	db2.setup(this, bot.guilds);
 	for(key of bot.guilds){
 		if(blackList.guilds.includes(key[0])){
 			key[1].leave().then( () => {

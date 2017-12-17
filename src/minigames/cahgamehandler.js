@@ -1,66 +1,7 @@
 const CAH = require("cah_game");
 const fs = require("fs");
-const db = require("../../src/database2");
 
-function createEmbed(colorName, info, title, fields, footer){
-	switch(colorName){
-		case "info":
-			color = 3447003;
-			break;
-
-		case "ban":
-			color = 16007746;
-			break;
-
-		case "kick":
-			color = 16028993;
-			break;
-
-		case "warn":
-			color = 15908236;
-			break;
-
-		case "unban":
-			color = 4193355;
-			break;
-
-		case "succes":
-			color = 4193355;
-			break;
-
-		case "fail":
-			color = 15908236;
-			break;
-
-		case "purple":
-			color = 0x5a00b1;
-			break;
-
-		default:
-			color = 3447003;
-			break;
-	}
-
-	return {
-		embed:{
-			color: color,
-			description: info,
-			title: title,
-			fields: fields,
-			footer: footer
-		}
-	};
-}
-
-function send(msg, message, _callback){
-    msg.channel.send(message).then((data) => {
-		if(typeof _callback === "function"){
-			_callback(message);
-		}
-	});
-}
-
-function broadcastCahMessages(msg, array){
+function broadcastCahMessages(self, msg, array){
 	for (let i = 0; i < array.length; i++){
 		let data = array[i];
 		if(data.description){
@@ -71,18 +12,18 @@ function broadcastCahMessages(msg, array){
 			}
 
 			if(data.id != undefined && message.includes("%points")){
-				db.getStats_cah(msg.guild.id, data.id, (row) => {
+				self.db.getStats_cah(msg.guild.id, data.id, (row) => {
 					let points = 1;
 					if(row){
 						points+= row.points;
 					}
 					message = message.replace("%points", points);
-					message = createEmbed("purple", message);
-					send(msg, message);
+					message = self.createEmbed("purple", message);
+					self.send(msg, message);
 				});
 			} else {
-				message = createEmbed("purple", message);
-				send(msg, message);
+				message = self.createEmbed("purple", message);
+				self.send(msg, message);
 			}
 
 		}
@@ -140,7 +81,7 @@ class gameHandler{
         this.holder = {};
     }
 
-    start(msg){
+    start(self, msg){
         let id = msg.channel.id;
         if(this.holder[id] == undefined){
             let args = msg.params.slice(0);
@@ -173,39 +114,39 @@ class gameHandler{
 
             this.holder[id] = new CAH(msg.author.id, cards, rounds, packs);
 
-            let message = createEmbed("purple", "CAH Game started, type !cjoin to join!");
-            send(msg, message);
+            let message = self.createEmbed("purple", "CAH Game started, type !cjoin to join!");
+            self.send(msg, message);
         } else if(msg.author.id == this.holder[id].owner){
             if(game.started){
-                let message = createEmbed("purple", "CAH Game is already started!");
-                send(msg, message);
+                let message = self.createEmbed("purple", "CAH Game is already started!");
+                self.send(msg, message);
             } else {
                 let data = this.holder[id].start();
-                broadcastCahMessages(msg, data);
+                broadcastCahMessages(self, msg, data);
             }
         } else {
-            let message = createEmbed("purple", "You can't start CAH, wait for <@" + this.holder[id].owner +"> to start the game!");
-            send(msg, message);
+            let message = self.createEmbed("purple", "You can't start CAH, wait for <@" + this.holder[id].owner +"> to start the game!");
+            self.send(msg, message);
         }
     }
 
-    join(msg){
+    join(self, msg){
         let id = msg.channel.id;
         if(this.holder[id] == undefined){
-            let message = createEmbed("purple", "No CAH Game playing, type !cstart to start a game!");
-            send(msg, message);
+            let message = self.createEmbed("purple", "No CAH Game playing, type !cstart to start a game!");
+            self.send(msg, message);
         } else {
             let data = this.holder[id].join(msg.author.id);
-            broadcastCahMessages(msg, data);
+            broadcastCahMessages(self, msg, data);
             //WHEN GAME IS ALREADY PLAYING PRIVATE MESSAGE HAS TO BE SEND!!!!!!
         }
     }
 
-    leave(msg){
+    leave(self, msg){
         let id = msg.channel.id;
         if(this.holder[id] == undefined){
-            let message = createEmbed("purple", "No CAH Game playing.");
-            send(msg, message);
+            let message = self.createEmbed("purple", "No CAH Game playing.");
+            self.send(msg, message);
         } else {
             let data = this.holder[id].leave(msg.author.id);
 
@@ -213,15 +154,15 @@ class gameHandler{
                 if(data[i].status == "finished") delete this.holder[id];
             }
 
-            broadcastCahMessages(msg, data);
+            broadcastCahMessages(self, msg, data);
         }
     }
 
-    choose(msg){
+    choose(self, msg){
         let id = msg.channel.id;
         if(this.holder[id] == undefined){
-            let message = createEmbed("purple", "No CAH Game playing, type !cstart to start a game!");
-            send(msg, message);
+            let message = self.createEmbed("purple", "No CAH Game playing, type !cstart to start a game!");
+            self.send(msg, message);
         } else {
             let data = this.holder[id].choose(msg.author.id, msg.params);
 
@@ -237,7 +178,7 @@ class gameHandler{
 						case "point":
 							let guildid = msg.guild.id;
 							let playerid = data[i].winner[0];
-							db.setStats_cah(guildid, playerid, 1);
+							self.db.setStats_cah(guildid, playerid, 1);
 							break;
 						default:
 
@@ -245,39 +186,39 @@ class gameHandler{
 				}
 			}
 
-			broadcastCahMessages(msg, data);
+			broadcastCahMessages(self, msg, data);
 
         }
     }
 
-    reset(msg){
+    reset(self, msg){
         let id = msg.channel.id;
         delete this.holder[id];
-        broadcastCahMessages(msg, [{
+        broadcastCahMessages(self, msg, [{
             description: "CAH was resetted for this channel, type !cstart to start a new game!"
         }])
     }
 
-	skip(msg){
+	skip(self, msg){
 		let id = msg.channel.id;
 		if(this.holder[id] == undefined){
-            let message = createEmbed("purple", "No CAH Game playing, type !cstart to start a game!");
-            send(msg, message);
+            let message = self.createEmbed("purple", "No CAH Game playing, type !cstart to start a game!");
+            self.send(msg, message);
         } else {
 			let data = this.holder[id].skip();
 			for(let i = 0; i <data.length; i++){
 				if(data[i].status == "finished") delete this.holder[id];
 			}
-			broadcastCahMessages(msg, data);
+			broadcastCahMessages(self, msg, data);
 		}
 	}
 
-	kick(msg){
+	kick(self, msg){
 		let id = msg.channel.id;
 		let userids = msg.mentions.users.keyArray();
 		if(this.holder[id] == undefined){
-			let message = createEmbed("purple", "No CAH Game playing.");
-			send(msg, message);
+			let message = self.createEmbed("purple", "No CAH Game playing.");
+			self.send(msg, message);
 		} else {
 			while(userids.length){
 				let userid = userids.shift();
@@ -288,69 +229,80 @@ class gameHandler{
 					if(data[i].status == "finished") delete this.holder[id];
 				}
 
-				broadcastCahMessages(msg, data);
+				broadcastCahMessages(self, msg, data);
 			}
 		}
 	}
 
-	scoreboard(msg){
+	scoreboard(self, msg){
 		let guildid = msg.guild.id;
 
 		if(msg.params.length >= 1){
-			db.getStats_cah(guildid, msg.mentions.users.first().id, (row) => {
+			self.db.getStats_cah(guildid, msg.mentions.users.first().id, (row) => {
 				let message;
 				if(row){
-					message = createEmbed("purple", "<@" + row.id + "> has " + row.points + " points!");
+					message = self.createEmbed("purple", "<@" + row.id + "> has " + row.points + " points!");
 				} else {
-					message = createEmbed("purple", "<@" + msg.mentions.users.first().id + "> didn't won any rounds yet");
+					message = self.createEmbed("purple", "<@" + msg.mentions.users.first().id + "> didn't won any rounds yet");
 				}
-				send(msg, message);
+				self.send(msg, message);
 			});
 		} else {
-			db.getStats_cah(guildid, "top25", (rows) => {
+			self.db.getStats_cah(guildid, "top25", (rows) => {
 				if(rows){
 					let message = "Top 25:\n";
 					for(let i = 0; i < rows.length; i++){
 						message += "\n" + (1+i) + " - <@" + rows[i].id + ">: " + rows[i].points + " points";
 					}
-					message = createEmbed("purple", message, "Scoreboard:");
-					send(msg, message);
+					message = self.createEmbed("purple", message, "Scoreboard:");
+					self.send(msg, message);
 				}
 			});
 		}
 	}
 }
 
-exports.start = function(msg){
-    game.start(msg);
+function start(self, msg){
+    game.start(self, msg);
 }
 
-exports.join = function(msg){
-    game.join(msg);
+function join(self, msg){
+    game.join(self, msg);
 }
 
-exports.leave = function(msg){
-    game.leave(msg);
+function leave(self, msg){
+    game.leave(self, msg);
 }
 
-exports.choose = function(msg){
-    game.choose(msg);
+function choose(self, msg){
+    game.choose(self, msg);
 }
 
-exports.reset = function(msg){
-    game.reset(msg);
+function reset(self, msg){
+    game.reset(self, msg);
 }
 
-exports.skip = function(msg){
-	game.skip(msg);
+function skip(self, msg){
+	game.skip(self, msg);
 }
 
-exports.kick = function(msg){
-	game.kick(msg);
+function kick(self, msg){
+	game.kick(self, msg);
 }
 
-exports.scoreboard = function(msg){
-	game.scoreboard(msg);
+function scoreboard(self, msg){
+	game.scoreboard(self, msg);
 }
 
 const game = new gameHandler();
+
+module.exports = {
+	start: start,
+	join: join,
+	leave: leave,
+	choose: choose,
+	reset: reset,
+	skip: skip,
+	kick: kick,
+	scoreboard: scoreboard
+};

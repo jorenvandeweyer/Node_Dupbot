@@ -6,6 +6,6 @@ module.exports = {
     args: 1,
     guildOnly: true,
     execute(self, msg){
-        self.cah.choose(msg);
+        self.cah.choose(self, msg);
     }
 };

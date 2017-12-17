@@ -5,7 +5,6 @@ module.exports = {
     args: 0,
     guildOnly: true,
     execute(self, msg){
-        console.log(self.cah);
-        self.cah.leave(msg);
+        self.cah.leave(self, msg);
     }
 };

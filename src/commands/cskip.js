@@ -6,6 +6,6 @@ module.exports = {
     args: 0,
     guildOnly: true,
     execute(self, msg){
-        self.cah.skip(msg);
+        self.cah.skip(self, msg);
     }
 };

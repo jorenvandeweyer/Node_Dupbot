@@ -7,6 +7,6 @@ module.exports = {
     usage: "@player",
     guildOnly: true,
     execute(self, msg){
-        self.cah.kick(msg);
+        self.cah.kick(self, msg);
     }
 };

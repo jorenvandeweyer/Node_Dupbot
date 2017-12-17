@@ -5,6 +5,6 @@ module.exports = {
     args: 0,
     guildOnly: true,
     execute(self, msg){
-        self.cah.scoreboard(msg);
+        self.cah.scoreboard(self, msg);
     }
 };
