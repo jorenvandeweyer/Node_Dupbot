@@ -15,7 +15,7 @@ const antispam = require("./src/antispam");
 
 var bot, listener, youtube, serverManager;
 
-const graphs = require("./src/graphs");
+const graphs = require("./src/graphs2");
 /***************/
 /****Exports****/
 /***************/
