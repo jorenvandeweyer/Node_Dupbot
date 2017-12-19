@@ -209,7 +209,7 @@ function setup(b, l){
 				console.log("[+]Left guild on blacklist: " + key);
 			});
 		} else {
-			db.add(this, guild.id);
+			db.addGuild(this, guild.id);
 		}
 	});
 
