@@ -1,115 +1,5 @@
-const {plotly_username, plotly_apikey} = require("../serverSettings");
+const ChartjsNode = require('chartjs-node');
 const Discord = require("discord.js");
-
-var plotly = require('plotly')(plotly_username, plotly_apikey);
-
-function lines(x, y, _callback){
-    var trace1 = {
-        x: x,
-        y: y,
-        type: "scatter"
-    };
-
-    var layout = {
-      xaxis: {
-          showticklabels: true,
-          tickangle: 45,
-          tickfont: {
-              family: "Old Standard TT, serif",
-              size: 14,
-              color: "black"
-          },
-          exponentformat: "e",
-          showexponent: "All"
-      },
-      yaxis: {
-          title: "#members",
-          titlefont: {
-              family: "Arial, sans-serif",
-              size: 18,
-              color: "black"
-          },
-          showticklabels: true,
-          tickfont: {
-              family: "Old Standard TT, serif",
-              size: 14,
-              color: "black"
-          },
-          exponentformat: "e",
-          showexponent: "All"
-      }
-    };
-
-    var figure = { 'data': [trace1], 'layout': layout };
-
-    var imgOpts = {
-        format: 'png',
-        width: 3000,
-        height: 1500
-    };
-
-    plotly.getImage(figure, imgOpts, function (error, imageStream) {
-        if (error) return console.log (error);
-        _callback(imageStream);
-    });
-}
-
-function bars(x1, y1, x2, y2, _callback){
-    var trace1 = {
-        x: x1,
-        y: y1,
-        type: "bar",
-        name: "Members Joined",
-        marker: {color: "rgb(35, 178, 54)"}
-    };
-    var trace2 = {
-        x: x2,
-        y: y2,
-        type: "bar",
-        name: "Members Left",
-        marker: {color: "#db5a44"}
-    };
-    var layout = {
-        xaxis: {
-            showticklabels: true,
-            tickangle: 45,
-            tickfont: {
-                family: "Old Standard TT, serif",
-                size: 14,
-                color: "black"
-            },
-            exponentformat: "e",
-            showexponent: "All"
-        },
-        yaxis: {
-            title: "#members",
-            titlefont: {
-                family: "Arial, sans-serif",
-                size: 18,
-                color: "black"
-            },
-            showticklabels: true,
-            tickfont: {
-                family: "Old Standard TT, serif",
-                size: 14,
-                color: "black"
-            },
-            exponentformat: "e",
-            showexponent: "All"
-        },
-        barmode: "overlay"
-    };
-    var figure = { 'data': [trace1, trace2], 'layout': layout};
-    var imgOpts = {
-        format: 'png',
-        width: 3000,
-        height: 1500
-    };
-    plotly.getImage(figure, imgOpts, function (error, imageStream) {
-        if (error) return console.log (error);
-        _callback(imageStream);
-    });
-}
 
 function createGraphs(self, msg, start, end){
     let creationTime = msg.guild.createdTimestamp;
@@ -196,16 +86,17 @@ function createGraphs(self, msg, start, end){
             }
 
             y_total_cum = y_total_cum.slice(1);
-            
-            bars(x_green, y_green, x_red, y_red, (stream) => {
+
+            createImageStreamB(x_green, y_green, y_red).then((stream) => {
                 let attachment = new Discord.Attachment(stream);
                 self.send(msg, attachment);
             });
 
-            lines(x_total, y_total_cum, (stream) => {
+            createImageStreamL(x_total, y_total_cum).then((stream) => {
                 let attachment = new Discord.Attachment(stream);
                 self.send(msg, attachment);
             });
+
         });
     });
 }
@@ -248,3 +139,77 @@ function get(self, msg){
 module.exports = {
     get: get
 };
+
+function createImageStreamL(dates, joins){
+    var chartNode = new ChartjsNode(800, 600);
+    return chartNode.drawChart({
+        type: "line",
+        data: {
+            labels: dates,
+            datasets: [
+                {
+                    label: "First",
+                    backgroundColor: 'rgba(53, 255, 53, 1)',
+                    borderWidth: 1,
+                    data: joins,
+                    pointRadius: 0
+                }
+            ],
+        },
+        options: {
+            scales: {
+                xAxes: [{
+                    type: "time",
+                    stacked: true,
+                }],
+                yAxes: [{
+                    //stacked: false,
+                    ticks: {
+                        beginAtZero: true
+                    },
+                }]
+            },
+        }
+    }).then(() => {
+        return chartNode.getImageBuffer('image/png');
+    });
+}
+
+function createImageStreamB(dates, joins, leaves){
+    var chartNode = new ChartjsNode(600, 600);
+    return chartNode.drawChart({
+        type: "bar",
+        data: {
+            labels: dates,
+            datasets: [
+                {
+                    label: "Leaves",
+                    backgroundColor: 'rgba(255, 53, 53, 1)',
+                    borderWidth: 1,
+                    data: leaves,
+                }, {
+                    label: "Joins",
+                    backgroundColor: 'rgba(53, 255, 53, 1)',
+                    borderWidth: 1,
+                    data: joins,
+                }
+            ]
+        },
+        options: {
+            scales: {
+                xAxes: [{
+                    type: "time",
+                    stacked: true
+                }],
+                yAxes: [{
+                    stacked: false,
+                    ticks: {
+                        beginAtZero: true
+                    },
+                }]
+            }
+        }
+    }).then(() => {
+        return chartNode.getImageBuffer('image/png');
+    });
+}
