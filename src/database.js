@@ -234,14 +234,13 @@ function setStats_cah(guild, player, points){
 function getServerStats(guild, type, _callback){
     con.query("SELECT * FROM serverStats_" + guild + " WHERE type='" + type + "' ORDER BY timestamp ASC", (err, result) => {
         if(err) throw err;
-        console.log("type:", type, result);
+        console.log("type:", type);
         _callback(result);
     });
 }
 
 function setServerStats(guild, type, value){
     let timestamp = new Date().getTime();
-    console.log(timestamp);
     con.query("INSERT INTO serverStats_" + guild + " SET ?", {
         type: type,
         timestamp: timestamp.toString(),
