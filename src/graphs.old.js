@@ -1,5 +1,3 @@
-const ChartjsNode = require('chartjs-node');
-
 const {plotly_username, plotly_apikey} = require("../serverSettings");
 const Discord = require("discord.js");
 
@@ -198,27 +196,16 @@ function createGraphs(self, msg, start, end){
             }
 
             y_total_cum = y_total_cum.slice(1);
-
-            // bars(x_green, y_green, x_red, y_red, (stream) => {
-            //     let attachment = new Discord.Attachment(stream);
-            //     self.send(msg, attachment);
-            // });
-            //
-            // lines(x_total, y_total_cum, (stream) => {
-            //     let attachment = new Discord.Attachment(stream);
-            //     self.send(msg, attachment);
-            // });
-
-            createImageStreamB(x_green, y_green, y_red).then((stream) => {
+            
+            bars(x_green, y_green, x_red, y_red, (stream) => {
                 let attachment = new Discord.Attachment(stream);
                 self.send(msg, attachment);
             });
 
-            createImageStreamL(x_total, y_total_cum).then((stream) => {
+            lines(x_total, y_total_cum, (stream) => {
                 let attachment = new Discord.Attachment(stream);
                 self.send(msg, attachment);
             });
-
         });
     });
 }
@@ -261,77 +248,3 @@ function get(self, msg){
 module.exports = {
     get: get
 };
-
-function createImageStreamL(dates, joins){
-    var chartNode = new ChartjsNode(600, 600);
-    return chartNode.drawChart({
-        type: "line",
-        data: {
-            labels: dates,
-            datasets: [
-                {
-                    label: "First",
-                    backgroundColor: 'rgba(53, 255, 53, 1)',
-                    borderWidth: 1,
-                    data: joins,
-                }
-            ]
-        },
-        options: {
-            scales: {
-                xAxes: [{
-                    type: "time"
-                    //stacked: true,
-                }],
-                yAxes: [{
-                    //stacked: false,
-                    ticks: {
-                        beginAtZero: true
-                    },
-                }]
-            }
-        }
-    }).then(() => {
-        return chartNode.getImageBuffer('image/png');
-    });
-}
-// 600x600 canvas size
-function createImageStreamB(dates, joins, leaves){
-    var chartNode = new ChartjsNode(600, 600);
-    return chartNode.drawChart({
-        type: "bar",
-        data: {
-            labels: dates,
-            datasets: [
-                {
-                    label: "Joins",
-                    backgroundColor: 'rgba(53, 255, 53, 1)',
-                    borderWidth: 1,
-                    data: joins,
-                },
-                {
-                    label: "Leaves",
-                    backgroundColor: 'rgba(255, 53, 53, 1)',
-                    borderWidth: 1,
-                    data: leaves,
-                }
-            ]
-        },
-        options: {
-            scales: {
-                xAxes: [{
-                    type: "time",
-                    stacked: false,
-                }],
-                yAxes: [{
-                    stacked: false,
-                    ticks: {
-                        beginAtZero: true
-                    },
-                }]
-            }
-        }
-    }).then(() => {
-        return chartNode.getImageBuffer('image/png');
-    });
-}
