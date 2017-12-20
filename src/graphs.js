@@ -1,6 +1,8 @@
 const ChartjsNode = require('chartjs-node');
 const Discord = require("discord.js");
 
+let chartNodeB, chartNodeL;
+
 function createGraphs(self, msg, start, end){
     let creationTime = msg.guild.createdTimestamp;
     msg.guild.fetchMembers().then( (guild) => {
@@ -89,12 +91,16 @@ function createGraphs(self, msg, start, end){
 
             createImageStreamB(x_green, y_green, y_red).then((stream) => {
                 let attachment = new Discord.Attachment(stream);
-                self.send(msg, attachment);
+                self.send(msg, attachment, () =>{
+                    chartNodeB.destroy();
+                });
             });
 
             createImageStreamL(x_total, y_total_cum).then((stream) => {
                 let attachment = new Discord.Attachment(stream);
-                self.send(msg, attachment);
+                self.send(msg, attachment, () =>{
+                    chartNodeL.destroy();
+                });
             });
 
         });
@@ -141,8 +147,8 @@ module.exports = {
 };
 
 function createImageStreamL(dates, joins){
-    var chartNode = new ChartjsNode(800, 600);
-    return chartNode.drawChart({
+    chartNodeL = new ChartjsNode(800, 600);
+    return chartNodeL.drawChart({
         type: "line",
         data: {
             labels: dates,
@@ -171,13 +177,13 @@ function createImageStreamL(dates, joins){
             },
         }
     }).then(() => {
-        return chartNode.getImageBuffer('image/png');
+        return chartNodeL.getImageBuffer('image/png');
     });
 }
 
 function createImageStreamB(dates, joins, leaves){
-    var chartNode = new ChartjsNode(600, 600);
-    return chartNode.drawChart({
+    chartNodeB = new ChartjsNode(600, 600);
+    return chartNodeB.drawChart({
         type: "bar",
         data: {
             labels: dates,
@@ -210,6 +216,6 @@ function createImageStreamB(dates, joins, leaves){
             }
         }
     }).then(() => {
-        return chartNode.getImageBuffer('image/png');
+        return chartNodeB.getImageBuffer('image/png');
     });
 }
