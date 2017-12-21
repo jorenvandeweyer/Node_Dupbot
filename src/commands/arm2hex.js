@@ -229,7 +229,7 @@ function createHex(input){
             continue;
         }
         if(opcode[instr].params.length != params.length){
-            return (`line:${i} not enough parameters - ${instr} ${opcode[instr].params.join(" ")}`);
+            return (`line:${i} not enough parameters - ${instr} ${opcode[instr].params.join(" ")} - ${opcode[instr].info}`);
             break;
         }
 
