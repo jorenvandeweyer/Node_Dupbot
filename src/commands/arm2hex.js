@@ -106,7 +106,7 @@ const opcode = {
         type: "D",
         width: 11,
         info: "M[R[Rn] + DTAddr] = R[Rt]",
-        params: ["Rt", "Rn", "DTAdrr"]
+        params: ["Rt", "Rn", "DTAddr"]
 
     },
     "cbz": {
