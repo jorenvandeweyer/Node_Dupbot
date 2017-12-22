@@ -1,5 +1,6 @@
 const Discord = require('discord.js');
 const Request = require("request");
+const {unsplash_clientid} = require("../../serverSettings.json");
 
 module.exports = {
     name: "image",
@@ -10,7 +11,7 @@ module.exports = {
     execute(self, msg){
         Request.get('https://api.unsplash.com/photos/random?count=1&query=' + msg.params.join("-"), {
             'auth': {
-                'bearer': 'Client-ID 96e122dccd8e3a4edc0976af8d1318599d540e7aacf30e2a0a037ea1789ca2cb'
+                'bearer': 'Client-ID ' + unsplash_clientid
             }
         }, (err, res, body) => {
             let data = JSON.parse(body);
