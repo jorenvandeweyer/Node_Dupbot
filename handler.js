@@ -80,7 +80,13 @@ function command(msg){
 
 	try {
 		if(!command.guildOnly && msg.channel.type !== "text"){
-			command.execute(this, msg);
+			try{
+				command.execute(this, msg);
+			} catch(e) {
+				let message = createEmbed("info", ":bomb: :boom: That didn't work out :neutral_face:");
+				send(msg, message);
+				console.log(e);
+			}
 		} else {
 			db.getPermissions(msg.guild.id, msg.command, (value) => {
 				// console.log("------ " + msg.permissionLevel + "/" + value + " : " + msg.command);
@@ -98,6 +104,7 @@ function command(msg){
 				} catch(e){
 					let message = createEmbed("info", ":bomb: :boom: That didn't work out :neutral_face:");
 					send(msg, message);
+					console.log(e);
 				}
 			});
 		}
