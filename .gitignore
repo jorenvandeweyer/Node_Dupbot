@@ -9,4 +9,3 @@ data/database
 node_modules/
 package-lock.json
 .com.apple.timemachine.supported
-src/commands/arm2hex.js
