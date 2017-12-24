@@ -269,9 +269,10 @@ function setBotStats(stat, value){
     });
 }
 
-function executeStatement(statement, opts){
+function executeStatement(statement, opts, _callback){
     con.query(statement, [opts], (err, result) => {
         if(err) throw err;
+        _callback(result);
         console.log("[db]Number of records inserted: " + result.affectedRows);
     });
 }
