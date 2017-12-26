@@ -3,6 +3,7 @@ module.exports = {
     description: "!ping",
     defaultPermission: 1,
     args: 0,
+    guildOnly: true,
     execute(self, msg){
         self.db.getSettings(msg.guild.id, "prefix", (pref) =>  {
             let prefix = pref;

@@ -32,6 +32,7 @@ listener.on("reload", function(){
 function login(reboot, channelId, messageId){
 	client = new Discord.Client();
 	client.commands = new Discord.Collection();
+	client.Discord = Discord;
 
 	if(__filename == serverSettings.filePath){
 		client.login(serverSettings.token); //dupbit

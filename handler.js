@@ -508,7 +508,7 @@ function getBot(){
 /***************/
 
 function send(msg, message, _callback){
-	if(!msg.channel.permissionsFor(msg.client.user).has("SEND_MESSAGES")) return;
+	if(msg.channel.type == "text" && !msg.channel.permissionsFor(msg.client.user).has("SEND_MESSAGES")) return;
 	msg.channel.send(message).then((message) => {
 		if (typeof _callback === "function"){
 			_callback(message);

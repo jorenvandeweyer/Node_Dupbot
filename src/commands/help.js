@@ -5,62 +5,95 @@ module.exports = {
     usage: "<command>",
     args: 0,
     execute(self, msg){
-        self.getPrefix(msg, (prefix) => {
-            self.db.getPermissions(msg.guild.id, "allPermissions", (permissions) => {
+        if(msg.channel.type == "text"){
+            self.getPrefix(msg, (prefix) => {
+                self.db.getPermissions(msg.guild.id, "allPermissions", (permissions) => {
 
-                permissions = sortPermissions(permissions);
+                    permissions = sortPermissions(permissions);
 
-                if (msg.params.length >= 1){
-            		let helpmsg = "No command";
-                    let command = msg.client.commands.get(msg.params[0]);
-                    if (command){
-                        if(permissions.keys[command.name] == 0){
-                            helpmsg = `The command \`${command.name}\` is disabled`;
-                        } else if(msg.permissionLevel < permissions.keys[command.name]){
-                            helpmsg = `You don't have access to \`${command.name}\``;
-                        } else {
-                            if(command.usage){
-                                helpmsg = `\`${prefix}${command.name} ${command.usage}\``;
+                    if (msg.params.length >= 1){
+                		let helpmsg = "No command";
+                        let command = msg.client.commands.get(msg.params[0]);
+                        if (command){
+                            if(permissions.keys[command.name] == 0){
+                                helpmsg = `The command \`${command.name}\` is disabled`;
+                            } else if(msg.permissionLevel < permissions.keys[command.name]){
+                                helpmsg = `You don't have access to \`${command.name}\``;
                             } else {
-                                helpmsg = `\`${prefix}${command.name}\``;
+                                if(command.usage){
+                                    helpmsg = `\`${prefix}${command.name} ${command.usage}\``;
+                                } else {
+                                    helpmsg = `\`${prefix}${command.name}\``;
+                                }
                             }
+
                         }
+                		message = self.createEmbed("info", helpmsg);
+                		self.send(msg, message);
+                	} else {
+                        // const cahCommands = ["cstart", "cjoin", "cleave", "c", "cscoreboard", "creset"];
+                        // const musicCommand = ["play", "skip", "queue"];
 
+                        let box = [{
+                            name: "Everyone",
+                            value: permissions.everyone.join(", ")
+                        },{
+                            name: "Admin only",
+                            value: permissions.mod.join(", ")
+                        },{
+                            name: "Owner only",
+                            value: permissions.owner.join(", ")
+                        }];
+
+                        // [
+                        //     {
+                        //         name: "Music",
+                        //         value: "play, skip, queue"
+                        //     },{
+                        //         name: "Cards Against Humanity",
+                        //         value: "cstart, cjoin, cleave, c, cscoreboard, creset",
+                        //     },
+                        // ]
+
+                		message = self.createEmbed("info", "All available commands, more info " + prefix + "help <command>", "Commands", box);
+                		self.send(msg, message);
+                	}
+            	});
+            });
+        } else {
+
+            if (msg.params.length >= 1){
+                let helpmsg = "No command";
+                let command = msg.client.commands.get(msg.params[0]);
+                if (command){
+                    if(command.usage){
+                            helpmsg = `\`!${command.name} ${command.usage}\``;
+                    } else {
+                            helpmsg = `\`!${command.name}\``;
                     }
-            		message = self.createEmbed("info", helpmsg);
-            		self.send(msg, message);
-            	} else {
-                    // const cahCommands = ["cstart", "cjoin", "cleave", "c", "cscoreboard", "creset"];
-                    // const musicCommand = ["play", "skip", "queue"];
+                }
+                message = self.createEmbed("info", helpmsg);
+                self.send(msg, message);
+            } else {
+                let commands = msg.client.commands.clone();
 
-                    let box = [{
-                        name: "Everyone",
-                        value: permissions.everyone.join(", ")
-                    },{
-                        name: "Admin only",
-                        value: permissions.mod.join(", ")
-                    },{
-                        name: "Owner only",
-                        value: permissions.owner.join(", ")
-                    }];
+                commands = commands.filter((command) => {
+                    if(command.guildOnly || command.defaultPermission > 3) return false;
+                    return true;
+                });
 
-                    // [
-                    //     {
-                    //         name: "Music",
-                    //         value: "play, skip, queue"
-                    //     },{
-                    //         name: "Cards Against Humanity",
-                    //         value: "cstart, cjoin, cleave, c, cscoreboard, creset",
-                    //     },
-                    // ]
+                let box = [{
+                    name: "DM only",
+                    value: commands.keyArray().join(", ")
+                }];
 
-            		message = self.createEmbed("info", "All available commands, more info " + prefix + "help <command>", "Commands", box);
-            		self.send(msg, message);
-            	}
-        	});
-        });
+
+                message = self.createEmbed("info", "All available commands, more info !help <command>", "Commands", box);
+                self.send(msg, message);
+            }
+        }
     }
-};
+}
 
 function sortPermissions(permissions){
     let disabled = [];

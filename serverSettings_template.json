@@ -16,5 +16,6 @@
     "mysql_pswd": "password",
     "mysql_db": "dupbot",
     "thecatapi": "key",
-    "unsplash_clientid": "clientid"
+    "unsplash_clientid": "clientid",
+    "gdax": "key"
 }

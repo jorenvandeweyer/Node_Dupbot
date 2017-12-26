@@ -12,6 +12,7 @@
     "dialogflow": "^0.1.0",
     "discord.js": "^11.2.1",
     "erlpack": "github:hammerandchisel/erlpack",
+    "gdax": "^0.4.2",
     "google-auth-library": "^0.10.0",
     "googleapis": "^20.1.0",
     "jsonfile": "^3.0.1",
