@@ -62,7 +62,7 @@ module.exports = {
 
                       if(parseFloat(amount) <= parseFloat(data["EUR"])){
                           embed.setTitle("Buy");
-                          embed.setDescription(`Bought ${gdaxData.EURtoBTC(parseFloat(amount))}BTC`);
+                          embed.setDescription(`Bought \`${gdaxData.EURtoBTC(parseFloat(amount))}BTC\` for \`${parseFloat(amount).toFixed(2)}EUR\` \`(${gdaxData.ask})\``);
 
                           self.db.setBtc(msg.guild.id, msg.author.id, "EUR", parseFloat(data["EUR"]) - parseFloat(amount));
                           self.db.setBtc(msg.guild.id, msg.author.id, "BTC", parseFloat(data["BTC"]) + parseFloat(gdaxData.EURtoBTC(parseFloat(amount))));
@@ -81,7 +81,7 @@ module.exports = {
 
                       if(parseFloat(value) <= parseFloat(data["BTC"])){
                           embed.setTitle("Sell");
-                          embed.setDescription(`Solled ${parseFloat(value).toFixed(8)}BTC for ${gdaxData.BTCtoEUR(parseFloat(value))}EUR`);
+                          embed.setDescription(`Sold \`${parseFloat(value).toFixed(8)}BTC\` for \`${gdaxData.BTCtoEUR(parseFloat(value))}EUR\`  \`(${gdaxData.bid})\``);
 
                           self.db.setBtc(msg.guild.id, msg.author.id, "EUR", parseFloat(data["EUR"]) + parseFloat(gdaxData.BTCtoEUR(parseFloat(value))));
                           self.db.setBtc(msg.guild.id, msg.author.id, "BTC", parseFloat(data["BTC"]) - parseFloat(value));
@@ -169,7 +169,7 @@ class GdaxData {
     }
 
     BTCtoEUR(value){
-        return (0.9975 * value * parseFloat(this.asks[0][0])).toFixed(2);
+        return (0.9975 * value * parseFloat(this.bids[0][0])).toFixed(2);
     }
 }
 
