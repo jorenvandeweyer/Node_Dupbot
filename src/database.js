@@ -122,13 +122,19 @@ function addGuild(self, guild){
         }
 
         if(!db_tables.includes("stats_cah_" + guild)){
-            con.query("CREATE TABLE stats_cah_" + guild + "(id INT(32), points INT(16))", (err, result) => {
+            con.query("CREATE TABLE stats_cah_" + guild + "(id BIGINT(32), points INT(16))", (err, result) => {
                 //nothing
             });
         }
 
         if(!db_tables.includes("serverStats_" + guild)){
             con.query("CREATE TABLE serverStats_" + guild + " (type CHAR(64), timestamp char(32), value char(32))", (err, result) => {
+                //nothing
+            });
+        }
+
+        if(!db_tables.includes("btc_" + guild)){
+            con.query("CREATE TABLE btc_" + guild + " (id BIGINT(32), value DOUBLE(32,8), type CHAR(5))", (err, result) => {
                 //nothing
             });
         }
@@ -269,6 +275,42 @@ function setBotStats(stat, value){
     });
 }
 
+function getBtc(guild, id, _callback){
+    if(id == "all"){
+        //todo
+    } else {
+        con.query("SELECT * FROM btc_" + guild + " WHERE id=" + id, (err, result) => {
+            if(err) throw err;
+            if(result.length){
+                _callback(result);
+            } else {
+                _callback(false);
+            }
+        });
+    }
+}
+
+function setBtc(guild, id, type, value){
+    con.query("SELECT * FROM btc_" + guild + " WHERE id=" + id + " AND type='" + type + "'", (err, result) => {
+        if(err) throw err;
+        if(result.length){
+            con.query("UPDATE btc_" + guild + " SET value=? WHERE id=? AND type=?", [value, id, type], (err, result) => {
+                if(err) throw err;
+                console.log("updated btc");
+            });
+        } else {
+            con.query("INSERT INTO btc_" + guild + " SET ?", {
+                id: id,
+                type: type,
+                value: value
+            }, (err, result) => {
+                if(err) throw err;
+                console.log("inserted btc");
+            });
+        }
+    });
+}
+
 function executeStatement(statement, opts, _callback){
     con.query(statement, [opts], (err, result) => {
         if(err) throw err;
@@ -295,5 +337,7 @@ module.exports = {
     setServerStats: setServerStats,
     getBotStats: getBotStats,
     setBotStats: setBotStats,
+    setBtc: setBtc,
+    getBtc, getBtc,
     close: close
 };
