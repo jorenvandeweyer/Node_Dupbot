@@ -277,6 +277,10 @@ function executeStatement(statement, opts, _callback){
     });
 }
 
+function close(){
+    con.destroy();
+}
+
 module.exports = {
     executeStatement: executeStatement,
     setup: setup,
@@ -290,5 +294,6 @@ module.exports = {
     getServerStats: getServerStats,
     setServerStats: setServerStats,
     getBotStats: getBotStats,
-    setBotStats: setBotStats
+    setBotStats: setBotStats,
+    close: close
 };

@@ -25,6 +25,9 @@ listener.on("reload", function(){
 	client.destroy();
 	console.log("\n[*]reloading files\n");
 	delete require.cache[require.resolve('./handler.js')];
+	Object.keys(require.cache).forEach(function(key) {
+		if(!key.includes("node_modules")) delete require.cache[key];
+	});
 	handler = require('./handler.js');
 	login(true, channelId, messageId);
 });

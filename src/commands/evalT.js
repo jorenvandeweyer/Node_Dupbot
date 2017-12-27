@@ -11,10 +11,10 @@ module.exports = {
 
     		require('child_process').exec(code, function(error, stdout, stderr){
     			msg.channel.send(">" + self.clean(code), {code:"xl"});
-    			if(error !== null) msg.channel.send(`\`ERROR\` \`\`\`xl\n${clean(error)}\n\`\`\``);
+    			if(error !== null) msg.channel.send(`\`ERROR\` \`\`\`xl\n${self.clean(error)}\n\`\`\``);
     			let message = stdout;
-    			if(message.length > 2000){
-    				message = self.splitter(message, 2000);
+    			if(message.length > 1700){
+    				message = self.splitter(message, 1700);
     				while(message.length > 0){
     					msg.channel.send(self.clean(message.shift()), {code: "xl"});
     				}
