@@ -16,7 +16,6 @@ module.exports = {
           if (error) {
             console.log(error);
           } else {
-              console.log(data);
               let gdaxData = new GdaxData(data);
               if(msg.params.includes("--stats")){
                   getInfo(self, msg, (data) => {
