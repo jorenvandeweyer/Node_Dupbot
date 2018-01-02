@@ -55,12 +55,13 @@ class Stats{
         let channel = [this.msg.channel.id, this.msg.channel];
         // for(let channel of this.channels){
             channel[1].fetchMessages({after: after, limit: 100}).then((messages) => {
+                console.time("request");
                 console.log(`${this.requests}`);
                 this.requests++;
 
-                // messages = messages.sort( (a, b) => {
-                //     return a.createdTimestamp - b.createdTimestamp;
-                // });
+                messages = messages.sort( (a, b) => {
+                    return a.createdTimestamp - b.createdTimestamp;
+                });
 
                 for(let message of messages){
                     let author = message[1].author.id;
@@ -71,10 +72,12 @@ class Stats{
                 }
 
                 if(messages.size == 100){
+                    console.timeEnd("request")
                     this.fetchAllMessages(messages.lastKey());
                 } else {
                     this.self.send(this.msg, JSON.stringify(this.stats));
                     this.self.send(this.msg, `Done, took ${(Date.now() - this.started) / 1000}seconds to fetch ${this.requests/10}k messages.`);
+                    console.timeEnd("request")
                 }
 
             });
