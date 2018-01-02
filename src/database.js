@@ -138,6 +138,12 @@ function addGuild(self, guild){
                 //nothing
             });
         }
+
+        if(!db_tables.includes("stats_" + guild)){
+            con.query("CREATE TABLE stats_" + guild + " (id BIGINT(32), value INT(32), type CHAR(16))", (err, result) => {
+                //nothing
+            });
+        }
     });
 }
 
@@ -311,6 +317,46 @@ function setBtc(guild, id, type, value){
     });
 }
 
+function getStats(guild, id, _callback){
+    if(id == "all"){
+
+        con.query("SELECT CAST(id as CHAR(64)) as id, value, type FROM stats_" + guild + " ORDER BY value DESC", (err, result) => {
+            console.log(result);
+            if(err) throw err;
+            _callback(result);
+        });
+    } else {
+        con.query("SELECT CAST(id as CHAR(64)) as id, value, type FROM stats_" + guild + " WHERE id=" + id, (err, result) => {
+            if(err) throw err;
+            if(result.length){
+                _callback(result);
+            } else {
+                _callback(false);
+            }
+        });
+    }
+}
+
+function setStats(guild, id, type, value){
+    con.query("SELECT * FROM stats_" + guild + " WHERE id=?", [id], (err, result) => {
+        if(err) throw err;
+        if(result.length){
+            con.query("UPDATE stats_" + guild + " SET value=value+" + value + " WHERE id=? AND type=?", [id, type], (err, result) => {
+                if(err) throw err;
+                console.log("updated stats");
+            });
+        } else {
+            con.query("INSERT INTO stats_" + guild + " SET ?", {
+                id: id,
+                type: type,
+                value: value
+            }, (err, result) => {
+                if(err) throw err;
+                console.log("inserted stats");
+            });
+        }
+    })
+}
 function executeStatement(statement, opts, _callback){
     con.query(statement, [opts], (err, result) => {
         if(err) throw err;
@@ -339,5 +385,7 @@ module.exports = {
     setBotStats: setBotStats,
     setBtc: setBtc,
     getBtc, getBtc,
+    getStats: getStats,
+    setStats: setStats,
     close: close
 };
