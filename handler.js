@@ -241,7 +241,11 @@ function setup(b, l){
 
 	bot.on("guildMemberAdd", (member) => {
 		db.setServerStats(member.guild.id, "guildMemberAdd", member.id);
-		db.setStats(member.guild.id, member.id, "MSG_SENT", 0);
+		db.getStats(msg.guild.id, msg.author.id, (member) => {
+			if(member){
+				db.setStats(member.guild.id, member.id, "MSG_SENT", 0);
+			}
+		});
 	});
 
 	let commandFiles = fs.readdirSync('./src/commands');
