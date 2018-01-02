@@ -1,26 +1,11 @@
 module.exports = {
     name: "stats",
     description: "stats",
-    defaultPermission: 4,
+    defaultPermission: 2,
     args: 0,
     guildOnly: true,
     execute(self, msg){
         let stats = new Stats(self, msg);
-        // let channels = msg.guild.channels.filter( (x) => {
-        //     if(x.type == "text"){
-        //         return true;
-        //     }
-        //     return false
-        // });
-        // let channel = [msg.channel.id, msg.channel];
-        // for(let channel of channels){
-            // channel[1].fetchMessages({after: msg.guild.createdTimestamp, limit: 100}).then((messages) => {
-            //     self.send(msg, `${messages.size} messages fetched from ${channel[0]}`);
-            //     self.send(msg, `created at ${messages.first().createdAt}`);
-            // });
-        // }
-
-        // self.send(msg, channels.keyArray().join(", "));
     }
 };
 
@@ -61,7 +46,7 @@ class Stats{
                 if(result){
                     let message = "Members with most sent messages:\n";
                     for(let i = 0; i <result.length; i++){
-                        console.log(result[i].id, result[i].value);
+                        if(i == 50) break;
                         message += `\n${i+1} - <@${result[i].id.toString()}>: ${result[i].value} messages`;
                     }
                     message = this.self.createEmbed("info", message, "Sent messages");
@@ -106,7 +91,6 @@ class Stats{
 
     updateDatabase(){
         for(let id in this.stats){
-            console.log(id);
             this.self.db.setStats(this.msg.guild.id, id, "MSG_SENT", this.stats[id]);
         }
     }

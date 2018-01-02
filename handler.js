@@ -60,8 +60,6 @@ function recieveMessage(msg){
 		db.getStats(msg.guild.id, msg.author.id, (member) => {
 			if(member){
 				db.setStats(msg.guild.id, msg.author.id, "MSG_SENT", 1);
-			} else {
-				console.log("no !stats been done before");
 			}
 		});
 	}
@@ -243,7 +241,7 @@ function setup(b, l){
 
 	bot.on("guildMemberAdd", (member) => {
 		db.setServerStats(member.guild.id, "guildMemberAdd", member.id);
-		db.setStats(msg.guild.id, member.id, "MSG_SENT", 0);
+		db.setStats(member.guild.id, member.id, "MSG_SENT", 0);
 	});
 
 	let commandFiles = fs.readdirSync('./src/commands');
