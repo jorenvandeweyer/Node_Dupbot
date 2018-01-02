@@ -61,7 +61,6 @@ class Stats{
             if(!channel[1].permissionsFor(this.msg.client.user).has("VIEW_CHANNEL"))continue;
             await this.fetchAllMessagesChannel(channel[1], this.msg.guild.createdTimestamp)
         }
-        this.self.send(this.msg, JSON.stringify(this.stats));
         this.self.send(this.msg, `Done, took ${(Date.now() - this.started) / 1000}seconds to fetch ${this.requests/10}k messages.`);
 
         this.updateDatabase();
