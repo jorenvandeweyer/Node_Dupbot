@@ -58,9 +58,9 @@ class Stats{
                 console.log(`${this.requests}`);
                 this.requests++;
 
-                messages = messages.sort( (a, b) => {
-                    return a.createdTimestamp - b.createdTimestamp;
-                });
+                // messages = messages.sort( (a, b) => {
+                //     return a.createdTimestamp - b.createdTimestamp;
+                // });
 
                 for(let message of messages){
                     let author = message[1].author.id;
