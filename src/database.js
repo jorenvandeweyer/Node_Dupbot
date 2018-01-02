@@ -321,7 +321,6 @@ function getStats(guild, id, _callback){
     if(id == "all"){
 
         con.query("SELECT CAST(id as CHAR(64)) as id, value, type FROM stats_" + guild + " ORDER BY value DESC", (err, result) => {
-            console.log(result);
             if(err) throw err;
             _callback(result);
         });
@@ -343,7 +342,7 @@ function setStats(guild, id, type, value){
         if(result.length){
             con.query("UPDATE stats_" + guild + " SET value=value+" + value + " WHERE id=? AND type=?", [id, type], (err, result) => {
                 if(err) throw err;
-                console.log("updated stats");
+                // console.log("updated stats");
             });
         } else {
             con.query("INSERT INTO stats_" + guild + " SET ?", {
@@ -352,7 +351,7 @@ function setStats(guild, id, type, value){
                 value: value
             }, (err, result) => {
                 if(err) throw err;
-                console.log("inserted stats");
+                // console.log("inserted stats");
             });
         }
     })
