@@ -46,7 +46,7 @@ class Stats{
                 if(result){
                     let message = "Members with most sent messages:\n";
                     for(let i = 0; i <result.length; i++){
-                        if(i == 40) break;
+                        if(i == 30) break;
                         message += `\n${i+1} - <@${result[i].id.toString()}>: ${result[i].value} messages`;
                     }
                     message = this.self.createEmbed("info", message, "Sent messages");
