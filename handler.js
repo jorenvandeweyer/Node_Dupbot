@@ -241,8 +241,8 @@ function setup(b, l){
 
 	bot.on("guildMemberAdd", (member) => {
 		db.setServerStats(member.guild.id, "guildMemberAdd", member.id);
-		db.getStats(msg.guild.id, msg.author.id, (member) => {
-			if(member){
+		db.getStats(member.guild.id, member.id, (memberx) => {
+			if(memberx){
 				db.setStats(member.guild.id, member.id, "MSG_SENT", 0);
 			}
 		});
