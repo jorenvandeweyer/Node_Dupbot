@@ -58,7 +58,7 @@ class Stats{
 
     async fetchAllMessages(){
         for(let channel of this.channels){
-            if(!channel.permissionsFor(this.msg.client.user).has("VIEW_CHANNEL"))continue;
+            if(!channel[1].permissionsFor(this.msg.client.user).has("VIEW_CHANNEL"))continue;
             await this.fetchAllMessagesChannel(channel[1], this.msg.guild.createdTimestamp)
         }
         this.self.send(this.msg, JSON.stringify(this.stats));
