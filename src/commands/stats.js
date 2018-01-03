@@ -1,3 +1,5 @@
+const Discord = require('discord.js');
+
 module.exports = {
     name: "stats",
     description: "stats",
@@ -34,7 +36,27 @@ class Stats{
 
             this.self.db.getStats(this.msg.guild.id, "all", (result) => {
                 if(result){
-                    let message = "Members with most sent messages:\n";
+                    let embed = new Discord.RichEmbed();
+                    let members = "";
+                    let percentage = "";
+                    let total = 0;
+
+                    for(let i = 0; i < result.length; i++){
+                        total += result[i].value;
+                    }
+                    for(let i = 0; i < result.length; i++){
+                        if(i === 25) break;
+                        members += `\n${i+1} - <@${result[i].id.toString()}>: ${result[i].value} messages`;
+                        percentage += `\n ${((result[i].value/total)*100).toFixed(2)}%`;
+                    }
+
+                    embed.addField("Members with most sent messages", members,true);
+                    embed.addField("Percentage", percentage,true);
+                    embed.setTitle(`Sent messages (${total} messages)`);
+                    embed.setDescription("\n");
+                    embed.setColor(3447003);
+
+                    /*let message = "Members with most sent messages:\n";
                     let total = 0;
                     for(let i = 0; i <result.length; i++){
                         total += result[i].value;
@@ -43,8 +65,8 @@ class Stats{
                         if(i === 30) break;
                         message += `\n${i+1} - <@${result[i].id.toString()}>: ${result[i].value} messages (${((result[i].value/total)*100).toFixed(2)}%)`;
                     }
-                    message = this.self.createEmbed("info", message, `Sent messages (${total} messages)`);
-                    this.self.send(this.msg, message);
+                    message = this.self.createEmbed("info", message, `Sent messages (${total} messages)`);*/
+                    this.self.send(this.msg, embed);
                 }
             });
         });
