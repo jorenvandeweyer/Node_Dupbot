@@ -5,19 +5,9 @@ module.exports = {
     args: 0,
     guildOnly: true,
     execute(self, msg){
-        let stats = new Stats(self, msg);
+        new Stats(self, msg);
     }
 };
-
-function fetchMessages(channel, after, _callback){
-    channel.fetchMessages({after: after, limit: 100}).then((messages) => {
-
-    });
-}
-
-function fetchStats(channel, _callback){
-    let obj = {};
-}
 
 class Stats{
     constructor(self, msg){
@@ -31,25 +21,29 @@ class Stats{
 
     init(){
         this.channels = this.msg.guild.channels.filter( (x) => {
-            return x.type == "text";
+            return x.type === "text";
         });
         this.getStats();
     }
 
-    async getStats(_callback){
+    async getStats(){
         await this.self.db.getStats(this.msg.guild.id, "all", async (result) => {
-            if(result.length == 0){
+            if(result.length === 0){
                 await this.fetchAllMessages();
             }
 
             this.self.db.getStats(this.msg.guild.id, "all", (result) => {
                 if(result){
                     let message = "Members with most sent messages:\n";
+                    let total = 0;
                     for(let i = 0; i <result.length; i++){
-                        if(i == 30) break;
-                        message += `\n${i+1} - <@${result[i].id.toString()}>: ${result[i].value} messages`;
+                        total += result[i].value;
                     }
-                    message = this.self.createEmbed("info", message, "Sent messages");
+                    for(let i = 0; i < result.length; i++){
+                        if(i === 30) break;
+                        message += `\n${i+1} - <@${result[i].id.toString()}>: ${result[i].value} messages (${((result[i].value/total)*100).toFixed(2)}%)`;
+                    }
+                    message = this.self.createEmbed("info", message, `Sent messages (${total} messages)`);
                     this.self.send(this.msg, message);
                 }
             });
@@ -83,7 +77,7 @@ class Stats{
                 this.stats[author]++;
             }
 
-            if(messages.size == 100){
+            if(messages.size === 100){
                 await this.fetchAllMessagesChannel(channel, messages.lastKey());
             }
         });

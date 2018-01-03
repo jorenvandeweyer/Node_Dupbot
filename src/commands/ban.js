@@ -11,14 +11,14 @@ module.exports = {
 			if(msg.params.length >= 2){
 				let message = "You are banned because:";
 				let reason = "";
-				for (i = 1; i<msg.params.length; i++){
+				for (let i = 1; i<msg.params.length; i++){
 					reason += " " + msg.params[i];
 				}
 				let targetID = self.serverManager().getMention(msg);
 				self.ban(msg, targetID, message + reason);
 				self.log(msg, targetID, "ban", reason);
 			} else {
-				message = self.createEmbed("info", "You must specify a reason for a ban");
+				let message = self.createEmbed("info", "You must specify a reason for a ban");
 				self.send(msg, message);
 			}
 		}
