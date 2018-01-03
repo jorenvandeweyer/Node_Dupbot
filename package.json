@@ -32,7 +32,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@bitbucket.org/JorenVandeweyer/discord_dupbot.git"
+    "url": "git+ssh://git@github.com:jorenvandeweyer/Node_Dupbot.git"
   },
   "keywords": [
     "Discord",
@@ -42,5 +42,5 @@
   ],
   "author": "Joren Vandeweyer",
   "license": "ISC",
-  "homepage": "https://bitbucket.org/JorenVandeweyer/discord_dupbot#readme"
+  "homepage": "https://github.com/jorenvandeweyer/Node_Dupbot#readme"
 }
