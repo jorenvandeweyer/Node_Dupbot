@@ -24,7 +24,7 @@ module.exports = {
                 });
             }
             let most = Object.keys(users).sort((a, b) => {
-                return users[b] - users[a];
+                return users[b].value - users[a].value;
             });
             for(let i = 0; i < 20; i++){
                 console.log(most[i], users[most[i]]);
