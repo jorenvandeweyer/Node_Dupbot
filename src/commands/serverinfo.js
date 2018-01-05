@@ -18,8 +18,7 @@ module.exports = {
             });
 
             let presences = guild.presences;
-            console.log(presences);
-            console.log(msg.guild.presences);
+
             let online = presences.filter((presence) => {
                 return presence.status === "online";
             });
