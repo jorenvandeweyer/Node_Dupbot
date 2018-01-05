@@ -122,7 +122,7 @@ function addGuild(self, guild){
         }
 
         if(!db_tables.includes("stats_cah_" + guild)){
-            con.query("CREATE TABLE stats_cah_" + guild + "(id BIGINT(32), points INT(16))", (err, result) => {
+            con.query("CREATE TABLE stats_cah_" + guild + "(id CHAR(32), points INT(16))", (err, result) => {
                 //nothing
             });
         }
@@ -134,16 +134,63 @@ function addGuild(self, guild){
         }
 
         if(!db_tables.includes("btc_" + guild)){
-            con.query("CREATE TABLE btc_" + guild + " (id BIGINT(32), value DOUBLE(32,8), type CHAR(5))", (err, result) => {
+            con.query("CREATE TABLE btc_" + guild + " (id CHAR(32), value DOUBLE(32,8), type CHAR(5))", (err, result) => {
                 //nothing
             });
         }
 
         if(!db_tables.includes("stats_" + guild)){
-            con.query("CREATE TABLE stats_" + guild + " (id BIGINT(32), value INT(32), type CHAR(16))", (err, result) => {
+            con.query("CREATE TABLE stats_" + guild + " (id CHAR(32), value INT(32), type CHAR(16))", (err, result) => {
                 //nothing
             });
         }
+    });
+}
+
+function deleteGuild(guild, ... _callback){
+    con.query(`SELECT table_name FROM information_schema.tables WHERE table_schema='${mysql_db}' AND table_name LIKE '%_${guild}'`, (err, result) => {
+        if(result.length){
+            result = result.map(x => x.table_name);
+            con.query(`DROP TABLE ${result.join(",")}`, (err, result) => {
+                typeof _callback[0] === 'function' && _callback[0]();
+            });
+        } else {
+            typeof _callback[0] === 'function' && _callback[0]();
+        }
+    });
+}
+
+function rebuildGuild(guild, ... args){
+    deleteGuild(guild, () => {
+        addGuild(args[0], guild);
+    });
+}
+
+function rebuildTable(table, ... args){
+    deleteTable(table, () => {
+        let guilds = args[0].bot().guilds;
+        for(let guild of guilds){
+            addGuild(args[0], guild[0]);
+        }
+    });
+}
+
+function deleteTable(table, ... _callback){
+    con.query(`SELECT table_name FROM information_schema.tables WHERE table_schema='${mysql_db}' AND table_name LIKE '${table}_%'`, (err, result) => {
+        if(result.length){
+            result = result.map(x => x.table_name);
+            con.query(`DROP TABLE ${result.join(",")}`, (err, result) => {
+                typeof _callback[0] === 'function' && _callback[0]();
+            });
+        } else {
+            typeof _callback[0] === 'function' && _callback[0]();
+        }
+    });
+}
+
+function resetDatabase(db){
+    con.query(`DELETE FROM ${db}`, (err, result) => {
+        console.log(`Reset: ${db}`);
     });
 }
 
@@ -196,11 +243,11 @@ function getSettings(guild, setting, _callback){
     }
 }
 
-function setSettings(guild, setting, value, _callback){
+function setSettings(guild, setting, value, ... _callback){
     if(setting in settings){
         con.query("UPDATE settings_" + guild + " SET value='" + value + "' WHERE setting='" + setting + "'", (err, result) => {
             if(err) throw err;
-            if(typeof _callback === "function") _callback();
+            typeof _callback[0] === "function" && _callback[0]();
         });
     }
 }
@@ -356,6 +403,7 @@ function setStats(guild, id, type, value){
         }
     })
 }
+
 function executeStatement(statement, opts, _callback){
     con.query(statement, [opts], (err, result) => {
         if(err) throw err;
@@ -369,9 +417,15 @@ function close(){
 }
 
 module.exports = {
+    con: con,
     executeStatement: executeStatement,
     setup: setup,
     addGuild: addGuild,
+    deleteGuild: deleteGuild,
+    rebuildGuild: rebuildGuild,
+    deleteTable: deleteTable,
+    rebuildTable: rebuildTable,
+    resetDatabase: resetDatabase,
     getPermissions: getPermissions,
     setPermissions: setPermissions,
     getSettings: getSettings,
