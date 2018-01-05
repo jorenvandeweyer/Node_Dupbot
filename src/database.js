@@ -63,6 +63,12 @@ function addGuild(self, guild){
                         console.log("[db]Number of records inserted: " + result.affectedRows);
                     });
                 }
+
+                for(let i = 0; i < db_commands.length; i++){
+                    if(!self.bot().commands.has(db_commands[i])){
+                        console.log(db_commands[i]);
+                    }
+                }
             });
         } else {
             con.query("CREATE TABLE permissions_" + guild + " (command CHAR(64) PRIMARY KEY, value INT(3))", (err, result) => {
@@ -103,6 +109,12 @@ function addGuild(self, guild){
                         if(err) throw err;
                         console.log("[db]Number of records inserted: " + result.affectedRows);
                     });
+                }
+
+                for(let i = 0; i < db_settings; i++){
+                    if(!(db_settings[i] in settings)){
+                        console.log(db_settings[i]);
+                    }
                 }
             });
         } else {
