@@ -48,7 +48,7 @@ function login(reboot, channelId, messageId){
 	    handler.setup(client, listener);
 
 		if(reboot){
-			client.channels.get(channelId).fetchMessage(messageId).then(message => {message.edit({embed:{color:4193355, description:"Server updated."}})});
+			client.channels.get(channelId).fetchMessage(messageId).then(message => {message.edit({embed:{color:4193355, description:"<:check:314349398811475968>"}})});
 		}
 	});
 

@@ -1,4 +1,3 @@
-const {botOwner} = require("../../serverSettings.json");
 const Discord = require("discord.js");
 
 module.exports = {
@@ -25,10 +24,6 @@ module.exports = {
             console.log(msg.guild.presences);
             let online = presences.filter((presence) => {
                 return presence.status === "online";
-            });
-
-            let offline = presences.filter((presence) => {
-                return presence.status === "offline";
             });
 
             let idle = presences.filter((presence) => {
