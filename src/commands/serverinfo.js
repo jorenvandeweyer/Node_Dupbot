@@ -1,5 +1,3 @@
-const Discord = require("discord.js");
-
 module.exports = {
     name: "serverinfo",
     description: "serverinfo",
@@ -34,7 +32,7 @@ module.exports = {
                 return presence.status === "dnd";
             });
 
-            let embed = new Discord.RichEmbed();
+            let embed = new self.Discord.RichEmbed();
             embed.setTitle("=-=-=-=-= "+ guild.name +" =-=-=-=-=");
             embed.setColor("RED");
             embed.setFooter("Created at " + guild.createdAt, guild.iconURL);

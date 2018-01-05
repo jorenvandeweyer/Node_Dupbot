@@ -51,7 +51,7 @@ function addGuild(self, guild){
                     }
                 }
 
-                for(let command of self.bot().commands){
+                for(let command of self.bot.commands){
                     if(!db_commands.includes(command[0])){
                         console.log("[db]" + command[0]);
                         values.push([command[0], command[1].defaultPermission]);
@@ -65,7 +65,7 @@ function addGuild(self, guild){
                 }
 
                 for(let i = 0; i < db_commands.length; i++){
-                    if(!self.bot().commands.has(db_commands[i])){
+                    if(!self.bot.commands.has(db_commands[i])){
                         con.query(`DELETE FROM permissions_${guild} WHERE command='${db_commands[i]}'`, (err, result) => {
                             //tt
                         });

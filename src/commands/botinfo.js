@@ -12,6 +12,8 @@ module.exports = {
                 for(guild of msg.client.guilds){
                     members+=guild[1].memberCount;
                 }
+                let embed = new self.Discord.RichEmbed();
+                console.log(embed);
                 self.send(msg, {
                     embed: {
                         color: 0x5a00b1,

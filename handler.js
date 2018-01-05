@@ -13,7 +13,7 @@ const serverSettings = require("./serverSettings.json");
 const blackList = require("./blackList.json");
 const antispam = require("./src/antispam");
 
-let bot, listener, youtube, serverManager;
+let bot, Discord, listener, youtube, serverManager;
 
 const graphs = require("./src/graphs");
 /***************/
@@ -190,6 +190,7 @@ function setup(b, l){
 	console.log("[*]initiating setup");
 	bot = b;
 	listener = l;
+	Discord = b.Discord;
 
 	youtube = google.youtube({
 		version: 'v3',
@@ -509,10 +510,6 @@ function getServerManager(){
 
 function getListener(){
 	return listener;
-}
-
-function getBot(){
-	return bot;
 }
 
 /***************/
@@ -1131,7 +1128,13 @@ function YouTubePlaylist(object, _callback){
 /****************/
 
 module.exports = {
-	bot: getBot,
+	get bot(){
+		return bot;
+    },
+
+	get Discord(){
+		return Discord
+	},
 
 	command: command,
 

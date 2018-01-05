@@ -1,4 +1,3 @@
-const Discord = require('discord.js');
 const Request = require("request");
 const {unsplash_clientid} = require("../../serverSettings.json");
 
@@ -18,7 +17,7 @@ module.exports = {
             let image = data[0];
             let referal = "?utm_source=dupbot&utm_medium=referral"
 
-            let currentEmbed = new Discord.RichEmbed();
+            let currentEmbed = new self.Discord.RichEmbed();
             currentEmbed.setTitle(`Result for: ${msg.params.join(" ")}`)
                 .setURL(image.links.html + referal)
                 .setAuthor(`Author: ${image.user.name}`, image.user.profile_image.small , image.user.links.html + referal)

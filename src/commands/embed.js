@@ -1,5 +1,3 @@
-const Discord = require('discord.js');
-
 module.exports = {
     name: "embed",
     description: "!embed",
@@ -7,10 +5,9 @@ module.exports = {
     defaultPermission: 4,
     args: 0,
     execute(self, msg){
-
         if(msg.params.includes("--create")){
             if(self.currentEmbed == undefined){
-                self.currentEmbed = new Discord.RichEmbed();
+                self.currentEmbed = new self.Discord.RichEmbed();
             } else {
                 self.send(msg, self.createEmbed("info", "there is already one existing embed"));
             }
@@ -50,11 +47,8 @@ module.exports = {
             self.currentEmbed.setAuthor(msg.author.username + "#" + msg.author.discriminator, user.avatarURL);
         }
 
-
-
         if(self.currentEmbed !== undefined){
             self.send(msg, self.currentEmbed);
         }
-
     }
 };
