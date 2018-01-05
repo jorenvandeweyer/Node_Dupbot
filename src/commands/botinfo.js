@@ -9,36 +9,19 @@ module.exports = {
         self.db.getBotStats("messages", (messages) => {
             msg.client.fetchUser(botOwner).then( (user) => {
                 let members = 0;
-                for(guild of msg.client.guilds){
+                for(let guild of msg.client.guilds){
                     members+=guild[1].memberCount;
                 }
+
                 let embed = new self.Discord.RichEmbed();
-                console.log(embed);
-                self.send(msg, {
-                    embed: {
-                        color: 0x5a00b1,
-                        title: "=-=-=-=-=-=-= Dupbot =-=-=-=-=-=-=",
-                        fields: [
-                            {
-                                name: "Guilds",
-                                value: msg.client.guilds.size
-                            }, {
-                                name: "Members",
-                                value: members
-                            }, {
-                                name: "Messages seen",
-                                value: messages
-                            }
-                        ],
-                        footer: {
-                            icon_url: user.avatarURL,
-                            text: "Made by " + user.username + "#" + user.discriminator
-                        },
-                        thumbnail: {
-                            url: msg.client.user.avatarURL
-                        }
-                    }
-                });
+                embed.setTitle("=-=-=-=-=-=-= Dupbot =-=-=-=-=-=-=");
+                embed.setColor("RED");
+                embed.setFooter("Made by " + user.username + "#" + user.discriminator, user.avatarURL);
+                embed.setThumbnail(msg.client.user.avatarURL);
+                embed.addField("Guilds", msg.client.guilds.size);
+                embed.addField("Members", members);
+                embed.addField("Messages seen", messages);
+                self.send(msg, embed);
             });
         });
     }
