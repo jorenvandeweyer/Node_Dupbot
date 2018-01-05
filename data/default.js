@@ -9,7 +9,7 @@ module.exports = {
     logchannel: "",
     iam_roles: "",
     max_iam_roles: -1,
-    talk: true,
+    talk: false,
     support: true,
     prefix: "",
     botupdates: true
