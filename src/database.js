@@ -66,7 +66,9 @@ function addGuild(self, guild){
 
                 for(let i = 0; i < db_commands.length; i++){
                     if(!self.bot().commands.has(db_commands[i])){
-                        console.log(db_commands[i]);
+                        con.query(`DELETE FROM permissions_${guild} WHERE command='${db_commands[i]}'`, (err, result) => {
+                            //tt
+                        });
                     }
                 }
             });
@@ -113,7 +115,9 @@ function addGuild(self, guild){
 
                 for(let i = 0; i < db_settings; i++){
                     if(!(db_settings[i] in settings)){
-                        console.log(db_settings[i]);
+                        con.query(`DELETE FROM settings_${guild} WHERE setting='${db_settings[i]}'`, (err, result) => {
+                            //tt
+                        });
                     }
                 }
             });
