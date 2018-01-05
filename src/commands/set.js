@@ -115,7 +115,8 @@ module.exports = {
                     break;
     			case "deleteCommands":
     				self.db.getSettings(msg.guild.id, "deleteCommands", (value) => {
-    					let val = !parseInt(value);
+                        value = value == "true" || value == "1";
+                        let val = +!value;
     					self.db.setSettings(msg.guild.id, "deleteCommands", val, () => {
     						if(val){
     							message = self.createEmbed("succes", "Commands will be deleted.");
@@ -138,7 +139,8 @@ module.exports = {
     				break;
                 case "ai":
                     self.db.getSettings(msg.guild.id, "ai", (value) => {
-                        let val = !parseInt(value);
+                        value = value == "true" || value == "1";
+                        let val = +!value;
                         self.db.setSettings(msg.guild.id, "ai", val, () => {
                             if(val){
                                 message = self.createEmbed("succes", "You enabled the AI(beta) function");
@@ -151,10 +153,11 @@ module.exports = {
                     break;
                 case "talk":
                     self.db.getSettings(msg.guild.id, "talk", (value) => {
-                        let val = !parseInt(value);
+                        value = value == "true" || value == "1";
+                        let val = +!value;
                         self.db.setSettings(msg.guild.id, "talk", val, () => {
                             if(val){
-                                message = self.createEmbed("succes", "Bot will respond one messages that include it's name");
+                                message = self.createEmbed("succes", "Bot will respond to messages that include it's name");
                             } else {
                                 message = self.createEmbed("succes", "Bot won't respond to messages that includes it's name anymore.")
                             }
@@ -164,7 +167,8 @@ module.exports = {
                     break;
                 case "support":
                     self.db.getSettings(msg.guild.id, "support", (value) => {
-                        let val = !parseInt(value);
+                        value = value == "true" || value == "1";
+                        let val = +!value;
                         self.db.setSettings(msg.guild.id, "support", val, () => {
                             if(val){
                                 message = self.createEmbed("succes", "Bot admin support enabled");
@@ -184,7 +188,8 @@ module.exports = {
                     break;
                 case "botupdates":
                     self.db.getSettings(msg.guild.id, "botupdates", (value) => {
-                        let val = !parseInt(value);
+                        value = value == "true" || value == "1";
+                        let val = +!value;
                         self.db.setSettings(msg.guild.id, "botupdates", val, () => {
                             if(val){
                                 message = self.createEmbed("succes", "Bot updates are back on.");
