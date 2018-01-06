@@ -1,11 +1,7 @@
-src/commands/join.js
-src/commands/leave.js
+src/commands/botowner/join.js
+src/commands/botowner/leave.js
 serverSettings.json
-upload.sh
-settings.json
 users.json
-stats.json
-data/database
 node_modules/
 package-lock.json
 .com.apple.timemachine.supported

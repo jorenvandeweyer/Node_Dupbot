@@ -4,22 +4,22 @@ module.exports = {
     defaultPermission: 1,
     args: 0,
     guildOnly: true,
-    execute(self, msg){
+    execute(Client, msg){
         message = "";
-    	if(self.serverManager().songQueue[msg.guild.id] == undefined) self.serverManager().songQueue[msg.guild.id]= [];
-    	for(song in self.serverManager().songQueue[msg.guild.id]){
+    	if(Client.serverManager().songQueue[msg.guild.id] == undefined) Client.serverManager().songQueue[msg.guild.id]= [];
+    	for(song in Client.serverManager().songQueue[msg.guild.id]){
     		let playlist = "";
-    		if(self.serverManager().songQueue[msg.guild.id][song].type == "playlist"){
-    			playlist = " | Playlist " + self.serverManager().songQueue[msg.guild.id][song].songs.length + " songs left";
+    		if(Client.serverManager().songQueue[msg.guild.id][song].type == "playlist"){
+    			playlist = " | Playlist " + Client.serverManager().songQueue[msg.guild.id][song].songs.length + " songs left";
     		}
-    		message += song + ": " + self.serverManager().songQueue[msg.guild.id][song].title + playlist + "\n";
+    		message += song + ": " + Client.serverManager().songQueue[msg.guild.id][song].title + playlist + "\n";
     	}
-    	self.db.getSettings(msg.guild.id, "musicChannel", (channelId) => {
-    		message = self.createEmbed("music", message, "Song queue");
+    	Client.db.getSettings(msg.guild.id, "musicChannel", (channelId) => {
+    		message = Client.createEmbed("music", message, "Song queue");
     		if(channelId){
-    			self.sendChannel(msg, channelId, message);
+    			Client.sendChannel(msg, channelId, message);
     		} else {
-    			self.send(msg, message);
+    			Client.send(msg, message);
     		}
     	});
     }

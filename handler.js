@@ -6,23 +6,21 @@ const google = require('googleapis');
 
 const Servers = require("./src/server");
 const db = require("./src/database");
-const cah = require("./src/minigames/cahgamehandler");
 const ai = require("./src/ai");
 const cleverbot = require("./src/cleverbot");
 const serverSettings = require("./serverSettings.json");
 const blackList = require("./blackList.json");
 const antispam = require("./src/antispam");
-
 let bot, Discord, listener, youtube, serverManager;
 
-const graphs = require("./src/graphs");
+
 /***************/
 /****Exports****/
 /***************/
 
 function recieveMessage(msg){
 	isCommand(msg, () => {
-		antispam.check(this, msg, () => {
+		antispam.check(Client, msg, () => {
 			if(msg.isCommand){
 				if(msg.channel.type === "text"){
 					// console.log(msg.guild.id, msg.author.id, msg.command);
@@ -32,22 +30,22 @@ function recieveMessage(msg){
 						}
 					});
 				}
-				command.call(this, msg);
+				command(msg);
 			}else if(msg.interact){
 				if(msg.channel.type === "text"){
 					db.getSettings(msg.guild.id, "talk", (value) => {
 						if(parseInt(value)){
 							db.getSettings(msg.guild.id, "ai", (value) => {
 								if(parseInt(value)){
-									ai.get(this, msg);
+									ai.get(Client, msg);
 								} else {
-									cleverbot.get(this, msg);
+									cleverbot.get(Client, msg);
 								}
 							});
 						}
 					});
 				} else {
-					cleverbot.get(this, msg);
+					cleverbot.get(Client, msg);
 				}
 			}
 		});
@@ -86,7 +84,7 @@ function command(msg){
 	try {
 		if(!command.guildOnly && msg.channel.type !== "text"){
 			try{
-				command.execute(this, msg);
+				command.execute(Client, msg);
 			} catch(e) {
 				let message = createEmbed("info", ":bomb: :boom: That didn't work out :neutral_face:");
 				send(msg, message);
@@ -99,7 +97,7 @@ function command(msg){
 
 				try{
 					if(msg.permissionLevel >= value){
-						command.execute(this, msg);
+						command.execute(Client, msg);
 					} else {
 						if(command.failPermission !== undefined){
 							let message = createEmbed("info", command.failPermission);
@@ -199,7 +197,7 @@ function setup(b, l){
 
 	serverManager = new Servers(b, bot.guilds);
 
-	db.setup(this, bot.guilds);
+	db.setup(Client, bot.guilds);
 	for(key of bot.guilds){
 		if(blackList.guilds.includes(key[0])){
 			key[1].leave().then( () => {
@@ -222,7 +220,7 @@ function setup(b, l){
 				console.log("[+]Left guild on blacklist: " + key);
 			});
 		} else {
-			db.addGuild(this, guild.id);
+			db.addGuild(Client, guild.id);
 		}
 	});
 
@@ -247,14 +245,23 @@ function setup(b, l){
 		});
 	});
 
-	let commandFiles = fs.readdirSync('./src/commands');
-
-	for (let file of commandFiles) {
-		let command = require(`./src/commands/${file}`);
-		bot.commands.set(command.name, command);
-	}
+	addDirToCommands('./src/commands');
 
 	console.log("[+]setup ready");
+}
+
+function addDirToCommands(path){
+	let files = fs.readdirSync(path);
+
+	for(let file of files){
+		if(fs.lstatSync(`${path}/${file}`).isDirectory()){
+			addDirToCommands(`${path}/${file}`);
+		} else {
+			let command = require(`${path}/${file}`);
+			console.log(command.name);
+			bot.commands.set(command.name, command);
+		}
+	}
 }
 
 /**************/
@@ -689,66 +696,6 @@ function userHasFile(msg, userID){
 	return true;
 }
 
-function broadcastNextSpeed(msg, market){
-	let speeds = [];
-	let str = "";
-	https.get("https://twspeeds.com/callhandler.php?action=discord&market=" + market, (res) => {
-		res.on('data', (chunk) => {
-			str += chunk;
-		});
-		res.on('end', function(){
-			speeds = JSON.parse(str);
-
-			if(speeds.length !== 0){
-				let message = "```Markdown\r\n"
-				 + "Next speedround:\r\n"
-				 + speeds[0].round + "\r\n"
-				 + "Start: " + speeds[0].start + "\r\n"
-				 + "End: " + speeds[0].end + "\r\n"
-				 + "```" + "\r\n"
-				 + "https://www.tribalwars.nl/page/speed/rounds/future";
-
-			 	message = createEmbed("info", message);
-				send(msg, message);
-			}
-		})
-	});
-}
-
-function broadcastSpeed(msg, market){
-	let speeds = [];
-	let str = "";
-	https.get("https://twspeeds.com/callhandler.php?action=discord&market=" + market, (res) => {
-		res.on('data', (chunk) => {
-			str += chunk;
-		});
-		res.on('end', function(){
-			speeds = JSON.parse(str);
-
-			if(speeds.length !== 0){
-
-				let message = "```Markdown\r\n"
-				 + "Next speedrounds:\r\n\r\n";
-
-
-				speeds.forEach(function(speed){
-					message += speed.round + "\r\n"
-					 + "Start: " + speed.start + "\r\n"
-					 + "End: " + speed.end + "\r\n\r\n";
-				});
-
-				message += "```" + "\r\n"
-				 + "https://www.tribalwars.nl/page/speed/rounds/future";
-
-				message = createEmbed("info", message);
-				send(msg, message);
-			} else {
-				send(msg, createEmbed("info", speedCommand.help));
-			}
-		});
-	});
-}
-
 function deleteMessage(msg, messageID){
 	msg.channel.messages.get(messageID).delete();
 }
@@ -1128,10 +1075,18 @@ function YouTubePlaylist(object, _callback){
 /****************/
 
 module.exports = {
+	recieveMessage: recieveMessage,
+	setup: setup
+};
+
+const Client = {
+	music: require("./src/music/music"),
+	cah: require("./src/minigames/cahgamehandler"),
+	graphs: require("./src/graphs"),
+
 	get bot(){
 		return bot;
     },
-
 	get Discord(){
 		return Discord
 	},
@@ -1144,15 +1099,10 @@ module.exports = {
 
 	createEmbed: createEmbed,
 	db: db,
-	cah: cah,
-	graphs: graphs,
 
 	clean: clean,
 	splitter: splitter,
 	log: log,
-
-	recieveMessage: recieveMessage,
-	setup: setup,
 
 	send: send,
 	sendChannel: sendChannel,
@@ -1164,8 +1114,6 @@ module.exports = {
 	warn: warn,
 	see: see,
 	userHasFile: userHasFile,
-	broadcastNextSpeed: broadcastNextSpeed,
-	broadcastSpeed: broadcastSpeed,
 	deleteMessage: deleteMessage,
 	editMessage: editMessage,
 	addToRole: addToRole,
