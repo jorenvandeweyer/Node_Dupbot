@@ -139,7 +139,7 @@ function addGuild(self, guild){
 
         if(!db_tables.includes(`modlog_${guild}`)){
             con.query(`CREATE TABLE modlog_${guild} (id INT PRIMARY KEY AUTO_INCREMENT, user VARCHAR(32), type VARCHAR(16), \`mod\` VARCHAR(32), timestamp VARCHAR(32), reason VARCHAR(255), time VARCHAR(32) )`, (err, result) => {
-                console.log(err);
+
             });
         }
 
