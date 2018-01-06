@@ -404,14 +404,6 @@ function sendChannel(msg, channelId, message, _callback){
 	});
 }
 
-function deleteMessage(msg, messageID){
-	msg.channel.messages.get(messageID).delete();
-}
-
-function editMessage(msg, messageID, content){
-	msg.channel.messages.get(messageID).edit(content);
-}
-
 function joinVoiceChannel(msg, _callback){
 	db.getSettings(msg.guild.id, "voiceChannel", (value) => {
 		if(value){
@@ -420,10 +412,6 @@ function joinVoiceChannel(msg, _callback){
 			msg.member.voiceChannel.join().then(con => _callback(con));
 		}
 	});
-}
-
-function leaveVoiceChannel(msg){
-	msg.guild.voiceConnection.channel.leave()
 }
 
 /****************/
@@ -467,8 +455,5 @@ const Client = {
 
 	send: send,
 	sendChannel: sendChannel,
-	deleteMessage: deleteMessage,
-	editMessage: editMessage,
 	joinVoiceChannel: joinVoiceChannel,
-	leaveVoiceChannel: leaveVoiceChannel
 };

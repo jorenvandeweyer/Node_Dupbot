@@ -113,7 +113,7 @@ function addGuild(self, guild){
                     });
                 }
 
-                for(let i = 0; i < db_settings; i++){
+                for(let i = 0; i < db_settings.length; i++){
                     if(!(db_settings[i] in settings)){
                         con.query(`DELETE FROM settings_${guild} WHERE setting='${db_settings[i]}'`, (err, result) => {
                             //tt

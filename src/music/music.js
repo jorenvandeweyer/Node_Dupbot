@@ -346,7 +346,7 @@ function playSong(Client, msg){
 				playSong(Client, msg);
 			}, 1000);
 		} else {
-			Client.leaveVoiceChannel(msg);
+			msg.guild.voiceConnection.channel.leave();
 			Client.db.getSettings(msg.guild.id, "musicChannel", (channelId) => {
 				if(channelId){
 					Client.sendChannel(msg, channelId, Client.createEmbed("info", "Queue finished"));
