@@ -1,5 +1,5 @@
 const request = require('request');
-const {thecatapi} = require("../../serverSettings.json");
+const {thecatapi} = require("../../../serverSettings.json");
 
 module.exports = {
     name: "cat",

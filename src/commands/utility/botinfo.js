@@ -1,4 +1,4 @@
-const {botOwner} = require("../../serverSettings.json");
+const {botOwner} = require("../../../serverSettings.json");
 
 module.exports = {
     name: "botinfo",

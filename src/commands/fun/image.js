@@ -1,5 +1,5 @@
 const Request = require("request");
-const {unsplash_clientid} = require("../../serverSettings.json");
+const {unsplash_clientid} = require("../../../serverSettings.json");
 
 module.exports = {
     name: "image",
