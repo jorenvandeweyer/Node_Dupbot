@@ -45,7 +45,6 @@ module.exports = class Servers{
 
     extractID(msg, pos){
         if(msg.mentions.users.first()){
-            console.log("test");
             return msg.mentions.users.first().id;
         } else {
             return msg.params[pos];
@@ -57,7 +56,6 @@ module.exports = class Servers{
 			return msg.mentions.roles.first();
 		} else {
             if(msg.content.includes("<@&")){
-                console.log(msg.content.split("<@&")[1].split(">")[0])
                 return {id: msg.content.split("<@&")[1].split(">")[0]};
 
             } else {
