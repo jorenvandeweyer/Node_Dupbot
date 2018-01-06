@@ -6,7 +6,7 @@ module.exports = {
     guildOnly: true,
     execute(Client, msg){
         if(msg.client.voiceConnections.get(msg.guild.id)){
-    		Client.nextSong(msg);
+    		Client.music.nextSong(Client, msg);
     	}
     }
 };

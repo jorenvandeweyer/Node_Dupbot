@@ -1,8 +1,5 @@
 const https = require('https');
 const fs = require('fs');
-const ytdl = require('ytdl-core');
-const streamOptions = { seek: 0, volume: 1 };
-const google = require('googleapis');
 
 const Servers = require("./src/server");
 const db = require("./src/database");
@@ -11,7 +8,7 @@ const cleverbot = require("./src/cleverbot");
 const serverSettings = require("./serverSettings.json");
 const blackList = require("./blackList.json");
 const antispam = require("./src/antispam");
-let bot, Discord, listener, youtube, serverManager;
+let bot, Discord, listener, serverManager;
 
 
 /***************/
@@ -190,11 +187,6 @@ function setup(b, l){
 	listener = l;
 	Discord = b.Discord;
 
-	youtube = google.youtube({
-		version: 'v3',
-		auth: serverSettings.youtubeAuth
-	});
-
 	serverManager = new Servers(b, bot.guilds);
 
 	db.setup(Client, bot.guilds);
@@ -252,13 +244,11 @@ function setup(b, l){
 
 function addDirToCommands(path){
 	let files = fs.readdirSync(path);
-
 	for(let file of files){
 		if(fs.lstatSync(`${path}/${file}`).isDirectory()){
 			addDirToCommands(`${path}/${file}`);
 		} else {
 			let command = require(`${path}/${file}`);
-			console.log(command.name);
 			bot.commands.set(command.name, command);
 		}
 	}
@@ -446,47 +436,6 @@ function createEmbed(colorName, info, title, fields, footer){
 			footer: footer
 		}
 	};
-}
-
-function convertYTDuration(duration) {
-    let a = duration.match(/\d+/g);
-
-    if (duration.indexOf('M') >= 0 && duration.indexOf('H') === -1 && duration.indexOf('S') === -1) {
-        a = [0, a[0], 0];
-    }
-
-    if (duration.indexOf('H') >= 0 && duration.indexOf('M') === -1) {
-        a = [a[0], 0, a[1]];
-    }
-    if (duration.indexOf('H') >= 0 && duration.indexOf('M') === -1 && duration.indexOf('S') === -1) {
-        a = [a[0], 0, 0];
-    }
-
-    duration = 0;
-
-    if (a.length === 3) {
-        duration = duration + parseInt(a[0]) * 3600;
-        duration = duration + parseInt(a[1]) * 60;
-        duration = duration + parseInt(a[2]);
-    }
-
-    if (a.length === 2) {
-        duration = duration + parseInt(a[0]) * 60;
-        duration = duration + parseInt(a[1]);
-    }
-
-    if (a.length === 1) {
-        duration = duration + parseInt(a[0]);
-    }
-    return duration;
-}
-
-function convertTimeToString(seconds) {
-	seconds = Number(seconds);
-	let hours = Math.floor(seconds / 3600);
-	let minutes = Math.floor(seconds % 3600 / 60);
-	seconds = Math.floor(seconds % 3600 % 60);
-	return ((hours > 0 ? hours + ":" + (minutes < 10 ? "0" : "") : "") + minutes + ":" + (seconds < 10 ? "0" : "") + seconds);
 }
 
 function clean(text) {
@@ -726,350 +675,6 @@ function leaveVoiceChannel(msg){
 	msg.guild.voiceConnection.channel.leave()
 }
 
-function playSong(msg){
-	let connection = bot.voiceConnections.get(msg.guild.id);
-	let video = serverManager.songQueue[msg.guild.id][0];
-	let videoID;
-
-	if(video.type === "song"){
-		videoID = video.videoID;
-
-		db.getSettings(msg.guild.id, "musicChannel", (channelId) => {
-			if(channelId){
-				sendChannel(msg, channelId, {
-					embed: {
-						color: 0x5a00b1,
-						title: "=-=-=-=-=-=-= Song =-=-=-=-=-=-=",
-						fields: [
-							{
-								name: "Now Streaming",
-								value: video.title
-							},
-							{
-								name: "Duration",
-								value: video.duration
-							},
-							{
-								name: "Channel",
-								value: video.channel
-							}
-						],
-						footer: {
-							icon_url: msg.author.avatarURL,
-							text: "Requested by " + video.username
-						},
-						thumbnail: {
-							url: video.thumbnail
-						}
-					}
-				}, addSongFeedback);
-			}
-		});
-	} else if(video.type === "playlist"){
-		let shuffleValue = "off";
-		video.current = 0;
-
-		if(video.shuffle){
-			shuffleValue = "on";
-			video.current = Math.floor(Math.random()*video.songs.length);
-		}
-
-		videoID = video.songs[video.current].videoID;
-
-		YouTubeVideo(video.songs[video.current].videoID, function(obj){
-			db.getSettings(msg.guild.id, "musicChannel", (channelId) => {
-				if(channelId){
-					sendChannel(msg, channelId, {
-						embed: {
-							color: 0x5a00b1,
-							title: "=-=-=-=-=-=-= Playlist =-=-=-=-=-=-=",
-							fields: [
-								{
-									name: video.title,
-									value: video.songs.length + " songs left in playlist || shuffle " + shuffleValue
-								},
-								{
-									name: "Now Streaming",
-									value: obj.title
-								},
-								{
-									name: "Duration",
-									value: obj.duration
-								},
-								{
-									name: "Channel",
-									value: obj.channel
-								}
-							],
-							footer: {
-								icon_url: "https://cdn.discordapp.com/avatars/" + video.userID + "/" + video.avatar + ".webp?size=1024",
-								text: "Requested by " + video.username
-							},
-							thumbnail: {
-								url: obj.thumbnail
-							}
-						}
-					}, addSongFeedback);
-				}
-			});
-		});
-	}
-
-   	let stream = ytdl('https://www.youtube.com/watch?v=' + videoID, {  });
-   	let dispatcher = connection.playStream(stream, streamOptions);
-
-	dispatcher.on('end', () => {
-		// if(serverManager.stats[msg.guild.id] == undefined) {
-		// 	serverManager.stats[msg.guild.id] = {};
-		// 	serverManager.stats[msg.guild.id].songsPlayed = 0;
-		// }
-		// serverManager.stats[msg.guild.id].songsPlayed ++;
-		// serverManager.saveStats();
-		if(serverManager.collectors[msg.guild.id]){
-			serverManager.collectors[msg.guild.id].stop();
-		}
-		if(video.type === "song"){
-			serverManager.songQueue[msg.guild.id].shift();
-		} else if (video.type === "playlist"){
-			if(video.songs.length === 1){
-				serverManager.songQueue[msg.guild.id].shift();
-			} else {
-				video.songs.splice(video.current, 1);
-			}
-		} else {
-			serverManager.songQueue[msg.guild.id].shift()
-		}
-
-		if(serverManager.songQueue[msg.guild.id].length > 0){
-			setTimeout(function(){
-				playSong(msg);
-			},1000);
-		} else {
-			leaveVoiceChannel(msg);
-			db.getSettings(msg.guild.id, "musicChannel", (channelId) => {
-				if(channelId){
-					sendChannel(msg, channelId, createEmbed("info", "Queue finished"));
-				}
-			});
-		}
-	});
-}
-
-function addSongFeedback(msg){
-	msg.react("❌");
-	//msg.react("✅");
-	const collector = msg.createReactionCollector( (reaction) => {
-		return reaction.emoji.name === "❌" || reaction.emoji.name === "✅";
-	}, {
-		time: 60 * 60 * 100
-	});
-	serverManager.collectors[msg.guild.id] = collector;
-
-	collector.on('collect', (r) => {
-		if(r.emoji.name === "❌"){
-			let users = r.users.filter((value) => {
-				return msg.guild.members.get(value.id).voiceChannelID === msg.guild.voiceConnection.channel.id;
-			});
-			if(users.size > bot.voiceConnections.get(msg.guild.id).channel.members.size / 2){
-				bot.voiceConnections.get(msg.guild.id).dispatcher.end();
-			}
-		}
-	});
-}
-
-function nextSong(msg){
-	if(msg.permissionLevel < 2){
-		if(serverManager.songQueue[msg.guild.id].length > 0){
-			if(serverManager.songQueue[msg.guild.id][0].userID !== msg.author.id){
-				return;
-			}
-		} else {
-			return;
-		}
-	}
-	if(msg.params.length > 0){
-		if(msg.params[0] === "playlist"){
-			serverManager.songQueue[msg.guild.id][0].type = "skipPlaylist";
-		}
-	}
-
-	bot.voiceConnections.get(msg.guild.id).dispatcher.end();
-}
-
-function addSongToQueue(msg, id){
-	YouTubeVideo(id, function(video){
-		let song = {
-			type: "song",
-			userID: msg.author.id,
-			username: msg.author.username,
-			avatar: msg.author.avatarURL,
-			videoID: video.id,
-			title: video.title,
-			channel: video.channel,
-			duration: video.duration,
-			seconds: video.seconds,
-			thumbnail: video.thumbnail
-		};
-		if(serverManager.songQueue[msg.guild.id] === undefined) serverManager.songQueue[msg.guild.id] = [];
-		serverManager.songQueue[msg.guild.id].push(song);
-
-		let message = createEmbed("music");
-		message.embed.title = song.title;
-		message.embed.footer =  {
-			icon_url: song.avatar,
-			text: "Queued by " + song.username
-		};
-
-		db.getSettings(msg.guild.id, "musicChannel", (channelId) => {
-			if(channelId){
-				sendChannel(msg, channelId, message);
-			} else {
-				send(msg, message);
-			}
-		});
-
-		if(!bot.voiceConnections.get(msg.guild.id)){
-			joinVoiceChannel(msg, function(){
-				playSong(msg);
-			});
-		}
-
-	});
-}
-
-function addPlaylistToQueue(msg, id, shuffle){
-	YouTubePlaylist({
-		id: id,
-		maxResults: "50"
-	}, function(object){
-		let playlist = {
-			type: "playlist",
-			userID: msg.author.id,
-			username: msg.author.username,
-			avatar: msg.author.avatarURL,
-			title: object.title,
-			songs: [],
-			shuffle: shuffle
-		};
-
-		let songs = object.items;
-		for(i = 0; i < songs.length; i++){
-			let video = songs[i].snippet;
-			try{
-				let song = {
-					videoID: video.resourceId.videoId,
-					title: video.title,
-					channel: video.channelTitle,
-					thumbnail: video.thumbnails.default.url
-				};
-				playlist.songs.push(song);
-			} catch(e){
-				console.error(e);
-			}
-
-		}
-
-		if(serverManager.songQueue[msg.guild.id] === undefined) serverManager.songQueue[msg.guild.id] = [];
-		serverManager.songQueue[msg.guild.id].push(playlist);
-
-		let message = createEmbed("music");
-		message.embed.title = playlist.title;
-		message.embed.footer = {
-			icon_url: playlist.avatar,
-			text: "Queued by " + playlist.username
-		};
-
-		db.getSettings(msg.guild.id, "musicChannel", (channelId) => {
-			if(channelId){
-				sendChannel(msg, channelId, message);
-			} else {
-				send(msg, message);
-			}
-		});
-
-		if(!bot.voiceConnections.get(msg.guild.id)){
-			joinVoiceChannel(msg, () => {
-				playSong(msg);
-			});
-		}
-
-	});
-}
-
-function YouTubeSearch(search, _callback){
-	youtube.search.list({
-		part: 'snippet',
-		q: search,
-		maxResults: "1",
-		type: "video"
-	}, function (err, data) {
-		if (err) return console.error(err);
-
-		let videoSearch = data.items[0];
-		if(videoSearch === undefined) return;
-		_callback({
-			id: videoSearch.id.videoId,
-			title: videoSearch.snippet.title,
-		});
-
-	});
-}
-
-function YouTubeVideo(id, _callback){
-	youtube.videos.list({
-		id: id,
-		part: 'snippet,contentDetails'
-	}, function (err, data){
-		if (err) return console.error(err);
-
-		let videoResult = data.items[0];
-		if(videoResult === undefined) return;
-
-		_callback({
-			id: videoResult.id,
-			duration: convertTimeToString(convertYTDuration(videoResult.contentDetails.duration)),
-			seconds: convertYTDuration(videoResult.contentDetails.duration),
-			title: videoResult.snippet.title,
-			channel: videoResult.snippet.channelTitle,
-			thumbnail: videoResult.snippet.thumbnails.medium.url
-		});
-	})
-}
-
-function YouTubePlaylist(object, _callback){
-	youtube.playlistItems.list({
-		playlistId: object.id,
-		pageToken: object.pageToken,
-		maxResults: object.maxResults,
-		part: 'snippet,contentDetails'
-	}, function(err, data){
-		if(err) return console.error(err);
-		if(data.items[0] === undefined) return;
-		if(object.items === undefined) object.items = [];
-
-		object.items.push.apply(object.items, data.items);
-
-		if(data.nextPageToken){
-			object.pageToken = data.nextPageToken;
-			if(data.pageInfo.totalResults - object.items.length > 50){
-				object.maxResults = 50;
-			} else {
-				object.maxResults = data.pageInfo.totalResults - object.items.length;
-			}
-			YouTubePlaylist(object, _callback);
-		} else {
-			youtube.playlists.list({
-				id: object.id,
-				part: "snippet, contentDetails"
-			}, function(err, data2){
-				object.title = data2.items[0].snippet.title;
-				_callback(object);
-
-			})
-		}
-	});
-}
-
 /****************/
 /****COMMANDS****/
 /****************/
@@ -1088,7 +693,7 @@ const Client = {
 		return bot;
     },
 	get Discord(){
-		return Discord
+		return Discord;
 	},
 
 	command: command,
@@ -1119,13 +724,5 @@ const Client = {
 	addToRole: addToRole,
 	removeFromRole: removeFromRole,
 	joinVoiceChannel: joinVoiceChannel,
-	leaveVoiceChannel: leaveVoiceChannel,
-	playSong: playSong,
-	addSongFeedback: addSongFeedback,
-	nextSong: nextSong,
-	addSongToQueue: addSongToQueue,
-	addPlaylistToQueue: addPlaylistToQueue,
-	YouTubeSearch: YouTubeSearch,
-	YouTubeVideo: YouTubeVideo,
-	YouTubePlaylist: YouTubePlaylist
+	leaveVoiceChannel: leaveVoiceChannel
 };
