@@ -8,8 +8,11 @@ module.exports = {
     execute(Client, msg){
         userID = Client.serverManager.extractID(msg, 0);
     	roleID = Client.serverManager.extractRoleID(msg, 1);
-    	if(userID && roleID){
-    		Client.addToRole(msg, userID, roleID);
-    	}
+
+        msg.guild.members.get(userID).addRole(roleID).then((member) => {
+            Client.send(msg, Client.createEmbed("succes", `Assigned <@&${roleID}> to <@${member.id}>`));
+        }).catch((reason) => {
+            Client.send(msg, Client.createEmbed("fail", "Not a valid role or user"));
+        });
     }
 };

@@ -23,17 +23,17 @@ module.exports = {
 
                         if(Client.serverManager.getRoles(msg).indexOf(roleId) == -1){
                             if(!exceededRoleLimit(Client, msg, roles, max)){
-                                Client.addToRole(msg, msg.author.id, roleId);
-                                message = Client.createEmbed("succes", "You succesfully assigned the role <@&" + roleId + "> to yourClient.");
+                                msg.guild.members.get(msg.author.id).addRole(roleId);
+                                message = Client.createEmbed("succes", "You succesfully assigned the role <@&" + roleId + "> to yourself.");
                             } else {
                                 message = Client.createEmbed("fail", "Exceeded iam role limit");
                             }
                         } else {
-                            Client.removeFromRole(msg, msg.author.id, roleId);
-                            message = Client.createEmbed("succes", "You succesfully removed the role <@&" + roleId + "> from yourClient");
+                            msg.guild.members.get(msg.author.id).removeRole(roleId);
+                            message = Client.createEmbed("succes", "You succesfully removed the role <@&" + roleId + "> from yourself");
                         }
                     } else {
-                        message= Client.createEmbed("fail", "`" + role + "` isn't a valid role or you are not allowed to assign the role `" + role + "` to yourClient.");
+                        message= Client.createEmbed("fail", "`" + role + "` isn't a valid role or you are not allowed to assign the role `" + role + "` to yourself.");
                     }
                 } else {
                     let allRoles = [];

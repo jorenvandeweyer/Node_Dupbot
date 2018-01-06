@@ -25,7 +25,7 @@ class Antispam {
         }
     }
 
-    check(self, msg, _callback){
+    check(Client, msg, _callback){
         if(this.keys.filter(x => x === msg.author.id + "," + msg.command).length > 6){
             this.ignore.push(msg.author.id);
         } else {
@@ -45,8 +45,8 @@ class Antispam {
 
 let antispam = new Antispam();
 
-function c(self, msg, _callback){
-    antispam.check(self, msg, _callback);
+function c(Client, msg, _callback){
+    antispam.check(Client, msg, _callback);
 }
 
 module.exports = {

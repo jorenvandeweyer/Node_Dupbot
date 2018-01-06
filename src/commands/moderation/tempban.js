@@ -9,24 +9,19 @@ module.exports = {
         if (msg.params.length >= 1){
             let targetID = Client.serverManager.extractID(msg, 0)
     		if(targetID){
-    			if(msg.params.length >= 3){
-                    msg.params.shift();
-                    let days = msg.params.shift();
-    				let reason = msg.params.join(" ");
+                msg.params.shift();
+                let days = msg.params.shift();
+				let reason = msg.params.join(" ");
 
-                    msg.guild.ban(targetID, {
-                        reason: reason
-                    }).then((user) => {
-                        Client.log(msg, user.id, "tempban", reason, days);
-                        Client.send(msg, Client.createEmbed("ban", "<@"+ user.id + "> You have been banned :hammer:"))
-                        user.send(Client.createEmbed("ban", "You have been banned for " +days + " days.\nReason: " + reason));
-                    }).catch((reason) => {
-                        Client.send(msg, Client.createEmbed("fail", reason));
-                    });
-    			} else {
-    				let message = Client.createEmbed("info", "You must specify a time and a reason for a tempban");
-    				Client.send(msg, message);
-    			}
+                msg.guild.ban(targetID, {
+                    reason: reason
+                }).then((user) => {
+                    Client.log(msg, user.id, "tempban", reason, days);
+                    Client.send(msg, Client.createEmbed("ban", "<@"+ user.id + "> You have been banned :hammer:"))
+                    user.send(Client.createEmbed("ban", "You have been banned for " +days + " days.\nReason: " + reason));
+                }).catch((reason) => {
+                    Client.send(msg, Client.createEmbed("fail", reason));
+                });
     		}
     	}
     }

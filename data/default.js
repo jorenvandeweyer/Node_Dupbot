@@ -5,11 +5,10 @@ module.exports = {
     musicChannel: "",
     djrole: "",
     deleteCommands: false,
-    ai: false,
+    ai: true,
     logchannel: "",
     iam_roles: "",
     max_iam_roles: -1,
-    talk: false,
     support: true,
     prefix: "",
     botupdates: true

@@ -5,10 +5,11 @@ module.exports = {
     args: 1,
     guildOnly: true,
     execute(Client, msg){
-        if (msg.params.length >= 1){
-    		if(Client.serverManager.extractID(msg, 0)){
-    			Client.silence(msg, Client.serverManager.extractID(msg, 0));
-    		}
-    	}
+        let userID = Client.serverManager.extractID(msg, 0);
+        msg.guild.members.get(userID).setMute(true).then((member) => {
+            Client.send(msg, Client.createEmbed("warn", `<@${member.id}> Muted :point_up_2:`));
+        }).catch((reason) => {
+            Client.send(msg, Client.createEmbed("fail", "This is not a valid member."));
+        });
     }
 };

@@ -4,7 +4,6 @@ const fs = require('fs');
 const Servers = require("./src/server");
 const db = require("./src/database");
 const ai = require("./src/ai");
-const cleverbot = require("./src/cleverbot");
 const serverSettings = require("./serverSettings.json");
 const blackList = require("./blackList.json");
 const antispam = require("./src/antispam");
@@ -29,19 +28,13 @@ function recieveMessage(msg){
 				command(msg);
 			}else if(msg.interact){
 				if(msg.channel.type === "text"){
-					db.getSettings(msg.guild.id, "talk", (value) => {
+					db.getSettings(msg.guild.id, "ai", (value) => {
 						if(parseInt(value)){
-							db.getSettings(msg.guild.id, "ai", (value) => {
-								if(parseInt(value)){
-									ai.get(Client, msg);
-								} else {
-									cleverbot.get(Client, msg);
-								}
-							});
+							ai.get(Client, msg);
 						}
 					});
 				} else {
-					cleverbot.get(Client, msg);
+					ai.get(Client, msg);
 				}
 			}
 		});
@@ -65,7 +58,7 @@ function command(msg){
 		return msg.reply("No no no! Don't use this in DM's :scream:");
 	}
 
-	if (command.args && !msg.params.length) {
+	if (command.args > msg.params.length) {
 		let reply = `You are using this command wrong :expressionless:, ${msg.author}!`;
 
 		if (command.usage) {
@@ -74,7 +67,7 @@ function command(msg){
 			reply += `\nTry this: \`${serverManager.prefix}${command.name}\``;
 		}
 
-		return msg.channel.send(reply);
+		return msg.channel.send(createEmbed("fail", reply));
 	}
 
 	try {
@@ -234,6 +227,10 @@ function setup(b, l){
 				db.setStats(member.guild.id, member.id, "MSG_SENT", 0);
 			}
 		});
+	});
+
+	bot.fetchUser(serverSettings.botOwner).then((user) => {
+		bot.botOwner = user;
 	});
 
 	addDirToCommands('./src/commands');
@@ -407,34 +404,12 @@ function sendChannel(msg, channelId, message, _callback){
 	});
 }
 
-function silence(msg, userID){
-	let message = createEmbed("warn", "<@" + userID + "> Muted :point_up_2:");
-	send(msg, message);
-
-	msg.guild.members.get(userID).setMute(true);
-}
-
-function unSilence(msg, userID){
-	let message = createEmbed("unban", "<@" + userID + "> Unmuted :ok_hand:");
-	send(msg, message);
-
-	msg.guild.members.get(userID).setMute(false);
-}
-
 function deleteMessage(msg, messageID){
 	msg.channel.messages.get(messageID).delete();
 }
 
 function editMessage(msg, messageID, content){
 	msg.channel.messages.get(messageID).edit(content);
-}
-
-function addToRole(msg, userID, roleID){
-	msg.guild.members.get(userID).addRole(roleID);
-}
-
-function removeFromRole(msg, userID, roleID){
-	msg.guild.members.get(userID).removeRole(roleID);
 }
 
 function joinVoiceChannel(msg, _callback){
@@ -478,6 +453,7 @@ const Client = {
 	get listener(){
 		return listener;
 	},
+
 	command: command,
 
 	getPrefix: getPrefix,
@@ -491,12 +467,8 @@ const Client = {
 
 	send: send,
 	sendChannel: sendChannel,
-	silence: silence,
-	unSilence: unSilence,
 	deleteMessage: deleteMessage,
 	editMessage: editMessage,
-	addToRole: addToRole,
-	removeFromRole: removeFromRole,
 	joinVoiceChannel: joinVoiceChannel,
 	leaveVoiceChannel: leaveVoiceChannel
 };

@@ -10,24 +10,25 @@ module.exports = {
     		switch(msg.params[0]){
     			case "log":
     				Client.db.setSettings(msg.guild.id, "logchannel", msg.channel.id, () => {
-    					message = Client.createEmbed("succes", "Logchannel set.");
+    					let message = Client.createEmbed("succes", "Logchannel set.");
     					Client.send(msg, message);
     				});
     				break;
     			case "warntime":
     				if(msg.params.length >= 2){
     					Client.db.setSettings(msg.guild.id, "warntime", msg.params[1], () => {
-    						message = Client.createEmbed("succes", "Warntime set to " + msg.params[1] + " hours.");
+    						let message = Client.createEmbed("succes", "Warntime set to " + msg.params[1] + " hours.");
     						Client.send(msg, message);
     					});
     				} else {
-    					message = Client.createEmbed("info", "!set warntime <hours>");
+    					let message = Client.createEmbed("info", "!set warntime <hours>");
     					Client.send(msg, message);
     				}
     				break;
     			case "iamrole":
     				if(msg.params.length >= 2){
-    					let role = Client.serverManager.extractRole(msg);
+    					let role = Client.serverManager.extractRole(msg, 1);
+                        console.log(role);
     					let roles = [];
     					Client.db.getSettings(msg.guild.id, "iam_roles", (value) => {
     						if(value){
@@ -57,7 +58,7 @@ module.exports = {
     					});
 
     				} else {
-    					message = Client.createEmbed("info", "!set role <@Role>");
+    					let message = Client.createEmbed("info", "!set role <@Role>");
     					Client.send(msg, message);
     				}
     				break;
@@ -74,12 +75,12 @@ module.exports = {
     					roleID = Client.serverManager.extractRoleID(msg, 1);
     					if(roleID){
     						Client.db.setSettings(msg.guild.id, "adminrole", roleID, () => {
-    							message = Client.createEmbed("succes", "Adminrole set to <@&" + roleID + ">");
+    							let message = Client.createEmbed("succes", "Adminrole set to <@&" + roleID + ">");
     							Client.send(msg, message);
     						});
     					}
     				} else {
-    					message = Client.createEmbed("info", "!set admin @Role");
+    					let message = Client.createEmbed("info", "!set admin @Role");
     					Client.send(msg, message);
     				}
     				break;
@@ -87,23 +88,23 @@ module.exports = {
     				let voiceChannel = msg.member.voiceChannelID;
     				if(voiceChannel){
     					Client.db.setSettings(msg.guild.id, "voiceChannel", voiceChannel, () => {
-    						message = Client.createEmbed("succes", "Voice channel set to <#" + voiceChannel + ">");
+    						let message = Client.createEmbed("succes", "Voice channel set to <#" + voiceChannel + ">");
     						Client.send(msg, message);
     					});
     				} else {
-    					message = Client.createEmbed("info", "Go in a voice channel before using this command.");
+    					let message = Client.createEmbed("info", "Go in a voice channel before using this command.");
     					Client.send(msg, message);
     				}
     				break;
     			case "music":
     				Client.db.setSettings(msg.guild.id, "musicChannel", msg.channel.id, () => {
-    					message = Client.createEmbed("succes", "Music channel set.");
+    					let message = Client.createEmbed("succes", "Music channel set.");
     					Client.send(msg, message);
     				});
     				break;
                 case "dj":
                     if(msg.params.length >= 2){
-                        roleID = Client.serverManager.extractRoleID(msg, 1);
+                        let roleID = Client.serverManager.extractRoleID(msg, 1);
                         if(roleID){
                             Client.db.setSettings(msg.guild.id, "djrole", roleID, () => {
                                 message = Client.createEmbed("succes", "DJ role set to <@&" + roleID + ">");
@@ -117,6 +118,7 @@ module.exports = {
                         value = value == "true" || value == "1";
                         let val = +!value;
     					Client.db.setSettings(msg.guild.id, "deleteCommands", val, () => {
+                            let message;
     						if(val){
     							message = Client.createEmbed("succes", "Commands will be deleted.");
     						} else {
@@ -141,6 +143,7 @@ module.exports = {
                         value = value == "true" || value == "1";
                         let val = +!value;
                         Client.db.setSettings(msg.guild.id, "ai", val, () => {
+                            let message;
                             if(val){
                                 message = Client.createEmbed("succes", "You enabled the AI(beta) function");
                             } else {
@@ -155,6 +158,7 @@ module.exports = {
                         value = value == "true" || value == "1";
                         let val = +!value;
                         Client.db.setSettings(msg.guild.id, "talk", val, () => {
+                            let message;
                             if(val){
                                 message = Client.createEmbed("succes", "Bot will respond to messages that include it's name");
                             } else {
@@ -169,6 +173,7 @@ module.exports = {
                         value = value == "true" || value == "1";
                         let val = +!value;
                         Client.db.setSettings(msg.guild.id, "support", val, () => {
+                            let message;
                             if(val){
                                 message = Client.createEmbed("succes", "Bot admin support enabled");
                             } else {
@@ -190,6 +195,7 @@ module.exports = {
                         value = value == "true" || value == "1";
                         let val = +!value;
                         Client.db.setSettings(msg.guild.id, "botupdates", val, () => {
+                            let message;
                             if(val){
                                 message = Client.createEmbed("succes", "Bot updates are back on.");
                             } else {
@@ -200,12 +206,12 @@ module.exports = {
                     });
                     break;
                 default:
-    				message = Client.createEmbed("info", msg.client.commands.get("set").description);
+    				let message = Client.createEmbed("info", msg.client.commands.get("set").description);
     				Client.send(msg, message);
     				break;
     		}
     	} else {
-    		message = Client.createEmbed("info", msg.client.commands.get("set").description);
+    		let message = Client.createEmbed("info", msg.client.commands.get("set").description);
     		Client.send(msg, message);
     	}
     }

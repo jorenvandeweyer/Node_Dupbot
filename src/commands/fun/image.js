@@ -1,5 +1,4 @@
 const Request = require("request");
-const {unsplash_clientid} = require("../../../serverSettings.json");
 
 module.exports = {
     name: "image",
@@ -8,11 +7,9 @@ module.exports = {
     defaultPermission: 1,
     args: 0,
     execute(Client, msg){
-        Request.get('https://api.unsplash.com/photos/random?count=1&query=' + msg.params.join("-"), {
-            'auth': {
-                'bearer': 'Client-ID ' + unsplash_clientid
-            }
-        }, (err, res, body) => {
+        let query = "";
+        if(msg.params.length) query = "&query=" + msg.params.join("-");
+        Request.get('https://api.unsplash.com/photos/random?count=1&client_id=' + Client.serverSettings.unsplash_clientid + query, (err, res, body) => {
             let data = JSON.parse(body);
             let image = data[0];
             let referal = "?utm_source=dupbot&utm_medium=referral"

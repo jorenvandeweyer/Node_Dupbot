@@ -1,40 +1,47 @@
 const apiai = require('apiai');
-const cleverbot = require("./cleverbot");
 
 const {apiai_key} = require("../serverSettings.json");
 
 const app = apiai(apiai_key);
 
-function get(self, msg){
+function get(Client, msg){
     let request = app.textRequest(convert(msg.input_ai), {
         sessionId: msg.author.id
     });
 
     request.on('response', function(response) {
-        msg.params = [];
-        for(key in response.result.parameters){
-            if(response.result.parameters[key] !== ''){
-                msg.params.push(response.result.parameters[key]);
-            }
-        }
-
-        if(response.result.action){
-            msg.command = response.result.action;
-        }
-
-        if(response.result.action == "input.unknown"){
-            cleverbot.get(self, msg);
-        } else if(response.result.fulfillment.speech){
-            self.send(msg, convertBack(response.result.fulfillment.speech), () => {
-                self.command.call(self, msg);
-            });
+        if(response.result.actionIncomplete){
+            let text = convertBack(response.result.fulfillment.messages[0].speech);
+            text = personalize(Client, msg, text);
+            Client.send(msg, text);
         } else {
-            self.command.call(self, msg);
+            msg.params = [];
+            for(key in response.result.parameters){
+                if(response.result.parameters[key] !== ''){
+                    msg.params.push(response.result.parameters[key]);
+                }
+            }
+
+            if(response.result.action){
+                msg.command = response.result.action;
+            }
+
+            if(response.result.action == "input.unknown"){
+                //do nothing
+            } else if(response.result.fulfillment.messages[0].speech){
+                let text = convertBack(response.result.fulfillment.messages[0].speech);
+                text = personalize(Client, msg, text);
+                Client.send(msg, text, () => {
+                    Client.command.call(Client, msg);
+                });
+            } else {
+                Client.command.call(Client, msg);
+            }
         }
     });
 
     request.on('error', function(err){
-        self.send(msg, "Something did go wrong :disappointed:");
+        Client.send(msg, "Something did go wrong :disappointed:");
     });
 
     request.end();
@@ -52,6 +59,12 @@ function convertBack(phrase){
      .replace(/ROLEID/g, "<@&")
      .replace(/USERID/g, "<@")
      .replace(/SOMEIDEND/g, ">");
+}
+
+function personalize(Client, msg, response){
+    return response
+      .replace(/BOTNAME/g, msg.client.user.username)
+      .replace(/CREATOR/g, Client.bot.botOwner.username + "#" + Client.bot.botOwner.discriminator);
 }
 
 module.exports = {
