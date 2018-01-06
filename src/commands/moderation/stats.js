@@ -1,6 +1,5 @@
 module.exports = {
     name: "stats",
-    description: "stats",
     defaultPermission: 2,
     args: 0,
     guildOnly: true,

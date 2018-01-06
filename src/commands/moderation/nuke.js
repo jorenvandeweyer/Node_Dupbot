@@ -1,6 +1,5 @@
 module.exports = {
     name: "nuke",
-    description: "!nuke <amount>",
     usage: "<amount>",
     defaultPermission: 3,
     args: 0,

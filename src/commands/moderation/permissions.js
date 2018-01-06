@@ -1,6 +1,5 @@
 module.exports = {
     name: "permissions",
-    description: "!permissions",
     defaultPermission: 3,
     args: 0,
     guildOnly: true,
@@ -35,7 +34,7 @@ module.exports = {
     			}
     		}
 
-    		message = Client.createEmbed("info", "Permissions of all commands", "Permissions", [
+    		let message = Client.createEmbed("info", "Permissions of all commands", "Permissions", [
     			{
     				name: "Disabled",
     				value: disabled.join(", ")

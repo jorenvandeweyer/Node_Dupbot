@@ -20,7 +20,6 @@ function recieveMessage(msg){
 		antispam.check(Client, msg, () => {
 			if(msg.isCommand){
 				if(msg.channel.type === "text"){
-					// console.log(msg.guild.id, msg.author.id, msg.command);
 					db.getSettings(msg.guild.id, "deleteCommands", (value) => {
 						if(parseInt(value)){
 							msg.delete();
@@ -187,7 +186,7 @@ function setup(b, l){
 	listener = l;
 	Discord = b.Discord;
 
-	serverManager = new Servers(b, bot.guilds);
+	serverManager = new Servers(Client);
 
 	db.setup(Client, bot.guilds);
 	for(key of bot.guilds){
@@ -259,132 +258,58 @@ function addDirToCommands(path){
 /**************/
 
 function log(msg, userID, sort, reason, time){
-	let mod = msg.author.id;
-	let username = userID;
-	let presentNick = userID;
-	try{
-		username = serverManager.getUsername(msg, userID);
-		presentNick = serverManager.getNick(msg, userID);
-	} catch(e){
 
-	}
-	let date = new Date().getTime();
-	let message = "";
+	let data = {
+        user: userID,
+        type: sort,
+        mod: msg.author.id,
+        timestamp: Date.now(),
+        reason: reason,
+        time: time
+    };
 
-	if(serverManager.users[msg.guild.id] === undefined){
-		serverManager.users[msg.guild.id] = {};
-	}
+	db.setModlog(msg.guild.id, data);
 
-	if(serverManager.users[msg.guild.id][userID] === undefined){
-		serverManager.users[msg.guild.id][userID] = {
-			id: userID,
-			name: username,
-			nick: presentNick,
-			isBanned: false,
-			cooldownTime: 0,
-			activeWarnings: 0,
-			warnings: {},
-			kicks: {},
-			bans: {},
-			nicks: {},
-			unbans: {},
-			notes: {}
-		}
-	}
-
-
-
-	let file = serverManager.users[msg.guild.id][userID];
-	let title;
+	let embed = new Client.Discord.RichEmbed();
 
 	switch(sort){
 		case "warn":
-			file.warnings[date] = {
-				date: date,
-				reason: reason,
-				mod: mod
-			};
-			title = "Warning";
-			message += "**Mod**: <@" + mod + ">\n**User**: " + username + "\n**Reason**: " + reason;
+			embed.setTitle("Warning");
+			embed.setColor(15908236);
+			embed.setDescription(`**Mod**: <@${data.mod}>\n**Member:** <@${data.user}>\n**Reason:** ${data.reason}`);
 			break;
-
 		case "kick":
-			file.kicks[date] = {
-				date: date,
-				reason: reason,
-				mod: mod
-			};
-			title = "Kick";
-			message += "**Mod**: <@" + mod + ">\n**Kicked**: " + username + "\n**Reason**: " + reason;
-
+			embed.setTitle("Kick");
+			embed.setColor(16028993);
+			embed.setDescription(`**Mod**: <@${data.mod}>\n**Kicked**: <@${data.user}>\n**Reason**: ${data.reason}`);
 			break;
-
 		case "ban":
-			file.bans[date] = {
-				date: date,
-				reason: reason,
-				sort: "ban",
-				mod: mod
-			};
-			if(serverManager.users[msg.guild.id].bans === undefined) serverManager.users[msg.guild.id].bans = {};
-			serverManager.users[msg.guild.id].bans[userID] = username;
-			title = "Ban";
-			message += "**Mod**: <@" + mod + ">\n**Banned**: " + username + "\n**Reason**: " + reason;
+			embed.setTitle("Ban");
+			embed.setColor(16007746);
+			embed.setDescription(`**Mod**: <@${data.mod}>\n**Banned**: <@${data.user}>\n**Reason**: ${data.reason}`);
 			break;
-
 		case "tempban":
-			file.bans[date] = {
-				date: date,
-				reason: reason,
-				sort: "tempban",
-				time: time,
-				mod: mod
-			};
-			title = "tempban";
-			message += "**Mod**: <@" + mod + ">\n**Tempbanned**: " + username + "\n**Days**:" + time + "days \n**Reason**: " + reason;
+			embed.setTitle("Temp Ban");
+			embed.setColor(16007746);
+			embed.setDescription(`"**Mod**: <@${data.mod}>\n**Tempbanned**: <@${data.user}>\n**Days**: ${data.time} days\n**Reason**: ${data.reason}`);
 			break;
-
 		case "unban":
-			file.unbans[date] = {
-				date: date,
-				mod: mod
-			};
-			title = "Unban";
-			message += "**Mod**: <@" + mod + ">\n**Unbanned**: " + username;
-			delete serverManager.users[msg.guild.id].bans[userID];
+			embed.setTitle("Unban");
+			embed.setColor(4193355);
+			embed.setDescription(`**Mod**: <@${data.mod}>\n**Unbanned**: <@${data.user}>`);
 			break;
-
 		case "note":
-			file.notes[date] = {
-				date: date,
-				note: reason,
-				mod: mod
-			};
-			title = "Note";
-			message += "**Mod**: <@" + mod + ">\n**Note about**: " + presentNick + "\n**Content**: " + reason;
+			embed.setTitle("Note");
+			embed.setColor("WHITE");
+			embed.setDescription(`**Mod**: <@${data.mod}>\n**Note about**: <@${data.user}>\n**Content**: ${data.reason}`);
 			break;
 	}
-	message = createEmbed(sort, message, title);
 
 	db.getSettings(msg.guild.id, "logchannel", (channelId) => {
 		if(channelId){
-			sendChannel(msg, channelId, message);
+			sendChannel(msg, channelId, embed);
 		}
 	});
-
-	if(file.nick !== presentNick){
-		file.nicks[date] = {
-			date: date,
-			nick: presentNick
-		};
-		file.nick = presentNick;
-	}
-
-	serverManager.saveUsers();
-}
-
-function dateToString(date){
-	return new Date(date).toISOString().replace(/[A-z]/g, " ");
 }
 
 function createEmbed(colorName, info, title, fields, footer){
@@ -460,14 +385,6 @@ function splitter(str, l){
     return strs;
 }
 
-function getServerManager(){
-	return serverManager;
-}
-
-function getListener(){
-	return listener;
-}
-
 /***************/
 /***FUNCTIONS***/
 /***************/
@@ -490,38 +407,6 @@ function sendChannel(msg, channelId, message, _callback){
 	});
 }
 
-function kick(msg, userID, reason){
-	let message = createEmbed("kick", "<@" + userID + "> You have been kicked :wave:");
-	send(msg, message);
-
-	if(reason){
-		bot.users.get(userID).send(reason);
-	} else {
-		bot.users.get(userID).send("You have been kicked");
-	}
-
-	msg.guild.members.get(userID).kick(reason);
-}
-
-function ban(msg, userID, reason){
-	let message = createEmbed("ban", "<@"+ userID + "> You have been banned :hammer:");
-	send(msg, message);
-
-	bot.users.get(userID).send(reason);
-
-	msg.guild.ban(userID, {
-		days: 7,
-		reason: reason
-	});
-}
-
-function unban(msg, userID){
-	let message = createEmbed("unban", "Unbanned :ok_hand:");
-	send(msg, message);
-
-	msg.guild.unban(userID);
-}
-
 function silence(msg, userID){
 	let message = createEmbed("warn", "<@" + userID + "> Muted :point_up_2:");
 	send(msg, message);
@@ -534,115 +419,6 @@ function unSilence(msg, userID){
 	send(msg, message);
 
 	msg.guild.members.get(userID).setMute(false);
-}
-
-function warn(msg, userID, reason){
-	let warnings = {};
-	try{
-		warnings = serverManager.users[msg.guild.id][userID].warnings;
-	} catch(e){}
-
-	db.getSettings(msg.guild.id, "warntime", (value) => {
-		let warntime = 24;
-		if(value){
-			warntime = parseInt(value);
-		}
-		let today = new Date().getTime();
-		let active = 0;
-		for (let key in warnings){
-			date = warnings[key].date;
-			if(today - date < warntime* 60 * 60 * 1000){
-				active++;
-			}
-		}
-
-		let message = createEmbed("warn", reason);
-
-		send(msg, message);
-
-		if (active >= 3){
-			let messageKick = createEmbed("kick", "You have been automatically kicked after 3 (active) warnings.");
-			kick(msg, userID, messageKick);
-			log(msg, userID, "kick", "3 warnings");
-		}
-	});
-}
-
-function see(msg, userID){
-	if(!userHasFile(msg, userID)) return;
-	let user = serverManager.users[msg.guild.id][msg.author.id];
-	let warnings = "";
-	let kicks = "";
-	let bans = "";
-	let unbans = "";
-	let nicks = "";
-
-	for(let key in user.warnings){
-		warnings += dateToString(user.warnings[key].date) + " - <@" + user.warnings[key].mod + "> - " + user.warnings[key].reason + "\n";
-	}
-	if(warnings === "") warnings = "-";
-	for(let key in user.kicks){
-		kicks += dateToString(user.kicks[key].date) + " - <@" + user.kicks[key].mod + "> - " + user.kicks[key].reason + "\n";
-	}
-	if(kicks === "") kicks = "-";
-	for(let key in user.bans){
-		bans += dateToString(user.bans[key].date) + " - <@" + user.bans[key].mod + "> - " + user.bans[key].reason + "\n";
-	}
-	if(bans === "") bans = "-";
-	for(let key in user.unbans){
-		unbans += dateToString(user.unbans[key].date) + " - <@" + user.unbans[key].mod + "> - " + user.unbans[key].reason + "\n";
-	}
-	if(unbans === "") unbans = "-";
-	for(let key in user.nicks){
-		nicks += dateToString(user.nicks[key].date) + " - " + user.nicks[key].nick + "\n";
-	}
-	if(nicks === "") nicks = "-";
-
-	let fields = [
-		{
-			name: "Warnings:",
-			value: warnings
-		},{
-			name: "Kicks:",
-			value: kicks
-		},{
-			name: "Bans:",
-			value: bans
-		},{
-			name: "Unbans:",
-			value: unbans
-		},{
-			name: "Previous nicks:",
-			value: nicks
-		}
-	];
-	let message = createEmbed("info", "All events related to " + serverManager.getUsername(msg, userID), serverManager.getUsername(msg, userID), fields);
-	db.getSettings(msg.guild.id, "logchannel", (channelId) => {
-		if(channelId){
-			sendChannel(msg, channelId, message)
-		} else {
-			send(msg, message);
-		}
-	});
-}
-
-function userHasFile(msg, userID){
-	if(serverManager.users[msg.guild.id] === undefined) return false;
-
-	let user = serverManager.users[msg.guild.id][userID];
-
-	if(user === undefined){
-		let message = createEmbed("info", "User has no file!");
-		db.getSettings(msg.guild.id, "logchannel", (channelId) => {
-			if(channelId){
-				sendChannel(msg, channelId, message);
-			} else {
-				send(channelId, message);
-			}
-		});
-		return false;
-	}
-	return true;
 }
 
 function deleteMessage(msg, messageID){
@@ -688,6 +464,7 @@ const Client = {
 	music: require("./src/music/music"),
 	cah: require("./src/minigames/cahgamehandler"),
 	graphs: require("./src/graphs"),
+	serverSettings: require("./serverSettings.json"),
 
 	get bot(){
 		return bot;
@@ -695,11 +472,14 @@ const Client = {
 	get Discord(){
 		return Discord;
 	},
-
+	get serverManager(){
+		return serverManager;
+	},
+	get listener(){
+		return listener;
+	},
 	command: command,
 
-	serverManager: getServerManager,
-	listener: getListener,
 	getPrefix: getPrefix,
 
 	createEmbed: createEmbed,
@@ -711,14 +491,8 @@ const Client = {
 
 	send: send,
 	sendChannel: sendChannel,
-	kick: kick,
-	ban: ban,
-	unban: unban,
 	silence: silence,
 	unSilence: unSilence,
-	warn: warn,
-	see: see,
-	userHasFile: userHasFile,
 	deleteMessage: deleteMessage,
 	editMessage: editMessage,
 	addToRole: addToRole,

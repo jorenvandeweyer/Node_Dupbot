@@ -5,7 +5,7 @@ module.exports = {
     args: 0,
     guildOnly: true,
     execute(Client, msg){
-        message = Client.createEmbed("info", Client.serverManager().getRoles(msg).map(x => ("<@&" + x + ">")).join(", "), "Roles");
+        message = Client.createEmbed("info", Client.serverManager.getRoles(msg).map(x => ("<@&" + x + ">")).join(", "), "Roles");
     	Client.send(msg, message);
     }
 };

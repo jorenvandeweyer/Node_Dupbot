@@ -1,28 +1,34 @@
 module.exports = {
     name: "kick",
-    description: "!kick @user [reason]",
-    usage: "@user [reason]",
+    usage: "@user|userID [reason]",
     defaultPermission: 2,
     failPermission: "You can't kick people :point_up:",
     args: 1,
     guildOnly: true,
     execute(Client, msg){
-        if (msg.params.length >= 1){
-    		let targetID = Client.serverManager().getMention(msg);
-    		if(targetID){
-    			if(msg.params.length >= 2){
-    				let message = "You are kicked because: ";
-    				let reason = "";
-    				for (i = 1; i<msg.params.length; i++){
-    					reason += " " + msg.params[i];
-    				}
-    				Client.kick(msg, targetID, message + reason);
-    				Client.log(msg, targetID, "kick", reason);
-    			} else {
-    				Client.kick(msg, targetID );
-    				Client.log(msg, targetID, "kick", "No reason specified");
-    			}
-    		}
-    	}
+        let userID = Client.serverManager.extractID(msg, 0);
+
+        msg.guild.fetchMember(userID).then((member) => {
+            msg.params.shift();
+            let reason = msg.params.join(" ");
+
+            if(member.kickable){
+                member.kick(reason).then((member) =>{
+                    Client.send(msg, Client.createEmbed("kick", "<@" + member.id + "> You have been kicked :wave:"));
+                    Client.log(msg, member.id, "kick", reason);
+
+                    let kickMessage = "You have been kicked";
+                    if(reason) kickMessage = "You are kicked because: " + reason;
+
+                    member.send(Client.createEmbed("kick", kickMessage));
+                }).catch((reason) => {
+                    Client.send(msg, Client.createEmbed("fail", reason));
+                });
+            } else {
+                Client.send(msg, Client.createEmbed("fail", `My permissions are not high enough to kick <@${member.id}>`));
+            }
+        }).catch((reason) => {
+            Client.send(msg, Client.createEmbed("fail", "This is not a valid member."));    
+        });
     }
 };

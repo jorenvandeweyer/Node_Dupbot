@@ -1,6 +1,5 @@
 module.exports = {
     name: "set",
-    description: "!set <warntime, log, iamrole, maxiamroles, admin, deleteCommands, perm, music, voice, dj, prefix> <opt>",
     usage: "<warntime, log, iamrole, maxiamroles, admin, deleteCommands, perm, music, voice, dj, prefix> <opt>",
     defaultPermission: 3,
     failPermission: "You can't edit the settings",
@@ -28,7 +27,7 @@ module.exports = {
     				break;
     			case "iamrole":
     				if(msg.params.length >= 2){
-    					let role = Client.serverManager().getMentionRole(msg);
+    					let role = Client.serverManager.extractRole(msg);
     					let roles = [];
     					Client.db.getSettings(msg.guild.id, "iam_roles", (value) => {
     						if(value){
@@ -72,7 +71,7 @@ module.exports = {
                     break;
     			case "admin":
     				if(msg.params.length >= 2){
-    					roleID = Client.serverManager().getMentionRole(msg).id;
+    					roleID = Client.serverManager.extractRoleID(msg, 1);
     					if(roleID){
     						Client.db.setSettings(msg.guild.id, "adminrole", roleID, () => {
     							message = Client.createEmbed("succes", "Adminrole set to <@&" + roleID + ">");
@@ -104,7 +103,7 @@ module.exports = {
     				break;
                 case "dj":
                     if(msg.params.length >= 2){
-                        roleID = Client.serverManager().getMentionRole(msg).id;
+                        roleID = Client.serverManager.extractRoleID(msg, 1);
                         if(roleID){
                             Client.db.setSettings(msg.guild.id, "djrole", roleID, () => {
                                 message = Client.createEmbed("succes", "DJ role set to <@&" + roleID + ">");

@@ -23,7 +23,7 @@ function startUp(){
     con.query("SELECT table_name FROM information_schema.tables where table_schema='" + mysql_db + "' and table_name='botStats'", (err, result) => {
         if(err) throw err;
         if(result[0] == undefined){
-            con.query("CREATE TABLE botStats (stat CHAR(64) PRIMARY KEY, value BIGINT(255))", (err, result) => {
+            con.query("CREATE TABLE botStats (stat VARCHAR(64) PRIMARY KEY, value BIGINT(255))", (err, result) => {
                 con.query("INSERT INTO botStats VALUE ('messages', 0)");
             });
         }
@@ -73,7 +73,7 @@ function addGuild(self, guild){
                 }
             });
         } else {
-            con.query("CREATE TABLE permissions_" + guild + " (command CHAR(64) PRIMARY KEY, value INT(3))", (err, result) => {
+            con.query("CREATE TABLE permissions_" + guild + " (command VARCHAR(64) PRIMARY KEY, value INT", (err, result) => {
                 let sql = "INSERT INTO permissions_" + guild + " VALUES ?";
                 let values = [];
 
@@ -122,7 +122,7 @@ function addGuild(self, guild){
                 }
             });
         } else {
-            con.query("CREATE TABLE settings_" + guild + " (setting CHAR(64) PRIMARY KEY, value TEXT)", (err, result) => {
+            con.query("CREATE TABLE settings_" + guild + " (setting VARCHAR(64) PRIMARY KEY, value TEXT)", (err, result) => {
                 let sql = "INSERT INTO settings_" + guild + " VALUES ?";
                 let values = [];
 
@@ -137,26 +137,32 @@ function addGuild(self, guild){
             });
         }
 
+        if(!db_tables.includes(`modlog_${guild}`)){
+            con.query(`CREATE TABLE modlog_${guild} (id INT PRIMARY KEY AUTO_INCREMENT, user VARCHAR(32), type VARCHAR(16), \`mod\` VARCHAR(32), timestamp VARCHAR(32), reason VARCHAR(255), time VARCHAR(32) )`, (err, result) => {
+                console.log(err);
+            });
+        }
+
         if(!db_tables.includes("stats_cah_" + guild)){
-            con.query("CREATE TABLE stats_cah_" + guild + "(id CHAR(32), points INT(16))", (err, result) => {
+            con.query("CREATE TABLE stats_cah_" + guild + "(id VARCHAR(32), points INT", (err, result) => {
                 //nothing
             });
         }
 
         if(!db_tables.includes("serverStats_" + guild)){
-            con.query("CREATE TABLE serverStats_" + guild + " (type CHAR(64), timestamp char(32), value char(32))", (err, result) => {
+            con.query("CREATE TABLE serverStats_" + guild + " (type VARCHAR(64), timestamp VARCHAR(32), value VARCHAR(32))", (err, result) => {
                 //nothing
             });
         }
 
         if(!db_tables.includes("btc_" + guild)){
-            con.query("CREATE TABLE btc_" + guild + " (id CHAR(32), value DOUBLE(32,8), type CHAR(5))", (err, result) => {
+            con.query("CREATE TABLE btc_" + guild + " (id VARCHAR(32), value DOUBLE(32,8), type VARCHAR(5))", (err, result) => {
                 //nothing
             });
         }
 
         if(!db_tables.includes("stats_" + guild)){
-            con.query("CREATE TABLE stats_" + guild + " (id CHAR(32), value INT(32), type CHAR(16))", (err, result) => {
+            con.query("CREATE TABLE stats_" + guild + " (id VARCHAR(32), value INT, type VARCHAR(16))", (err, result) => {
                 //nothing
             });
         }
@@ -420,6 +426,19 @@ function setStats(guild, id, type, value){
     })
 }
 
+function getModlog(guild, id, _callback){
+    con.query(`SELECT * FROM modlog_${guild} WHERE user=?`, [id], (err, result) => {
+        if(err) throw err;
+        _callback(result);
+    });
+}
+
+function setModlog(guild, data){
+    con.query(`INSERT INTO modlog_${guild} SET ?`, data, (err, result) => {
+        if(err) throw err;
+    });
+}
+
 function executeStatement(statement, opts, _callback){
     con.query(statement, [opts], (err, result) => {
         if(err) throw err;
@@ -456,5 +475,7 @@ module.exports = {
     getBtc, getBtc,
     getStats: getStats,
     setStats: setStats,
+    getModlog: getModlog,
+    setModlog: setModlog,
     close: close
 };

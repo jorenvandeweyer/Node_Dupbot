@@ -1,31 +1,53 @@
 module.exports = {
     name: "warn",
-    description: "!warn @user [reason]",
-    usage: "@user [reason]",
+    usage: "@user|userID [reason]",
     defaultPermission: 2,
     failPermission: "You can't warn people :point_up:",
     args: 1,
     guildOnly: true,
     execute(Client, msg){
-        if (msg.params.length >= 1){
-    		let targetID = Client.serverManager().getMention(msg);
-    		if(targetID){
-    			let message = "<@" + targetID + "> warning! You got a warning for: ";
+		let targetID = Client.serverManager.extractID(msg, 0);
 
-    			if(msg.params.length >= 2){
-    				let reason =  "";
-    				for (i = 1; i<msg.params.length; i++){
-    					reason += " " + msg.params[i];
-    				}
-    				msg.client.users.get(targetID).send(message + reason)
-    				Client.log(msg, targetID, "warn", reason);
-    				Client.warn(msg, targetID, message + reason);
-    			} else {
-    				msg.client.users.get(targetID).send("Warning! Behave yourClient or you'll be kicked")
-    				Client.log(msg, targetID, "warn", "No reason specified");
-    				Client.warn(msg, targetID, "<@" + targetID + "> warning! Behave!");
-    			}
-    		}
-    	}
+        msg.guild.fetchMember(targetID).then((member) => {
+            msg.params.shift();
+            let reason = msg.params.join(" ");
+
+            Client.log(msg, member.id, "warn", reason);
+
+            Client.db.getModlog(msg.guild.id, member.id, (rows) => {
+                Client.db.getSettings(msg.guild.id, "warntime", (value) => {
+                    let active = filterActiveWarnings(rows, value);
+
+                    let warnMessage = `You have been warned on **${msg.guild.name}**\n\nYou have ${active}/3 active warnings.`;
+                    if(reason) warnMessage += "\nReason: " + reason;
+
+                    member.send(Client.createEmbed("warning", warnMessage));
+
+                    if(active >= 3){
+                        let spoofedMessage = msg;
+                        spoofedMessage.params = [member.id, "3 active warnings"] ;
+                        spoofedMessage.author = msg.client.user;
+                        Client.bot.commands.get("kick").execute(Client, spoofedMessage);
+                    }
+                });
+            });
+        });
     }
 };
+
+function filterActiveWarnings(rows, warntime){
+    if(warntime) warntime = parseInt(warntime);
+
+    let today = Date.now();
+    let active = 0;
+
+    for(let i = 0; i < rows.length; i++){
+        let row = rows[i];
+        if(row.type === "warn"){
+            let date = parseInt(row.timestamp);
+            if(today - date < warntime * 60 * 60 * 1000) active++;
+        }
+    }
+
+    return active;
+}

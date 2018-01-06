@@ -1,6 +1,5 @@
 module.exports = {
     name: "say",
-    description: "!say <text>",
     usage: "<text>",
     defaultPermission: 2,
     failPermission: "You can't say things",

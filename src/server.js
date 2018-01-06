@@ -1,28 +1,9 @@
 const fs = require('fs');
-const serverSettings = require("../serverSettings.json");
 
 module.exports = class Servers{
-    constructor(bot, guilds){
-        this.bot = bot;
-        this.songQueue = {};
-        this.collectors = {};
-        this.adminRole = {};
-
-        this.getUsers();
-    }
-
-    getUsers(){
-        try {
-            this.users = JSON.parse(fs.readFileSync("./data/users.json", "utf8"));
-        } catch(e) {
-            this.users = {};
-        }
-    }
-
-    saveUsers(_callback){
-        fs.writeFile(__dirname + "/../data/users.json", JSON.stringify(this.users), "utf8", function(err){
-            (typeof _callback === 'function') ? _callback(err) : null;
-        });
+    constructor(Client){
+        this.Client = Client;
+        this.bot = Client.bot;
     }
 
     getOwner(msg){
@@ -39,11 +20,11 @@ module.exports = class Servers{
 	}
 
 	isAdmin(msg, adminRole){
-            return this.isOwner(msg) || msg.author.id == serverSettings.botOwner || this.getRoles(msg).includes(adminRole);
+            return this.isOwner(msg) || msg.author.id == this.Client.serverSettings.botOwner || this.getRoles(msg).includes(adminRole);
 	}
 
     getPermissionLevel(msg, adminRole, support){
-        if(msg.author.id == serverSettings.botOwner && support == true){
+        if(msg.author.id == this.Client.serverSettings.botOwner && support == true){
             return 4;
         } else if(this.isOwner(msg)){
             return 3;
@@ -62,6 +43,15 @@ module.exports = class Servers{
 		}
 	}
 
+    extractID(msg, pos){
+        if(msg.mentions.users.first()){
+            console.log("test");
+            return msg.mentions.users.first().id;
+        } else {
+            return msg.params[pos];
+        }
+    }
+
 	getMentionRole(msg){
 		if (msg.mentions.roles.first()){
 			return msg.mentions.roles.first();
@@ -75,6 +65,22 @@ module.exports = class Servers{
             }
 		}
 	}
+
+    extractRoleID(msg, pos){
+        if(msg.mentions.roles.first()){
+            return msg.mentions.roles.first().id;
+        } else {
+            return msg.params[pos];
+        }
+    }
+
+    extractRole(msg, pos){
+        if(msg.mentions.roles.first()){
+            return msg.mentions.roles.first();
+        } else {
+            return msg.guild.roles.get(msg.params[pos]);
+        }
+    }
 
 	getUsername(msg, userID){
 		return this.bot.users.get(userID).username;

@@ -1,28 +1,36 @@
 module.exports = {
     name: "unban",
-    description: "!unban userID",
-    usage: "userId",
+    usage: "userID",
     defaultPermission: 2,
     failPermission: "You can't unban people :point_up:",
     args: 0,
     guildOnly: true,
     execute(Client, msg){
-        if (msg.params.length >= 1){
-    		if(msg.params[0] in Client.serverManager().users[msg.guild.id].bans){
-    			Client.unban(msg, msg.params[0]);
-    			Client.log(msg, msg.params[0], "unban");
-    		}
-    	} else {
-    		title = "Banned players:";
-    		message = "";
-    		let bans = Client.serverManager().users[msg.guild.id].bans;
-    		for(key in bans){
-    			message += "  * " + bans[key] + ": " + key + "\n";
-    		}
-    		message = Client.createEmbed("info", message, title);
-    		Client.db.getSettings(msg.guild.id, "logchannel", (channelId) => {
-    			Client.sendChannel(msg, channelId, message);
-    		});
-    	}
+        msg.guild.fetchBans().then((users) => {
+            if(msg.params.length >= 1){
+                if(users.has(msg.params[0])){
+                    msg.guild.unban(msg.params[0]).then((user) => {
+                        Client.log(msg, user.id, "unban");
+                        user.send(Client.createEmbed("succes", `You have been unbanned from **${msg.guild.name}**`));
+                    });
+                } else {
+                    Client.db.getSettings(msg.guild.id, "logchannel", (channelId) => {
+                        Client.sendChannel(msg, channelId, Client.createEmbed("fail", `<@${msg.params[0]}> is not banned`));
+                    });
+                }
+            } else {
+                let embed = new Client.Discord.RichEmbed();
+                embed.setTitle(`Banned members (${users.size}):`);
+                embed.setColor("RED");
+                let body = "";
+                for(let user of users){
+                    body += `\n<@${user[0]}>: ${user[0]}`;
+                }
+                embed.setDescription(body);
+                Client.db.getSettings(msg.guild.id, "logchannel", (channelId) => {
+                    Client.sendChannel(msg, channelId, embed);
+                });
+            }
+        });
     }
 };

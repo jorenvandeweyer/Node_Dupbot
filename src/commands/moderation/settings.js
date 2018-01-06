@@ -1,6 +1,5 @@
 module.exports = {
     name: "settings",
-    description: "!settings",
     defaultPermission: 3,
     args: 0,
     guildOnly: true,

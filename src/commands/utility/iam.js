@@ -21,7 +21,7 @@ module.exports = {
                     if(index >= 0){
                         let roleId = roles[index-1];
 
-                        if(Client.serverManager().getRoles(msg).indexOf(roleId) == -1){
+                        if(Client.serverManager.getRoles(msg).indexOf(roleId) == -1){
                             if(!exceededRoleLimit(Client, msg, roles, max)){
                                 Client.addToRole(msg, msg.author.id, roleId);
                                 message = Client.createEmbed("succes", "You succesfully assigned the role <@&" + roleId + "> to yourClient.");
@@ -50,7 +50,7 @@ module.exports = {
 };
 
 function exceededRoleLimit(Client, msg, iam_roles, max){
-    let roles = Client.serverManager().getRoles(msg);
+    let roles = Client.serverManager.getRoles(msg);
 
     let numberOfRoles = 0;
 

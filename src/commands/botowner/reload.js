@@ -17,7 +17,7 @@ module.exports = {
                     let messageId = msg.client.user.lastMessage.id;
                     msg.client.channels.get(channelId).fetchMessage(messageId).then(message => {
                         message.edit({embed:{color:3447003 , description:"<:empty:314349398723264512><a:loading:393852367751086090>"}}).then(() => {
-                            Client.listener().emit("reload");
+                            Client.listener.emit("reload");
                             Client.db.close();
                         });
                     });
@@ -26,7 +26,7 @@ module.exports = {
         } else {
             let message = Client.createEmbed("info", "<:empty:314349398723264512><a:loading:393852367751086090>");
         	Client.send(msg, message, function(){
-        		Client.listener().emit("reload");
+        		Client.listener.emit("reload");
                 Client.db.close();
         	});
         }

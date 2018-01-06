@@ -21,8 +21,8 @@ module.exports = {
     			Client.send(msg, message);
     			return;
     		}
-    		if(serverManager().getMention(msg)){
-    			Client.kick(msg, Client.serverManager().getMention(msg) );
+    		if(Client.serverManager.getMention(msg)){
+    			Client.kick(msg, Client.serverManager.getMention(msg) );
     		}
     	}
     }
