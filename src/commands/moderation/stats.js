@@ -98,13 +98,16 @@ module.exports = {
             }
 
             async fetchAllMessages(){
-                for(let channel of this.channels){
-                    if(!channel[1].permissionsFor(msg.client.user).has("VIEW_CHANNEL"))continue;
-                    await this.fetchAllMessagesChannel(channel[1], msg.guild.createdTimestamp)
-                }
-                Client.send(msg, `Done, took ${(Date.now() - this.started) / 1000}seconds to fetch ${this.requests/10}k messages.`);
 
-                this.updateDatabase();
+                Client.send(msg, Client.createEmbed("info", "<:empty:314349398723264512> Fetching messages <a:loading:393852367751086090>"), async (message) => {
+                    for(let channel of this.channels){
+                        if(!channel[1].permissionsFor(msg.client.user).has("VIEW_CHANNEL"))continue;
+                        await this.fetchAllMessagesChannel(channel[1], msg.guild.createdTimestamp)
+                    }
+                    message.edit(Client.createEmbed("succes", `<:check:314349398811475968> Finished, took ${(Date.now() - this.started) / 1000}seconds to fetch ${this.requests/10}k messages. Invoke the \`stats\` command again to see the result!`));
+
+                    this.updateDatabase();
+                });
             }
 
             async fetchAllMessagesChannel(channel, after){
