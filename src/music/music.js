@@ -30,7 +30,7 @@ function addSong(Client, msg){
     } else if(msg.params[0].includes("playlist?list=")){
         let shuffle = msg.params.includes("shuffle");
         let playlistId = msg.params[0].split("playlist?list=")[1].split("&")[0];
-        //Client.addPlaylistToQueue(Client, msg, playlistId, shuffle);
+        Client.addPlaylistToQueue(Client, msg, playlistId, shuffle);
     } else {
         let query = msg.params.join(" ");
         YouTubeSearch(Client, msg.params.join(" "), function(video){
