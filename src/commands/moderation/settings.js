@@ -5,10 +5,11 @@ module.exports = {
     guildOnly: true,
     execute(Client, msg){
         Client.db.getSettings(msg.guild.id, "allSettings", (settings) => {
-    		let message = "";
+    		let message = "```";
     		for(let i = 0; i < settings.length; i++){
-    			message += "\n`" + settings[i].setting + ": " + settings[i].value + "`";
+    			message += "\n" + settings[i].setting + ": " + settings[i].value;
     		}
+            message += "```";
 
     		messsage = Client.createEmbed("info", message, "Settings for this server");
     		Client.send(msg, message);

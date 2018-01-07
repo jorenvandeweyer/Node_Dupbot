@@ -35,7 +35,7 @@ module.exports = {
                         }
                         for(let i = 0; i < result.length; i++){
                             if(i === 20) break;
-                            members += `\n${i+1} - <@${result[i].id.toString()}>: ${result[i].value} messages`;
+                            members += `\n${i+1} - <@${result[i].user_id}>: ${result[i].value} messages`;
                             percentage += `\n ${((result[i].value/total)*100).toFixed(2)}%`;
                         }
 
