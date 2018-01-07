@@ -159,14 +159,6 @@ function startUp(Client){
             con.query("CREATE TABLE stats_bot (`stat` VARCHAR(64),`value` BIGINT(255),PRIMARY KEY (`stat`))", (err, result) => {
                 if(err) console.error(err),process.exit();
                 console.log("[db]Created stats_bot table");
-                //START conversion
-                con.query("SELECT * FROM botStats", (err, result) => {
-                    if(err) console.error(err),process.exit();
-                    con.query("INSERT INTO stats_bot VALUES (?)", [[result[0].stat, result[0].value]], (err, result)=>{
-                        if(err) console.error(err),process.exit();
-                    });
-                });
-                return //END conversion
                 con.query("INSERT INTO stats_bot VALUES ('messages', 0)", (err, result) => {
                     if(err) console.error(err),process.exit();
                 });
@@ -222,39 +214,6 @@ function addGuild(guild){
     con.query("INSERT INTO guilds (`guild`) VALUES (?)", [guild], (err, result) => {
         if(err) console.error(err),process.exit();
 
-        con.query(`INSERT INTO settings
-            SELECT guilds.guild_id, settings_default.setting_id, settings_${guild}.value FROM settings_${guild}
-            INNER JOIN guilds ON guilds.guild='${guild}'
-            INNER JOIN settings_default ON settings_default.setting = settings_${guild}.setting
-            ORDER BY settings_default.setting_id ASC`, (err, result) => {
-            if(err) console.error(err),process.exit();
-            console.log("settings")
-        });
-
-        con.query(`INSERT INTO permissions
-            SELECT guilds.guild_id, commands.command_id, permissions_${guild}.value FROM permissions_${guild}
-            INNER JOIN guilds ON guilds.guild='${guild}'
-            INNER JOIN commands ON commands.command = permissions_${guild}.command
-            ORDER BY commands.command_id ASC`, (err, result) => {
-            if(err) console.error(err),process.exit();
-            console.log("perm")
-        });
-
-        con.query(`INSERT INTO stats_users
-            SELECT guilds.guild_id, stats_${guild}.id, stats_${guild}.value, stats_${guild}.type FROM stats_${guild}
-            INNER JOIN guilds ON guilds.guild='${guild}'`, (err, result) => {
-            if(err) console.error(err),process.exit();
-            console.log("users")
-        });
-
-        con.query(`INSERT INTO stats_guild
-            SELECT guilds.guild_id, serverStats_${guild}.type, serverStats_${guild}.timestamp, serverStats_${guild}.value FROM serverStats_${guild}
-            INNER JOIN guilds ON guilds.guild='${guild}'`, (err, result) => {
-            if(err) console.error(err),process.exit();
-            console.log("guilds_st")
-        });
-
-        return //END CONVERSION
         con.query("INSERT INTO permissions SELECT guilds.guild_id, commands.command_id, commands.permissions_default FROM commands INNER JOIN guilds ON guilds.guild=?", [guild], (err, result) => {
             if(err) console.error(err),process.exit();
             console.log(`[db]Added permissions for guild ${guild}`);
@@ -301,16 +260,16 @@ function resetDatabase(db){
 }
 
 function getPermissions(guild, command, _callback){
-    // let sql = "SELECT guilds.guild, commands.command, permissions.value FROM permissions INNER JOIN guilds ON guilds.guild_id=permissions.guild_id INNER JOIN commands ON commands.command_id=permissions.command_id";
-    // sql += " WHERE guilds.guild=?"; // remove when making a cache
-    // if(command !== "allPermissions"){
-    //     sql += " AND commands.command=?";
-    // }
-    //
-    // con.query(sql, [guild, command], (err, result) => {
-    //     if(err) console.error(err),process.exit();
-    //     _callback(result)
-    // });
+    let sql = "SELECT guilds.guild, commands.command, permissions.value FROM permissions INNER JOIN guilds ON guilds.guild_id=permissions.guild_id INNER JOIN commands ON commands.command_id=permissions.command_id";
+    sql += " WHERE guilds.guild=?"; // remove when making a cache
+    if(command !== "allPermissions"){
+        sql += " AND commands.command=?";
+    }
+
+    con.query(sql, [guild, command], (err, result) => {
+        if(err) console.error(err),process.exit();
+        _callback(result)
+    });
 }
 
 function setPermissions(guild, command, value){
@@ -325,16 +284,16 @@ function setPermissions(guild, command, value){
 }
 
 function getSettings(guild, setting, _callback){
-    // let sql = "SELECT guilds.guild, settings_default.setting, settings.value FROM settings INNER JOIN guilds ON guilds.guild_id=settings.guild_id INNER JOIN settings_default ON settings_default.setting_id=settings.setting_id"
-    // sql += " WHERE guilds.guild=?" //replace when make a cache
-    // if(setting !== "allSettings"){
-    //     sql += " AND settings_default.setting=?";
-    // }
-    //
-    // con.query(sql, [guild, setting], (err, result) => {
-    //     if(err) console.error(err),process.exit();
-    //     _callback(result);
-    // });
+    let sql = "SELECT guilds.guild, settings_default.setting, settings.value FROM settings INNER JOIN guilds ON guilds.guild_id=settings.guild_id INNER JOIN settings_default ON settings_default.setting_id=settings.setting_id"
+    sql += " WHERE guilds.guild=?" //replace when make a cache
+    if(setting !== "allSettings"){
+        sql += " AND settings_default.setting=?";
+    }
+
+    con.query(sql, [guild, setting], (err, result) => {
+        if(err) console.error(err),process.exit();
+        _callback(result);
+    });
 }
 
 function setSettings(guild, setting, value, ... _callback){
@@ -376,32 +335,32 @@ function setStats_cah(guild, player, points){
 }
 
 function getStats_guild(guild, type, _callback){
-    // con.query("SELECT guilds.guild, stats_guild.type, stats_guild.timestamp, stats_guild.value FROM stats_guild INNER JOIN guilds ON guilds.guild_id=stats_guild.guild_id WHERE guilds.guild=? AND stats_guild.type=? ORDER BY timestamp ASC", [guild, type], (err, result) => {
-    //     if(err) console.error(err),process.exit();
-    //     _callback(result);
-    // });
+    con.query("SELECT guilds.guild, stats_guild.type, stats_guild.timestamp, stats_guild.value FROM stats_guild INNER JOIN guilds ON guilds.guild_id=stats_guild.guild_id WHERE guilds.guild=? AND stats_guild.type=? ORDER BY timestamp ASC", [guild, type], (err, result) => {
+        if(err) console.error(err),process.exit();
+        _callback(result);
+    });
 }
 
 function setStats_guild(guild, type, value){
-    // let timestamp = Date.now().toString();
-    // con.query("INSERT INTO stats_guild SELECT guilds.guild_id, ?, ?, ? FROM guilds WHERE guilds.guild=?", [type, timestamp, value, guild], (err, result) => {
-    //     if(err) console.error(err),process.exit();
-    //     console.log(type);
-    // });
+    let timestamp = Date.now().toString();
+    con.query("INSERT INTO stats_guild SELECT guilds.guild_id, ?, ?, ? FROM guilds WHERE guilds.guild=?", [type, timestamp, value, guild], (err, result) => {
+        if(err) console.error(err),process.exit();
+        console.log(type);
+    });
 }
 
 function getStats_bot(stat, _callback){
-    // con.query("SELECT value FROM stats_bot WHERE stat=?", [stat], (err, result) => {
-    //     if(err) console.error(err),process.exit();
-    //     _callback(result);
-    // });
+    con.query("SELECT value FROM stats_bot WHERE stat=?", [stat], (err, result) => {
+        if(err) console.error(err),process.exit();
+        _callback(result);
+    });
 }
 
 function setStats_bot(stat, value){
-    // con.query("UPDATE stats_bot SET value=value+? WHERE stat=?", [value, stat], (err, result) => {
-    //     if(err) console.error(err),process.exit();
-    //     //nothing
-    // });
+    con.query("UPDATE stats_bot SET value=value+? WHERE stat=?", [value, stat], (err, result) => {
+        if(err) console.error(err),process.exit();
+        //nothing
+    });
 }
 
 function getBtc(guild, id, _callback){
@@ -428,32 +387,32 @@ function setBtc(guild, id, type, value){
 }
 
 function getStats_users(guild, id, _callback){
-    // let sql = "SELECT guilds.guild, stats_users.user_id, stats_users.value, stats_users.type FROM stats_users INNER JOIN guilds ON guilds.guild_id=stats_users.guild_id WHERE guilds.guild=?";
-    // if(id === "all"){
-    //     sql += " ORDER BY stats_users.value DESC";
-    // } else {
-    //     sql += " AND stats_users.user_id=?";
-    // }
-    //
-    // con.query(sql, [guild, id], (err, result) => {
-    //     if(err) console.error(err),process.exit();
-    //     _callback(result);
-    // });
+    let sql = "SELECT guilds.guild, stats_users.user_id, stats_users.value, stats_users.type FROM stats_users INNER JOIN guilds ON guilds.guild_id=stats_users.guild_id WHERE guilds.guild=?";
+    if(id === "all"){
+        sql += " ORDER BY stats_users.value DESC";
+    } else {
+        sql += " AND stats_users.user_id=?";
+    }
+
+    con.query(sql, [guild, id], (err, result) => {
+        if(err) console.error(err),process.exit();
+        _callback(result);
+    });
 }
 
 function setStats_users(guild, id, type, value){
-    // getStats_users(guild, id, (result) => {
-    //     if(result.length){ //need a better check if I'll be using more stats!!!
-    //         console.log("update");
-    //         con.query("UPDATE stats_users SET `value`=`value`+? WHERE `guild_id`=(SELECT `guild_id` FROM guilds WHERE `guild`=?) AND `user_id`=? AND `type`=?", [value, guild, id, type], (err, result) => {
-    //             if(err) console.error(err),process.exit();
-    //         });
-    //     } else {
-    //         con.query("INSERT INTO stats_users SELECT guilds.guild_id, ?, ?, ? FROM guilds WHERE guilds.guild = ?", [id, value, type, guild], (err, result) => {
-    //             if(err) console.error(err),process.exit();
-    //         });
-    //     }
-    // });
+    getStats_users(guild, id, (result) => {
+        if(result.length){ //need a better check if I'll be using more stats!!!
+            console.log("update");
+            con.query("UPDATE stats_users SET `value`=`value`+? WHERE `guild_id`=(SELECT `guild_id` FROM guilds WHERE `guild`=?) AND `user_id`=? AND `type`=?", [value, guild, id, type], (err, result) => {
+                if(err) console.error(err),process.exit();
+            });
+        } else {
+            con.query("INSERT INTO stats_users SELECT guilds.guild_id, ?, ?, ? FROM guilds WHERE guilds.guild = ?", [id, value, type, guild], (err, result) => {
+                if(err) console.error(err),process.exit();
+            });
+        }
+    });
 }
 
 function getModlog(guild, id, _callback){
