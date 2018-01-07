@@ -159,6 +159,14 @@ function startUp(Client){
             con.query("CREATE TABLE stats_bot (`stat` VARCHAR(64),`value` BIGINT(255),PRIMARY KEY (`stat`))", (err, result) => {
                 if(err) console.error(err),process.exit();
                 console.log("[db]Created stats_bot table");
+                //START conversion
+                con.query("SELECT * FROM botStats", (err, result) => {
+                    if(err) console.error(err),process.exit();
+                    con.query("INSERT INTO stats_bot VALUES (?)", [[result[0].stat, result[0].value]], (err, result)=>{
+                        if(err) console.error(err),process.exit();
+                    });
+                });
+                return //END conversion
                 con.query("INSERT INTO stats_bot VALUES ('messages', 0)", (err, result) => {
                     if(err) console.error(err),process.exit();
                 });
@@ -213,6 +221,40 @@ function addGuild(guild){
     console.log(guild);
     con.query("INSERT INTO guilds (`guild`) VALUES (?)", [guild], (err, result) => {
         if(err) console.error(err),process.exit();
+
+        con.query(`INSERT INTO settings
+            SELECT guilds.guild_id, settings_default.setting_id, settings_${guild}.value FROM settings_${guild}
+            INNER JOIN guilds ON guilds.guild='${guild}'
+            INNER JOIN settings_default ON settings_default.setting = settings_${guild}.setting
+            ORDER BY settings_default.setting_id ASC`, (err, result) => {
+            if(err) console.error(err),process.exit();
+            console.log("settings")
+        });
+
+        con.query(`INSERT INTO permissions
+            SELECT guilds.guild_id, commands.command_id, permissions_${guild}.value FROM permissions_${guild}
+            INNER JOIN guilds ON guilds.guild='${guild}'
+            INNER JOIN commands ON commands.command = permissions_${guild}.command
+            ORDER BY commands.command_id ASC`, (err, result) => {
+            if(err) console.error(err),process.exit();
+            console.log("perm")
+        });
+
+        con.query(`INSERT INTO stats_users
+            SELECT guilds.guild_id, stats_${guild}.id, stats_${guild}.value, stats_${guild}.type FROM stats_${guild}
+            INNER JOIN guilds ON guilds.guild='${guild}'`, (err, result) => {
+            if(err) console.error(err),process.exit();
+            console.log("users")
+        });
+
+        con.query(`INSERT INTO stats_guild
+            SELECT guilds.guild_id, serverStats_${guild}.type, serverStats_${guild}.timestamp, serverStats_${guild}.value FROM serverStats_${guild}
+            INNER JOIN guilds ON guilds.guild='${guild}'`, (err, result) => {
+            if(err) console.error(err),process.exit();
+            console.log("guilds_st")
+        });
+
+        return //END CONVERSION
         con.query("INSERT INTO permissions SELECT guilds.guild_id, commands.command_id, commands.permissions_default FROM commands INNER JOIN guilds ON guilds.guild=?", [guild], (err, result) => {
             if(err) console.error(err),process.exit();
             console.log(`[db]Added permissions for guild ${guild}`);

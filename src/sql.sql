@@ -107,6 +107,26 @@ CREATE TABLE btc (
     UNIQUE combined_index (`guild_id`, `user_id`)
 );
 
+INSERT INTO settings
+    SELECT guilds.guild_id, settings_default.setting_id, settings_310865351099285505.value FROM settings_310865351099285505
+        INNER JOIN guilds ON guilds.guild='310865351099285505'
+        INNER JOIN settings_default ON settings_default.setting = settings_310865351099285505.setting
+        ORDER BY settings_default.setting_id ASC;
+
+INSERT INTO permissions
+    SELECT guilds.guild_id, commands.command_id, permissions_310865351099285505.value FROM permissions_310865351099285505
+        INNER JOIN guilds ON guilds.guild='310865351099285505'
+        INNER JOIN commands ON commands.command = permissions_310865351099285505.command
+        ORDER BY commands.command_id ASC;
+
+INSERT INTO stats_users
+    SELECT guilds.guild_id, stats_310865351099285505.id, stats_310865351099285505.value, stats_310865351099285505.type FROM stats_310865351099285505
+        INNER JOIN guilds ON guilds.guild='310865351099285505';
+
+INSERT INTO stats_guild 
+    SELECT guilds.guild_id, serverStats_323614795750178816.type, serverStats_323614795750178816.timestamp, serverStats_323614795750178816.value FROM serverStats_323614795750178816
+        INNER JOIN guilds ON guilds.guild='323614795750178816';
+
 
 SELECT table_name FROM information_schema.tables WHERE `table_schema`='${mysql_db}';
 
