@@ -6,6 +6,12 @@ module.exports = {
     guildOnly: true,
     execute(Client, msg){
         Client.db.getSettings(msg.guild.id, "voiceChannel", (channelId) => {
+            if(channelId.length){
+                channelId = channelId[0].value;
+            } else {
+                channelId = undefined;
+            }
+            
             let voiceChannelUser = msg.member.voiceChannelID;
             if(voiceChannelUser === undefined){
                 let message = Client.createEmbed("warn", "Go in a voiceChannel first");
