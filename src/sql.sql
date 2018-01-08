@@ -109,9 +109,10 @@ CREATE TABLE btc (
 
 CREATE TABLE events (
     `id` INT UNSIGNED AUTO_INCREMENT,
-    `created_at` TIMESTAMP NOT NULL DEFAULT current_timestamp,
-    `execute_at` TIMESTAMP NOT NULL,
+    `created_at` TIMESTAMP(3) NOT NULL DEFAULT current_timestamp,
+    `execute_at` TIMESTAMP(3) NOT NULL,
     `guild_id` INT UNSIGNED,
+    `channel_id` VARCHAR(32),
     `initiator_id` VARCHAR(32),
     `action` VARCHAR(64),
     `target_id` VARCHAR(32),
@@ -175,6 +176,9 @@ SELECT modlog.id, guilds.guild, modlog.user, modlog.type, modlog.mod, modlog.tim
     INNER JOIN guilds ON guilds.guild_id=modlog.guild_id
     WHERE guilds.guild=? AND modlog.user=?;
 
+SELECT events.id, events.created_at, events.execute_at, guilds.guild, events.channel_id, events.initiator_id, events.action, events.target_id, events.data FROM events
+    INNER JOIN guilds ON guilds.guild_id=events.guild_id;
+
 UPDATE permissions SET `value`=?
     WHERE
         `guild_id`=(SELECT `guild_id` FROM guilds WHERE `guild`=?)
@@ -206,6 +210,10 @@ UPDATE stats_users SET `value`=?
     `user_id`=?
     AND
     `type`=?;
+
+INSERT INTO events (`execute_at`, `guild_id`, `channel_id`, `initiator_id`, `action`, `target_id`, `data`)
+    SELECT FROM_UNIXTIME(?), guilds.guild_id, ?, ?, ?, ?, ? FROM guilds
+        WHERE guilds.guild = ?;
 
 INSERT INTO stats_guild
     SELECT guilds.guild_id, ?, ?, ? FROM guilds

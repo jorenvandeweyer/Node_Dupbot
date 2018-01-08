@@ -209,6 +209,12 @@ function startUp(Client){
                 console.log("[db]Created btc table");
             });
         }
+        if(!db_tables.includes("events")){
+            con.query("CREATE TABLE events (`id` INT UNSIGNED AUTO_INCREMENT, `created_at` TIMESTAMP NOT NULL DEFAULT current_timestamp, `execute_at` TIMESTAMP NOT NULL, `guild_id` INT UNSIGNED, `channel_id` VARCHAR(32), `initiator_id` VARCHAR(32), `action` VARCHAR(64), `target_id` VARCHAR(32), `data` TEXT, FOREIGN KEY (`guild_id`) REFERENCES guilds(`guild_id`) ON DELETE CASCADE ON UPDATE CASCADE, PRIMARY KEY (`id`))", (err, result) => {
+                if(err) console.error(err),process.exit();
+                console.log("[db]Created events table");
+            });
+        }
     });
 }
 
@@ -437,6 +443,19 @@ function setModlog(guild, data){
 
 }
 
+function getEvent(guild, query, _callback){
+    con.query("", [], (err, result) => {
+        if(err) console.error(err),process.exit();
+
+    });
+}
+
+function setEvent(guild, data){
+    con.query("INSERT INTO events (`execute_at`, `guild_id`, `channel_id`, `initiator_id`, `action`, `target_id`, `data`) SELECT FROM_UNIXTIME(?), guilds.guild_id, ?, ?, ?, ?, ? FROM guilds WHERE guilds.guild = ?",
+        [data.execute_at/1000, data.channel_id, data.initiator_id, data.action, data.target_id, data.data, data.guild_id], (err, result) => {
+        if(err) console.error(err),process.exit();
+    });
+}
 function executeStatement(statement, opts, _callback){
     con.query(statement, [opts], (err, result) => {
         if(err) console.error(err),process.exit();
