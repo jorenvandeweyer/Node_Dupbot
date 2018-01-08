@@ -206,7 +206,7 @@ function setup(b, l){
 
 	serverManager = new Servers(Client);
 
-	db.setup(Client, bot.guilds);
+	db.setup(Client);
 	for(key of bot.guilds){
 		if(blackList.guilds.includes(key[0])){
 			key[1].leave().then( () => {
@@ -229,7 +229,7 @@ function setup(b, l){
 				console.log("[+]Left guild on blacklist: " + key);
 			});
 		} else {
-			db.addGuild(Client, guild.id);
+			db.addGuild(guild.id);
 		}
 	});
 
