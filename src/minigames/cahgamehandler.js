@@ -13,6 +13,7 @@ function broadcastCahMessages(self, msg, array){
 
 			if(data.id != undefined && message.includes("%points")){
 				self.db.getStats_cah(msg.guild.id, data.id, (row) => {
+
 					let points = 1;
 					if(row){
 						points+= row.points;

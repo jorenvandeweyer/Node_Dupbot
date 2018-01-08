@@ -31,7 +31,7 @@ module.exports = {
                         console.log(role);
     					let roles = [];
     					Client.db.getSettings(msg.guild.id, "iam_roles", (value) => {
-    						if(value.length){
+    						if(value){
     							roles = value[0].value.split(",");
 
     							let index = roles.indexOf(role.id.toString());
@@ -115,11 +115,6 @@ module.exports = {
                     break;
     			case "deleteCommands":
     				Client.db.getSettings(msg.guild.id, "deleteCommands", (value) => {
-                        if(value.length){
-                            value = value[0].value;
-                        } else {
-                            value = undefined;
-                        }
                         value = value == "true" || value == "1";
                         let val = +!value;
     					Client.db.setSettings(msg.guild.id, "deleteCommands", val, () => {
@@ -145,11 +140,6 @@ module.exports = {
     				break;
                 case "ai":
                     Client.db.getSettings(msg.guild.id, "ai", (value) => {
-                        if(value.length){
-                            value = value[0].value;
-                        } else {
-                            value = undefined;
-                        }
                         value = value == "true" || value == "1";
                         let val = +!value;
                         Client.db.setSettings(msg.guild.id, "ai", val, () => {
@@ -165,11 +155,6 @@ module.exports = {
                     break;
                 case "support":
                     Client.db.getSettings(msg.guild.id, "support", (value) => {
-                        if(value.length){
-                            value = value[0].value;
-                        } else {
-                            value = undefined;
-                        }
                         value = value == "true" || value == "1";
                         let val = +!value;
                         Client.db.setSettings(msg.guild.id, "support", val, () => {
@@ -192,11 +177,6 @@ module.exports = {
                     break;
                 case "botupdates":
                     Client.db.getSettings(msg.guild.id, "botupdates", (value) => {
-                        if(value.length){
-                            value = value[0].value;
-                        } else {
-                            value = undefined;
-                        }
                         value = value == "true" || value == "1";
                         let val = +!value;
                         Client.db.setSettings(msg.guild.id, "botupdates", val, () => {

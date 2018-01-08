@@ -7,11 +7,6 @@ module.exports = {
     args: 0,
     execute(Client, msg){
         Client.db.getBotStats("messages", (messages) => {
-            if(messages.length){
-                messages = messages[0].value;
-            } else {
-                messages = undefined;
-            }
             msg.client.fetchUser(botOwner).then( (user) => {
                 let members = 0;
                 for(let guild of msg.client.guilds){

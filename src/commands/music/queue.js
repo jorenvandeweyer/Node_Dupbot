@@ -15,11 +15,6 @@ module.exports = {
     		message += song + ": " + Client.music.queue.get(msg.guild.id)[song].title + playlist + "\n";
     	}
     	Client.db.getSettings(msg.guild.id, "musicChannel", (channelId) => {
-            if(channelId.length){
-                channelId = channelId[0].value;
-            } else {
-                channelId = undefined;
-            }
     		message = Client.createEmbed("music", message, "Song queue");
     		if(channelId){
     			Client.sendChannel(msg, channelId, message);

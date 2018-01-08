@@ -277,7 +277,15 @@ function getPermissions(guild, command, _callback){
 
     con.query(sql, [guild, command], (err, result) => {
         if(err) console.error(err),process.exit();
-        _callback(result)
+        if(command !== "allPermissions"){
+            if(result.length){
+                _callback(result[0].value);
+            } else {
+                _callback(undefined);
+            }
+        } else {
+            _callback(result)
+        }
     });
 }
 
@@ -301,7 +309,15 @@ function getSettings(guild, setting, _callback){
 
     con.query(sql, [guild, setting], (err, result) => {
         if(err) console.error(err),process.exit();
-        _callback(result);
+        if(setting !== "allSettings"){
+            if(result.length){
+                _callback(result[0].value);
+            } else {
+                _callback(undefined);
+            }
+        } else {
+            _callback(result);
+        }
     });
 }
 
@@ -323,7 +339,15 @@ function getStats_cah(guild, player, _callback){
 
     con.query(sql, [guild, player], (err, result) => {
         if(err) console.error(err),process.exit();
-        _callback(result);
+        if(player !== "top25"){
+            if(result.length){
+                _callback(result[0].value);
+            } else {
+                _callback(undefined);
+            }
+        } else {
+            _callback(result);
+        }
     });
 }
 
@@ -361,7 +385,11 @@ function setStats_guild(guild, type, value){
 function getStats_bot(stat, _callback){
     con.query("SELECT value FROM stats_bot WHERE stat=?", [stat], (err, result) => {
         if(err) console.error(err),process.exit();
-        _callback(result);
+        if(result.length){
+            _callback(result[0].value);
+        } else {
+            _callback(undefined);
+        }
     });
 }
 
@@ -375,7 +403,11 @@ function setStats_bot(stat, value){
 function getBtc(guild, id, _callback){
     con.query("SELECT guilds.guild, btc.user_id, btc.value, btc.type FROM btc INNER JOIN guilds ON guilds.guild_id=btc.guild_id WHERE guilds.guild=? AND btc.user_id=?", (err, result) => {
         if(err) console.error(err),process.exit();
-        _callback(result);
+        if(result.length){
+            _callback(result);
+        } else {
+            _callback(false);
+        }
     });
 }
 
@@ -405,7 +437,15 @@ function getStats_users(guild, id, _callback){
 
     con.query(sql, [guild, id], (err, result) => {
         if(err) console.error(err),process.exit();
-        _callback(result);
+        if(id === "all"){
+            _callback(result);
+        } else {
+            if(result.length){
+                _callback(result);
+            } else {
+                _callback(false);
+            }            
+        }
     });
 }
 
