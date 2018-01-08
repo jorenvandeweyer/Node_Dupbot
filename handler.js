@@ -437,7 +437,7 @@ function joinVoiceChannel(msg, _callback){
 			value = undefined;
 		}
 		if(value){
-			msg.guild.channels.get(value[0].value).join().then(con => _callback(con));
+			msg.guild.channels.get(value).join().then(con => _callback(con));
 		} else {
 			msg.member.voiceChannel.join().then(con => _callback(con));
 		}
