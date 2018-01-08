@@ -432,6 +432,11 @@ function sendChannel(msg, channelId, message, _callback){
 function joinVoiceChannel(msg, _callback){
 	db.getSettings(msg.guild.id, "voiceChannel", (value) => {
 		if(value.length){
+			value = value[0].value;
+		} else {
+			value = undefined;
+		}
+		if(value){
 			msg.guild.channels.get(value[0].value).join().then(con => _callback(con));
 		} else {
 			msg.member.voiceChannel.join().then(con => _callback(con));

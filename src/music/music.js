@@ -99,6 +99,11 @@ function addSongToQueue(Client, msg, id){
         embed.setFooter("Queued by " + song.username, song.avatar);
 
 		Client.db.getSettings(msg.guild.id, "musicChannel", (channelId) => {
+            if(channelId.length){
+                channelId = channelId[0].value;
+            } else {
+                channelId = undefined;
+            }
 			if(channelId){
 				Client.sendChannel(msg, channelId, embed);
 			} else {
@@ -177,6 +182,11 @@ function addPlaylistToQueue(Client, msg, id, shuffle){
         embed.setFooter("Queued by " + playlist.username, playlist.avatar);
 
 		Client.db.getSettings(msg.guild.id, "musicChannel", (channelId) => {
+            if(channelId.length){
+                channelId = channelId[0].value;
+            } else {
+                channelId = undefined;
+            }
 			if(channelId){
 				sendChannel(msg, channelId, embed);
 			} else {
@@ -276,6 +286,11 @@ function playSong(Client, msg){
 		videoID = video.videoID;
 
 		Client.db.getSettings(msg.guild.id, "musicChannel", (channelId) => {
+            if(channelId.length){
+                channelId = channelId[0].value;
+            } else {
+                channelId = undefined;
+            }
 			if(channelId){
                 let embed = new Client.Discord.RichEmbed();
                 embed.setTitle("=-=-=-=-=-=-= Song =-=-=-=-=-=-=");
@@ -302,6 +317,11 @@ function playSong(Client, msg){
 
 		YouTubeVideo(video.songs[video.current].videoID, (obj) => {
 			Client.db.getSettings(msg.guild.id, "musicChannel", (channelId) => {
+                if(channelId.length){
+                    channelId = channelId[0].value;
+                } else {
+                    channelId = undefined;
+                }
 				if(channelId){
                     let embed = new Client.Discord.RichEmbed();
                     embed.setTitle("=-=-=-=-=-=-= Playlist =-=-=-=-=-=-=");
@@ -348,6 +368,11 @@ function playSong(Client, msg){
 		} else {
 			msg.guild.voiceConnection.channel.leave();
 			Client.db.getSettings(msg.guild.id, "musicChannel", (channelId) => {
+                if(channelId.length){
+                    channelId = channelId[0].value;
+                } else {
+                    channelId = undefined;
+                }
 				if(channelId){
 					Client.sendChannel(msg, channelId, Client.createEmbed("info", "Queue finished"));
 				}
