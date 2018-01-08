@@ -81,6 +81,9 @@ function startUp(Client){
         if(!db_tables.includes("guilds")){
             con.query("CREATE TABLE guilds (`guild_id` INT UNSIGNED AUTO_INCREMENT, `guild` VARCHAR(32) UNIQUE, PRIMARY KEY (`guild_id`))", (err, result) => {
                 if(err) console.error(err),process.exit();
+                con.query("INSERT INTO guilds (`guild`) VALUES ('0')", (err, result) => {
+                    if(err) console.error(err),process.exit();
+                });
                 for(let guild of Client.bot.guilds){
                     addGuild(guild[0]);
                 }
@@ -403,7 +406,6 @@ function getStats_users(guild, id, _callback){
 function setStats_users(guild, id, type, value){
     getStats_users(guild, id, (result) => {
         if(result.length){ //need a better check if I'll be using more stats!!!
-            console.log("update");
             con.query("UPDATE stats_users SET `value`=`value`+? WHERE `guild_id`=(SELECT `guild_id` FROM guilds WHERE `guild`=?) AND `user_id`=? AND `type`=?", [value, guild, id, type], (err, result) => {
                 if(err) console.error(err),process.exit();
             });

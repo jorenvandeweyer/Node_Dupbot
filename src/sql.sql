@@ -107,6 +107,21 @@ CREATE TABLE btc (
     UNIQUE combined_index (`guild_id`, `user_id`)
 );
 
+CREATE TABLE events (
+    `id` INT UNSIGNED AUTO_INCREMENT,
+    `created_at` TIMESTAMP NOT NULL DEFAULT current_timestamp,
+    `execute_at` TIMESTAMP NOT NULL,
+    `guild_id` INT UNSIGNED,
+    `initiator_id` VARCHAR(32),
+    `action` VARCHAR(64),
+    `target_id` VARCHAR(32),
+    `data` TEXT,
+    FOREIGN KEY (`guild_id`) REFERENCES guilds(`guild_id`)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    PRIMARY KEY (`id`)
+);
+
 INSERT INTO settings
     SELECT guilds.guild_id, settings_default.setting_id, settings_310865351099285505.value FROM settings_310865351099285505
         INNER JOIN guilds ON guilds.guild='310865351099285505'
@@ -123,7 +138,7 @@ INSERT INTO stats_users
     SELECT guilds.guild_id, stats_310865351099285505.id, stats_310865351099285505.value, stats_310865351099285505.type FROM stats_310865351099285505
         INNER JOIN guilds ON guilds.guild='310865351099285505';
 
-INSERT INTO stats_guild 
+INSERT INTO stats_guild
     SELECT guilds.guild_id, serverStats_323614795750178816.type, serverStats_323614795750178816.timestamp, serverStats_323614795750178816.value FROM serverStats_323614795750178816
         INNER JOIN guilds ON guilds.guild='323614795750178816';
 

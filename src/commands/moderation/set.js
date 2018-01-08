@@ -31,8 +31,8 @@ module.exports = {
                         console.log(role);
     					let roles = [];
     					Client.db.getSettings(msg.guild.id, "iam_roles", (value) => {
-    						if(value){
-    							roles = value.split(",");
+    						if(value.length){
+    							roles = value[0].value.split(",");
 
     							let index = roles.indexOf(role.id.toString());
     							if( index >= 0){
@@ -115,6 +115,11 @@ module.exports = {
                     break;
     			case "deleteCommands":
     				Client.db.getSettings(msg.guild.id, "deleteCommands", (value) => {
+                        if(value.length){
+                            value = value[0].value;
+                        } else {
+                            value = undefined;
+                        }
                         value = value == "true" || value == "1";
                         let val = +!value;
     					Client.db.setSettings(msg.guild.id, "deleteCommands", val, () => {
@@ -140,29 +145,19 @@ module.exports = {
     				break;
                 case "ai":
                     Client.db.getSettings(msg.guild.id, "ai", (value) => {
+                        if(value.length){
+                            value = value[0].value;
+                        } else {
+                            value = undefined;
+                        }
                         value = value == "true" || value == "1";
                         let val = +!value;
                         Client.db.setSettings(msg.guild.id, "ai", val, () => {
                             let message;
                             if(val){
-                                message = Client.createEmbed("succes", "You enabled the AI(beta) function");
+                                message = Client.createEmbed("succes", "Bot will respond to messages that include it's name (AI BETA)");
                             } else {
-                                message = Client.createEmbed("succes", "You disabled the AI function, Cleverbot will take over :)");
-                            }
-                            Client.send(msg, message);
-                        });
-                    });
-                    break;
-                case "talk":
-                    Client.db.getSettings(msg.guild.id, "talk", (value) => {
-                        value = value == "true" || value == "1";
-                        let val = +!value;
-                        Client.db.setSettings(msg.guild.id, "talk", val, () => {
-                            let message;
-                            if(val){
-                                message = Client.createEmbed("succes", "Bot will respond to messages that include it's name");
-                            } else {
-                                message = Client.createEmbed("succes", "Bot won't respond to messages that includes it's name anymore.")
+                                message = Client.createEmbed("succes", "Bot won't respond to messages that includes it's name anymore.");
                             }
                             Client.send(msg, message);
                         });
@@ -170,6 +165,11 @@ module.exports = {
                     break;
                 case "support":
                     Client.db.getSettings(msg.guild.id, "support", (value) => {
+                        if(value.length){
+                            value = value[0].value;
+                        } else {
+                            value = undefined;
+                        }
                         value = value == "true" || value == "1";
                         let val = +!value;
                         Client.db.setSettings(msg.guild.id, "support", val, () => {
@@ -192,6 +192,11 @@ module.exports = {
                     break;
                 case "botupdates":
                     Client.db.getSettings(msg.guild.id, "botupdates", (value) => {
+                        if(value.length){
+                            value = value[0].value;
+                        } else {
+                            value = undefined;
+                        }
                         value = value == "true" || value == "1";
                         let val = +!value;
                         Client.db.setSettings(msg.guild.id, "botupdates", val, () => {
