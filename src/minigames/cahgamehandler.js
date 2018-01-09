@@ -223,7 +223,6 @@ class gameHandler{
 		} else {
 			while(userids.length){
 				let userid = userids.shift();
-				console.log(userid);
 				let data = this.holder[id].kick(userid);
 
 				for(let i = 0; i < data.length; i++){
@@ -242,7 +241,7 @@ class gameHandler{
 			self.db.getStats_cah(guildid, msg.mentions.users.first().id).then((row) => {
 				let message;
 				if(row){
-					message = self.createEmbed("purple", "<@" + row.id + "> has " + row.points + " points!");
+					message = self.createEmbed("purple", "<@" + row.user_id + "> has " + row.points + " points!");
 				} else {
 					message = self.createEmbed("purple", "<@" + msg.mentions.users.first().id + "> didn't won any rounds yet");
 				}
@@ -253,7 +252,7 @@ class gameHandler{
 				if(rows){
 					let message = "Top 25:\n";
 					for(let i = 0; i < rows.length; i++){
-						message += "\n" + (1+i) + " - <@" + rows[i].id + ">: " + rows[i].points + " points";
+						message += "\n" + (1+i) + " - <@" + rows[i].user_id + ">: " + rows[i].points + " points";
 					}
 					message = self.createEmbed("purple", message, "Scoreboard:");
 					self.send(msg, message);

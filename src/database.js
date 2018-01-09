@@ -362,7 +362,7 @@ function getStats_cah(guild, player){
             if(err) return reject(err);
             if(player !== "top25"){
                 if(result.length){
-                    resolve(result[0].value);
+                    resolve(result[0].points);
                 } else {
                     resolve(undefined);
                 }
