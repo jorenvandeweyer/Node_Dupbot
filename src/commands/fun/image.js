@@ -10,6 +10,7 @@ module.exports = {
         let query = "";
         if(msg.params.length) query = "&query=" + msg.params.join("-");
         Request.get('https://api.unsplash.com/photos/random?count=1&client_id=' + Client.serverSettings.unsplash_clientid + query, (err, res, body) => {
+            if(res.statusCode !== 200) return;
             let data = JSON.parse(body);
             let image = data[0];
             let referal = "?utm_source=dupbot&utm_medium=referral"
