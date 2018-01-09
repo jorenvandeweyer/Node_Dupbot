@@ -19,7 +19,7 @@ function recieveMessage(msg){
 		antispam.check(Client, msg, () => {
 			if(msg.isCommand){
 				if(msg.channel.type === "text"){
-					db.getSettings(msg.guild.id, "deleteCommands", (value) => {
+					db.getSettings(msg.guild.id, "deleteCommands").then((value) => {
 						if(parseInt(value)){
 							msg.delete();
 						}
@@ -28,7 +28,7 @@ function recieveMessage(msg){
 				command(msg);
 			}else if(msg.interact){
 				if(msg.channel.type === "text"){
-					db.getSettings(msg.guild.id, "ai", (value) => {
+					db.getSettings(msg.guild.id, "ai").then((value) => {
 						if(parseInt(value)){
 							ai.get(Client, msg);
 						}
@@ -40,11 +40,11 @@ function recieveMessage(msg){
 		});
 		console.log(new Date().toISOString() ,msg.author.id, msg.command, msg.params, msg.interact);
 	});
-	db.setBotStats("messages", 1);
+	db.setStats_bot("messages", 1);
 	if(msg.channel.type === "text"){
-		db.getStats(msg.guild.id, msg.author.id, (member) => {
+		db.getStats_users(msg.guild.id, msg.author.id).then((member) => {
 			if(member){
-				db.setStats(msg.guild.id, msg.author.id, "MSG_SENT", 1);
+				db.setStats_users(msg.guild.id, msg.author.id, "MSG_SENT", 1);
 			}
 		});
 	}
@@ -80,7 +80,7 @@ function command(msg){
 				console.log(e);
 			}
 		} else {
-			db.getPermissions(msg.guild.id, msg.command, (value) => {
+			db.getPermissions(msg.guild.id, msg.command).then((value) => {
 				// console.log("------ " + msg.permissionLevel + "/" + value + " : " + msg.command);
 				if (value === undefined || value === 0) return;
 
@@ -110,7 +110,7 @@ function command(msg){
 function getPrefix(msg, _callback){
 	let prefix = serverManager.prefix;
 	if(msg.channel.type === "text"){
-		db.getSettings(msg.guild.id, "prefix", (pref) => {
+		db.getSettings(msg.guild.id, "prefix").then((pref) => {
 			if(pref) prefix = pref;
 			_callback(prefix);
 		});
@@ -126,8 +126,8 @@ function isCommand(msg, _callback){
 			msg.command = msg.params.shift().toLowerCase();
 			msg.isCommand = true;
 			if(msg.channel.type === "text"){
-				db.getSettings(msg.guild.id, "adminrole", (role) => {
-					db.getSettings(msg.guild.id, "support", (support) => {
+				db.getSettings(msg.guild.id, "adminrole").then((role) => {
+					db.getSettings(msg.guild.id, "support").then((support) => {
 						if(msg.member == null){
 							msg.guild.fetchMember(msg.author.id).then((member) => {
 								msg.member = member;
@@ -155,7 +155,7 @@ function isCommand(msg, _callback){
 				}
 				msg.input_ai = words.join(" ");
 				if(msg.channel.type === "text"){
-					db.getSettings(msg.guild.id, "adminrole", (role) => {
+					db.getSettings(msg.guild.id, "adminrole").then((role) => {
 						msg.permissionLevel = serverManager.getPermissionLevel(msg, role);
 						_callback();
 					});
@@ -183,7 +183,7 @@ function setup(b, l){
 
 	db.setup(Client);
 	Client.events.start(Client);
-	
+
 	for(key of bot.guilds){
 		if(blackList.guilds.includes(key[0])){
 			key[1].leave().then( () => {
@@ -224,9 +224,9 @@ function setup(b, l){
 
 	bot.on("guildMemberAdd", (member) => {
 		db.setServerStats(member.guild.id, "guildMemberAdd", member.id);
-		db.getStats(member.guild.id, "all", (memberx) => {
+		db.getStats_users(member.guild.id, "all").then((memberx) => {
 			if(memberx.length){
-				db.setStats(member.guild.id, member.id, "MSG_SENT", 0);
+				db.setStats_users(member.guild.id, member.id, "MSG_SENT", 0);
 			}
 		});
 	});
@@ -304,7 +304,7 @@ function log(msg, userID, sort, reason, time){
 			break;
 	}
 
-	db.getSettings(msg.guild.id, "logchannel", (channelId) => {
+	db.getSettings(msg.guild.id, "logchannel").then((channelId) => {
 		if(channelId){
 			sendChannel(msg, channelId, embed);
 		}
@@ -407,7 +407,7 @@ function sendChannel(msg, channelId, message, _callback){
 }
 
 function joinVoiceChannel(msg, _callback){
-	db.getSettings(msg.guild.id, "voiceChannel", (value) => {
+	db.getSettings(msg.guild.id, "voiceChannel").then((value) => {
 		if(value){
 			msg.guild.channels.get(value).join().then(con => _callback(con));
 		} else {
