@@ -29,7 +29,7 @@ function recieveMessage(msg){
 			}else if(msg.interact){
 				if(msg.channel.type === "text"){
 					db.getSettings(msg.guild.id, "ai").then((value) => {
-						if(parseInt(value)){
+						if(parseInt(value) || msg.interactName){
 							ai.get(Client, msg);
 						}
 					});
@@ -152,6 +152,9 @@ function isCommand(msg, _callback){
 				let index = words.map(y => y.toLowerCase()).indexOf(msg.client.user.username.toLowerCase());
 				if(index === 0 || index === words.length - 1){
 					words.splice(index, 1);
+				}
+				if(index === 0){
+					msg.interactName = true;
 				}
 				msg.input_ai = words.join(" ");
 				if(msg.channel.type === "text"){
