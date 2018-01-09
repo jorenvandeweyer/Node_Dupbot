@@ -571,6 +571,21 @@ function updateEvent(id, status){
     });
 }
 
+function editEvent(query, status){
+    return new Promise((resolve, reject) => {
+        let sql = "UPDATE events SET `status`=? WHERE true";
+
+        for(let i = 0; i < query.length; i++){
+            sql += query[i];
+        }
+
+        con.query(sql, [status], (err, result) => {
+            if(err) return reject(err);
+            resolve(result);
+        })
+    });
+}
+
 function executeStatement(statement, opts){
     return new Promise((resolve, reject) => {
         con.query(statement, [opts], (err, result) => {
@@ -615,5 +630,6 @@ module.exports = {
     getEvent: getEvent,
     setEvent: setEvent,
     updateEvent: updateEvent,
+    editEvent: editEvent,
     close: close
 };
