@@ -26,11 +26,11 @@ function addSong(Client, msg){
 
     if(msg.params[0].includes("watch?v=")){
         let videoId = msg.params[0].split("watch?v=")[1].split("&")[0];
-        Client.addSongToQueue(Client, msg, videoId);
+        addSongToQueue(Client, msg, videoId);
     } else if(msg.params[0].includes("playlist?list=")){
         let shuffle = msg.params.includes("shuffle");
         let playlistId = msg.params[0].split("playlist?list=")[1].split("&")[0];
-        Client.addPlaylistToQueue(Client, msg, playlistId, shuffle);
+        addPlaylistToQueue(Client, msg, playlistId, shuffle);
     } else {
         let query = msg.params.join(" ");
         YouTubeSearch(Client, msg.params.join(" "), function(video){
