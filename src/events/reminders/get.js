@@ -11,9 +11,14 @@ function execute(EventHandler, msg, params){
             ` AND events.initiator_id='${msg.author.id}'`,
             ` AND events.channel_id='${msg.channel.id}'`
         ]).then((result) => {
+
             let message = result.map((row) => {
-                return row.execute_at + ": " + JSON.parse(row.data).name;
+                let data = JSON.parse(row.data);
+                let text = row.execute_at;
+                if(data.name) text += ": " + data.name;
+                return text;
             }).join("\n");
+
             let embed = EventHandler.Client.createEmbed("info", message, "Reminders");
             if(msg.channel.type === "text" && !msg.channel.permissionsFor(msg.client.user).has("SEND_MESSAGES")) return;
             msg.channel.send(embed).then(resolve, reject);
