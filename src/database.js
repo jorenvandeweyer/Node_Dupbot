@@ -376,7 +376,7 @@ function getStats_cah(guild, player){
 function setStats_cah(guild, player, points){
     return new Promise((resolve, reject) => {
         getStats_cah(guild, player).then((result) => {
-            if(result.length){
+            if(result){
                 con.query("UPDATE stats_cah SET `points`=`points`+? WHERE `guild_id`=(SELECT `guild_id` FROM guilds WHERE `guild`=?) AND `user_id`=?", [points, guild, player], (err, result) => {
                     if(err) return reject(err);
                     console.log("[db]Update stats_cah");
