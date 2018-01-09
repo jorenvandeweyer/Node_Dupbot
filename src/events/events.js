@@ -23,9 +23,13 @@ class EventHandler{
         if(this.events.has(action[0])){
             if(this.events.get(action[0]).has(action[1])){
                 this.events.get(action[0]).get(action[1]).execute(this, msg, params).then((feedback) => {
-                    this.Client.send(msg, this.Client.createEmbed("info", feedback.message));
+                    if(feedback.message){
+                        this.Client.send(msg, this.Client.createEmbed("info", feedback.message));
+                    }
                 }).catch((error) => {
-                    this.Client.send(msg, this.CLient.createEmbed("fail", error.message));
+                    if(error.message){
+                        this.Client.send(msg, this.CLient.createEmbed("fail", error.message));                        
+                    }
                 });
             }
         }
