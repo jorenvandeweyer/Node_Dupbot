@@ -150,12 +150,14 @@ function isCommand(msg, _callback){
 				let words = msg.content.split(" ");
 
 				let index = words.map(y => y.toLowerCase()).indexOf(msg.client.user.username.toLowerCase());
+				if(index === -1) {
+					index = words.map(y => y.toLowerCase()).indexOf(msg.client.user.username.toLowerCase() + ",");
+					if(index === 0) msg.interactName = true;
+				}
 				if(index === 0 || index === words.length - 1){
 					words.splice(index, 1);
 				}
-				if(index === 0){
-					msg.interactName = true;
-				}
+
 				msg.input_ai = words.join(" ");
 				if(msg.channel.type === "text"){
 					db.getSettings(msg.guild.id, "adminrole").then((role) => {
