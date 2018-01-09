@@ -16,7 +16,7 @@ function execute(EventHandler, msg, params){
                 ` AND id IN (${ids.join(",")})`
             ], "DELETE").then((result) => {
                 resolve({
-                    message: `Delete ${result.affectedRows} reminders`
+                    message: `Deleted ${result.affectedRows} reminders`
                 });
             }).catch((err) => {
                     console.log(err);
