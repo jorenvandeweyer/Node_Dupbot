@@ -543,6 +543,9 @@ function getEvent(query){
         for(let i = 0; i < query.length; i++){
             sql += query[i];
         }
+
+        sql += " ORDER BY events.execute_at ASC";
+
         con.query(sql, [], (err, result) => {
             if(err) return reject(err);
             resolve(result);
