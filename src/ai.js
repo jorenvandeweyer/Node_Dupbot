@@ -5,8 +5,10 @@ const {apiai_key} = require("../serverSettings.json");
 const app = apiai(apiai_key);
 
 function get(Client, msg){
+    if(!msg.input_ai) return;
     let request = app.textRequest(convert(msg.input_ai), {
-        sessionId: msg.author.id
+        sessionId: msg.author.id,
+        timezone: "Europe/Paris"
     });
 
     request.on('response', function(response) {
@@ -27,9 +29,9 @@ function get(Client, msg){
             }
 
             if(response.result.action.includes("reminders")){
-                Client.events.handle(msg, response.result.action, response.result.parameters);
+                Client.events.process(msg, response.result.action, response.result.parameters);
             } else if(response.result.action === "input.unknown"){
-                //do nothing
+                Client.send(msg, "I didn't understand that :shrug:");
             } else if(response.result.fulfillment.messages[0].speech){
                 let text = convertBack(response.result.fulfillment.messages[0].speech);
                 text = personalize(Client, msg, text);
