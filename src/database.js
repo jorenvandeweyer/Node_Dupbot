@@ -568,7 +568,7 @@ function updateEvent(id, status){
     });
 }
 
-function executeStatement(statement, opts, _callback){
+function executeStatement(statement, opts){
     return new Promise((resolve, reject) => {
         con.query(statement, [opts], (err, result) => {
             if(err) return reject(err);
