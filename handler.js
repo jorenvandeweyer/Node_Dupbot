@@ -182,6 +182,8 @@ function setup(b, l){
 	serverManager = new Servers(Client);
 
 	db.setup(Client);
+	Client.events.start(Client);
+	
 	for(key of bot.guilds){
 		if(blackList.guilds.includes(key[0])){
 			key[1].leave().then( () => {
@@ -428,6 +430,7 @@ const Client = {
 	cah: require("./src/minigames/cahgamehandler"),
 	graphs: require("./src/graphs"),
 	serverSettings: require("./serverSettings.json"),
+	events: require("./src/events/events"),
 
 	get bot(){
 		return bot;

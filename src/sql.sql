@@ -117,6 +117,7 @@ CREATE TABLE events (
     `action` VARCHAR(64),
     `target_id` VARCHAR(32),
     `data` TEXT,
+    `status` VARCHAR(16),
     FOREIGN KEY (`guild_id`) REFERENCES guilds(`guild_id`)
         ON DELETE CASCADE
         ON UPDATE CASCADE,
@@ -176,7 +177,7 @@ SELECT modlog.id, guilds.guild, modlog.user, modlog.type, modlog.mod, modlog.tim
     INNER JOIN guilds ON guilds.guild_id=modlog.guild_id
     WHERE guilds.guild=? AND modlog.user=?;
 
-SELECT events.id, events.created_at, events.execute_at, guilds.guild, events.channel_id, events.initiator_id, events.action, events.target_id, events.data FROM events
+SELECT events.id, events.created_at, events.execute_at, guilds.guild, events.channel_id, events.initiator_id, events.action, events.target_id, events.data, events.status FROM events
     INNER JOIN guilds ON guilds.guild_id=events.guild_id;
 
 UPDATE permissions SET `value`=?
@@ -211,8 +212,8 @@ UPDATE stats_users SET `value`=?
     AND
     `type`=?;
 
-INSERT INTO events (`execute_at`, `guild_id`, `channel_id`, `initiator_id`, `action`, `target_id`, `data`)
-    SELECT FROM_UNIXTIME(?), guilds.guild_id, ?, ?, ?, ?, ? FROM guilds
+INSERT INTO events (`execute_at`, `guild_id`, `channel_id`, `initiator_id`, `action`, `target_id`, `data`, `status`)
+    SELECT FROM_UNIXTIME(?), guilds.guild_id, ?, ?, ?, ?, ?, ? FROM guilds
         WHERE guilds.guild = ?;
 
 INSERT INTO stats_guild

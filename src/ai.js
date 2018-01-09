@@ -26,7 +26,9 @@ function get(Client, msg){
                 msg.command = response.result.action;
             }
 
-            if(response.result.action == "input.unknown"){
+            if(response.result.action.includes("reminders")){
+                Client.events.handle(msg, response.result.action, response.result.parameters);
+            } else if(response.result.action === "input.unknown"){
                 //do nothing
             } else if(response.result.fulfillment.messages[0].speech){
                 let text = convertBack(response.result.fulfillment.messages[0].speech);

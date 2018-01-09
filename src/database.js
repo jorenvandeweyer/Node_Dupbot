@@ -210,7 +210,7 @@ function startUp(Client){
             });
         }
         if(!db_tables.includes("events")){
-            con.query("CREATE TABLE events (`id` INT UNSIGNED AUTO_INCREMENT, `created_at` TIMESTAMP NOT NULL DEFAULT current_timestamp, `execute_at` TIMESTAMP NOT NULL, `guild_id` INT UNSIGNED, `channel_id` VARCHAR(32), `initiator_id` VARCHAR(32), `action` VARCHAR(64), `target_id` VARCHAR(32), `data` TEXT, FOREIGN KEY (`guild_id`) REFERENCES guilds(`guild_id`) ON DELETE CASCADE ON UPDATE CASCADE, PRIMARY KEY (`id`))", (err, result) => {
+            con.query("CREATE TABLE events (`id` INT UNSIGNED AUTO_INCREMENT, `created_at` TIMESTAMP NOT NULL DEFAULT current_timestamp, `execute_at` TIMESTAMP NOT NULL, `guild_id` INT UNSIGNED, `channel_id` VARCHAR(32), `initiator_id` VARCHAR(32), `action` VARCHAR(64), `target_id` VARCHAR(32), `data` TEXT, `status` VARCHAR(16), FOREIGN KEY (`guild_id`) REFERENCES guilds(`guild_id`) ON DELETE CASCADE ON UPDATE CASCADE, PRIMARY KEY (`id`))", (err, result) => {
                 if(err) console.error(err),process.exit();
                 console.log("[db]Created events table");
             });
@@ -444,7 +444,7 @@ function getStats_users(guild, id, _callback){
                 _callback(result);
             } else {
                 _callback(false);
-            }            
+            }
         }
     });
 }
@@ -483,16 +483,26 @@ function setModlog(guild, data){
 
 }
 
-function getEvent(guild, query, _callback){
-    con.query("", [], (err, result) => {
-        if(err) console.error(err),process.exit();
+function getEvent(query, _callback){
+    let sql = "SELECT events.id, events.created_at, events.execute_at, guilds.guild, events.channel_id, events.initiator_id, events.action, events.target_id, events.data, events.status FROM events INNER JOIN guilds ON guilds.guild_id=events.guild_id WHERE true";
 
+    for(let key in query){
+        sql += ` AND event.${key}=query[${key}]`;
+    }
+
+    con.query(sql, [], (err, result) => {
+        if(err) console.error(err),process.exit();
+            if(result.length){
+                _callback(result);
+            } else {
+                _callback(undefined);
+            }
     });
 }
 
-function setEvent(guild, data){
-    con.query("INSERT INTO events (`execute_at`, `guild_id`, `channel_id`, `initiator_id`, `action`, `target_id`, `data`) SELECT FROM_UNIXTIME(?), guilds.guild_id, ?, ?, ?, ?, ? FROM guilds WHERE guilds.guild = ?",
-        [data.execute_at/1000, data.channel_id, data.initiator_id, data.action, data.target_id, data.data, data.guild_id], (err, result) => {
+function setEvent(data){
+    con.query("INSERT INTO events (`execute_at`, `guild_id`, `channel_id`, `initiator_id`, `action`, `target_id`, `data`, `status`) SELECT FROM_UNIXTIME(?), guilds.guild_id, ?, ?, ?, ?, ?, ? FROM guilds WHERE guilds.guild = ?",
+        [parseInt(data.execute_at)/1000, data.channel_id, data.initiator_id, data.action, data.target_id, data.data, data.status, data.guild_id], (err, result) => {
         if(err) console.error(err),process.exit();
     });
 }
@@ -534,5 +544,7 @@ module.exports = {
     setStats: setStats_users,
     getModlog: getModlog,
     setModlog: setModlog,
+    getEvent: getEvent,
+    setEvent: setEvent,
     close: close
 };
