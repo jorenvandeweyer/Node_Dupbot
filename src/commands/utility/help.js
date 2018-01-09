@@ -7,7 +7,7 @@ module.exports = {
     execute(Client, msg){
         if(msg.channel.type == "text"){
             Client.getPrefix(msg, (prefix) => {
-                Client.db.getPermissions(msg.guild.id, "allPermissions", (permissions) => {
+                Client.db.getPermissions(msg.guild.id, "allPermissions").then((permissions) => {
 
                     permissions = sortPermissions(permissions);
 

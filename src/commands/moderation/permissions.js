@@ -4,7 +4,7 @@ module.exports = {
     args: 0,
     guildOnly: true,
     execute(Client, msg){
-        Client.db.getPermissions(msg.guild.id, "allPermissions", (permissions) => {
+        Client.db.getPermissions(msg.guild.id, "allPermissions").then((permissions) => {
     		let disabled = [];
     		let everyone =  [];
     		let mod = [];

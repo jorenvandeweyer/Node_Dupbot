@@ -5,7 +5,7 @@ module.exports = {
     args: 0,
     guildOnly: true,
     execute(Client, msg){
-        Client.db.getSettings(msg.guild.id, "prefix", (pref) =>  {
+        Client.db.getSettings(msg.guild.id, "prefix").then((pref) =>  {
             let prefix = pref;
             if(prefix == "") prefix = Client.serverManager.prefix;
             message = Client.createEmbed("info", "The prefix is `" + prefix + "`");

@@ -14,7 +14,7 @@ module.exports = {
                         user.send(Client.createEmbed("succes", `You have been unbanned from **${msg.guild.name}**`));
                     });
                 } else {
-                    Client.db.getSettings(msg.guild.id, "logchannel", (channelId) => {
+                    Client.db.getSettings(msg.guild.id, "logchannel").then((channelId) => {
                         Client.sendChannel(msg, channelId, Client.createEmbed("fail", `<@${msg.params[0]}> is not banned`));
                     });
                 }
@@ -27,7 +27,7 @@ module.exports = {
                     body += `\n<@${user[0]}>: ${user[0]}`;
                 }
                 embed.setDescription(body);
-                Client.db.getSettings(msg.guild.id, "logchannel", (channelId) => {
+                Client.db.getSettings(msg.guild.id, "logchannel").then((channelId) => {
                     Client.sendChannel(msg, channelId, embed);
                 });
             }

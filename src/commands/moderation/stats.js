@@ -21,7 +21,7 @@ module.exports = {
             }
 
             async getStats(){
-                await Client.db.getStats(msg.guild.id, "all", async (result) => {
+                await Client.db.getStats_users(msg.guild.id, "all").then(async (result) => {
                     if(result.length === 0){
                         await this.fetchAllMessages();
                     } else {
@@ -45,59 +45,12 @@ module.exports = {
                         embed.setDescription("\n");
                         embed.setColor(3447003);
 
-                        /*let message = "Members with most sent messages:\n";
-                        let total = 0;
-                        for(let i = 0; i <result.length; i++){
-                            total += result[i].value;
-                        }
-                        for(let i = 0; i < result.length; i++){
-                            if(i === 30) break;
-                            message += `\n${i+1} - <@${result[i].id.toString()}>: ${result[i].value} messages (${((result[i].value/total)*100).toFixed(2)}%)`;
-                        }
-                        message = this.Client.createEmbed("info", message, `Sent messages (${total} messages)`);*/
                         Client.send(msg, embed);
                     }
-
-                    // this.Client.db.getStats(this.msg.guild.id, "all", (result) => {
-                    //     if(result){
-                    //         let embed = new Discord.RichEmbed();
-                    //         let members = "";
-                    //         let percentage = "";
-                    //         let total = 0;
-                    //
-                    //         for(let i = 0; i < result.length; i++){
-                    //             total += result[i].value;
-                    //         }
-                    //         for(let i = 0; i < result.length; i++){
-                    //             if(i === 20) break;
-                    //             members += `\n${i+1} - <@${result[i].id.toString()}>: ${result[i].value} messages`;
-                    //             percentage += `\n ${((result[i].value/total)*100).toFixed(2)}%`;
-                    //         }
-                    //
-                    //         embed.addField("Members with most sent messages", members,true);
-                    //         embed.addField("Percentage", percentage,true);
-                    //         embed.setTitle(`Sent messages (${total} messages)`);
-                    //         embed.setDescription("\n");
-                    //         embed.setColor(3447003);
-                    //
-                    //         /*let message = "Members with most sent messages:\n";
-                    //         let total = 0;
-                    //         for(let i = 0; i <result.length; i++){
-                    //             total += result[i].value;
-                    //         }
-                    //         for(let i = 0; i < result.length; i++){
-                    //             if(i === 30) break;
-                    //             message += `\n${i+1} - <@${result[i].id.toString()}>: ${result[i].value} messages (${((result[i].value/total)*100).toFixed(2)}%)`;
-                    //         }
-                    //         message = this.Client.createEmbed("info", message, `Sent messages (${total} messages)`);*/
-                    //         this.Client.send(this.msg, embed);
-                    //     }
-                    // });
                 });
             }
 
             async fetchAllMessages(){
-
                 Client.send(msg, Client.createEmbed("info", "<:empty:314349398723264512> Fetching messages <a:loading:393852367751086090>"), async (message) => {
                     for(let channel of this.channels){
                         if(!channel[1].permissionsFor(msg.client.user).has("VIEW_CHANNEL"))continue;
@@ -138,7 +91,7 @@ module.exports = {
                     values.push([id, this.stats[id], "MSG_SENT"]);
                 }
 
-                Client.db.executeStatement("INSERT INTO stats_" + msg.guild.id + " (id, value, type) VALUES ?", values, (result) => {
+                Client.db.executeStatement("INSERT INTO stats_" + msg.guild.id + " (id, value, type) VALUES ?", values).then((result) => {
                     console.log(result);
                 });
             }

@@ -9,14 +9,14 @@ module.exports = {
         if(msg.params.length >= 1){
     		switch(msg.params[0]){
     			case "log":
-    				Client.db.setSettings(msg.guild.id, "logchannel", msg.channel.id, () => {
+    				Client.db.setSettings(msg.guild.id, "logchannel", msg.channel.id).then(() => {
     					let message = Client.createEmbed("succes", "Logchannel set.");
     					Client.send(msg, message);
     				});
     				break;
     			case "warntime":
     				if(msg.params.length >= 2){
-    					Client.db.setSettings(msg.guild.id, "warntime", msg.params[1], () => {
+    					Client.db.setSettings(msg.guild.id, "warntime", msg.params[1]).then(() => {
     						let message = Client.createEmbed("succes", "Warntime set to " + msg.params[1] + " hours.");
     						Client.send(msg, message);
     					});
@@ -30,7 +30,7 @@ module.exports = {
     					let role = Client.serverManager.extractRole(msg, 1);
                         console.log(role);
     					let roles = [];
-    					Client.db.getSettings(msg.guild.id, "iam_roles", (value) => {
+    					Client.db.getSettings(msg.guild.id, "iam_roles").then((value) => {
     						if(value){
     							roles = value[0].value.split(",");
 
@@ -45,7 +45,7 @@ module.exports = {
     							roles = [role.id, role.name];
     						}
 
-    						Client.db.setSettings(msg.guild.id, "iam_roles", roles.join(","), () => {
+    						Client.db.setSettings(msg.guild.id, "iam_roles", roles.join(",")).then(() => {
     							let allRoles = [];
     							for (let i = 1; i < roles.length; i+=2){
     								allRoles.push(roles[i]);
@@ -64,7 +64,7 @@ module.exports = {
     				break;
                 case "maxiamroles":
                     if(msg.params.length >= 2){
-                        Client.db.setSettings(msg.guild.id, "max_iam_roles", parseInt(msg.params[1]), () => {
+                        Client.db.setSettings(msg.guild.id, "max_iam_roles", parseInt(msg.params[1])).then(() => {
                             let message = Client.createEmbed("info", "Max assignable roles set to: " + parseInt(msg.params[1]));
                             Client.send(msg, message);
                         });
@@ -74,7 +74,7 @@ module.exports = {
     				if(msg.params.length >= 2){
     					roleID = Client.serverManager.extractRoleID(msg, 1);
     					if(roleID){
-    						Client.db.setSettings(msg.guild.id, "adminrole", roleID, () => {
+    						Client.db.setSettings(msg.guild.id, "adminrole", roleID).then(() => {
     							let message = Client.createEmbed("succes", "Adminrole set to <@&" + roleID + ">");
     							Client.send(msg, message);
     						});
@@ -87,7 +87,7 @@ module.exports = {
     			case "voice":
     				let voiceChannel = msg.member.voiceChannelID;
     				if(voiceChannel){
-    					Client.db.setSettings(msg.guild.id, "voiceChannel", voiceChannel, () => {
+    					Client.db.setSettings(msg.guild.id, "voiceChannel", voiceChannel).then(() => {
     						let message = Client.createEmbed("succes", "Voice channel set to <#" + voiceChannel + ">");
     						Client.send(msg, message);
     					});
@@ -97,7 +97,7 @@ module.exports = {
     				}
     				break;
     			case "music":
-    				Client.db.setSettings(msg.guild.id, "musicChannel", msg.channel.id, () => {
+    				Client.db.setSettings(msg.guild.id, "musicChannel", msg.channel.id).then(() => {
     					let message = Client.createEmbed("succes", "Music channel set.");
     					Client.send(msg, message);
     				});
@@ -106,7 +106,7 @@ module.exports = {
                     if(msg.params.length >= 2){
                         let roleID = Client.serverManager.extractRoleID(msg, 1);
                         if(roleID){
-                            Client.db.setSettings(msg.guild.id, "djrole", roleID, () => {
+                            Client.db.setSettings(msg.guild.id, "djrole", roleID).then(() => {
                                 message = Client.createEmbed("succes", "DJ role set to <@&" + roleID + ">");
                                 Client.send(msg, message);
                             });
@@ -114,10 +114,10 @@ module.exports = {
                     }
                     break;
     			case "deleteCommands":
-    				Client.db.getSettings(msg.guild.id, "deleteCommands", (value) => {
+    				Client.db.getSettings(msg.guild.id, "deleteCommands").then((value) => {
                         value = value == "true" || value == "1";
                         let val = +!value;
-    					Client.db.setSettings(msg.guild.id, "deleteCommands", val, () => {
+    					Client.db.setSettings(msg.guild.id, "deleteCommands", val).then(() => {
                             let message;
     						if(val){
     							message = Client.createEmbed("succes", "Commands will be deleted.");
@@ -139,10 +139,10 @@ module.exports = {
     				}
     				break;
                 case "ai":
-                    Client.db.getSettings(msg.guild.id, "ai", (value) => {
+                    Client.db.getSettings(msg.guild.id, "ai").then((value) => {
                         value = value == "true" || value == "1";
                         let val = +!value;
-                        Client.db.setSettings(msg.guild.id, "ai", val, () => {
+                        Client.db.setSettings(msg.guild.id, "ai", val).then(() => {
                             let message;
                             if(val){
                                 message = Client.createEmbed("succes", "Bot will respond to messages that include it's name (AI BETA)");
@@ -154,10 +154,10 @@ module.exports = {
                     });
                     break;
                 case "support":
-                    Client.db.getSettings(msg.guild.id, "support", (value) => {
+                    Client.db.getSettings(msg.guild.id, "support").then((value) => {
                         value = value == "true" || value == "1";
                         let val = +!value;
-                        Client.db.setSettings(msg.guild.id, "support", val, () => {
+                        Client.db.setSettings(msg.guild.id, "support", val).then(() => {
                             let message;
                             if(val){
                                 message = Client.createEmbed("succes", "Bot admin support enabled");
@@ -170,16 +170,17 @@ module.exports = {
                     break;
                 case "prefix":
                     if(msg.params.length >= 2){
-                        Client.db.setSettings(msg.guild.id, "prefix", msg.params[1]);
-                        let message = Client.createEmbed("info", "Prefix set to `" + msg.params[1] + "`");
-                        Client.send(msg, message);
+                        Client.db.setSettings(msg.guild.id, "prefix", msg.params[1]).then(() => {
+                            let message = Client.createEmbed("info", "Prefix set to `" + msg.params[1] + "`");
+                            Client.send(msg, message);
+                        });
                     }
                     break;
                 case "botupdates":
-                    Client.db.getSettings(msg.guild.id, "botupdates", (value) => {
+                    Client.db.getSettings(msg.guild.id, "botupdates").then((value) => {
                         value = value == "true" || value == "1";
                         let val = +!value;
-                        Client.db.setSettings(msg.guild.id, "botupdates", val, () => {
+                        Client.db.setSettings(msg.guild.id, "botupdates", val).then(() => {
                             let message;
                             if(val){
                                 message = Client.createEmbed("succes", "Bot updates are back on.");

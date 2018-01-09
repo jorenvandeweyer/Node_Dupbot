@@ -107,8 +107,8 @@ function createGraphs(self, msg, start, end){
 }
 
 function getData(self, msg, _callback){
-    self.db.getServerStats(msg.guild.id, "guildMemberAdd", (joins) => {
-        self.db.getServerStats(msg.guild.id, "guildMemberRemove", (leaves) => {
+    self.db.getStats_guild(msg.guild.id, "guildMemberAdd").then((joins) => {
+        self.db.getStats_guild(msg.guild.id, "guildMemberRemove").then((leaves) => {
             let firstRecord = Infinity;
             if(joins.length){
                 firstRecord = joins[0].timestamp;

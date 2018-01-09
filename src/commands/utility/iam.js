@@ -6,8 +6,8 @@ module.exports = {
     args: 0,
     guildOnly: true,
     execute(Client, msg){
-        Client.db.getSettings(msg.guild.id, "iam_roles", (value) => {
-            Client.db.getSettings(msg.guild.id, "max_iam_roles", (max_roles) => {
+        Client.db.getSettings(msg.guild.id, "iam_roles").then((value) => {
+            Client.db.getSettings(msg.guild.id, "max_iam_roles").then((max_roles) => {
                 let max = parseInt(max_roles);
                 if(max < 0) max = Infinity;
 

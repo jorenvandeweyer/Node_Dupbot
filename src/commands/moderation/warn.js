@@ -14,8 +14,8 @@ module.exports = {
 
             Client.log(msg, member.id, "warn", reason);
 
-            Client.db.getModlog(msg.guild.id, member.id, (rows) => {
-                Client.db.getSettings(msg.guild.id, "warntime", (value) => {
+            Client.db.getModlog(msg.guild.id, member.id).then((rows) => {
+                Client.db.getSettings(msg.guild.id, "warntime").then((value) => {
                     let active = filterActiveWarnings(rows, value);
 
                     let warnMessage = `You have been warned on **${msg.guild.name}**\n\nYou have ${active}/3 active warnings.`;

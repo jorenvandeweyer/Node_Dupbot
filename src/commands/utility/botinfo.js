@@ -6,7 +6,7 @@ module.exports = {
     defaultPermission: 1,
     args: 0,
     execute(Client, msg){
-        Client.db.getBotStats("messages", (messages) => {
+        Client.db.getStats_bot("messages").then((messages) => {
             msg.client.fetchUser(botOwner).then( (user) => {
                 let members = 0;
                 for(let guild of msg.client.guilds){

@@ -24,7 +24,7 @@ module.exports = {
             messages = [];
 
             for(let guild of msg.client.guilds){
-                Client.db.getSettings(guild[1].id, "botupdates", (value) => {
+                Client.db.getSettings(guild[1].id, "botupdates").then((value) => {
                     Client.getPrefix({channel: {type: "text"}, guild: {id: guild[1].id}}, (prefix) => {
                         if(parseInt(value)){
                             let message = Client.createEmbed("info", msg.params.join(" ") + `\n\nThese updates and broadcasts can be disabled by using the set command \`${prefix}set botupdates\` inside your server.`);
@@ -42,7 +42,7 @@ module.exports = {
             messages = [];
             let guilds = msg.client.guilds;
             for(let guild of msg.client.guilds){
-                Client.db.getSettings(guild[1].id, "botupdates", (value) => {
+                Client.db.getSettings(guild[1].id, "botupdates").then((value) => {
                     if(parseInt(value)){
 
                         let channels = guild[1].channels.filter((channel) => {

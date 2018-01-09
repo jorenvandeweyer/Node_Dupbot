@@ -12,7 +12,7 @@ function broadcastCahMessages(self, msg, array){
 			}
 
 			if(data.id != undefined && message.includes("%points")){
-				self.db.getStats_cah(msg.guild.id, data.id, (row) => {
+				self.db.getStats_cah(msg.guild.id, data.id).then((row) => {
 
 					let points = 1;
 					if(row){
@@ -239,7 +239,7 @@ class gameHandler{
 		let guildid = msg.guild.id;
 
 		if(msg.params.length >= 1){
-			self.db.getStats_cah(guildid, msg.mentions.users.first().id, (row) => {
+			self.db.getStats_cah(guildid, msg.mentions.users.first().id).then((row) => {
 				let message;
 				if(row){
 					message = self.createEmbed("purple", "<@" + row.id + "> has " + row.points + " points!");
@@ -249,7 +249,7 @@ class gameHandler{
 				self.send(msg, message);
 			});
 		} else {
-			self.db.getStats_cah(guildid, "top25", (rows) => {
+			self.db.getStats_cah(guildid, "top25").then((rows) => {
 				if(rows){
 					let message = "Top 25:\n";
 					for(let i = 0; i < rows.length; i++){

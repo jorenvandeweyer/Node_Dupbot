@@ -174,7 +174,7 @@ class GdaxData {
 
 function getInfo(Client, msg, _callback){
     if(msg.channel.type !== "text") return;
-    Client.db.getBtc(msg.guild.id, msg.author.id, (data) => {
+    Client.db.getBtc(msg.guild.id, msg.author.id).then((data) => {
         if(data){
             let obj = {};
             for(let i = 0; i < data.length; i++){

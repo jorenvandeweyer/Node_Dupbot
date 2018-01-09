@@ -5,7 +5,7 @@ module.exports = {
     args: 1,
     guildOnly: true,
     execute(Client, msg){
-        Client.db.getSettings(msg.guild.id, "voiceChannel", (channelId) => {            
+        Client.db.getSettings(msg.guild.id, "voiceChannel").then((channelId) => {            
             let voiceChannelUser = msg.member.voiceChannelID;
             if(voiceChannelUser === undefined){
                 let message = Client.createEmbed("warn", "Go in a voiceChannel first");
