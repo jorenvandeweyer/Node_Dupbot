@@ -188,6 +188,7 @@ function setup(b, l){
 
 	db.setup(Client);
 	Client.events.start(Client);
+	Client.discordbots.set(Client);
 
 	for(key of bot.guilds){
 		if(blackList.guilds.includes(key[0])){
@@ -206,6 +207,7 @@ function setup(b, l){
 	}
 
 	bot.on("guildCreate", (guild) => {
+		Client.discordbots.set(Client);
 		if(blackList.guilds.includes(guild.id)){
 			key[1].leave().then( () => {
 				console.log("[+]Left guild on blacklist: " + key);
@@ -436,6 +438,7 @@ const Client = {
 	graphs: require("./src/graphs"),
 	serverSettings: require("./serverSettings.json"),
 	events: require("./src/events/events"),
+	discordbots: require("./src/discordbots"),
 
 	get bot(){
 		return bot;

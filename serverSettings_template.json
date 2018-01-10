@@ -17,5 +17,6 @@
     "mysql_db": "dupbot",
     "thecatapi": "key",
     "unsplash_clientid": "clientid",
-    "gdax": "key"
+    "gdax": "key",
+    "discordbotsapi": "key"
 }
