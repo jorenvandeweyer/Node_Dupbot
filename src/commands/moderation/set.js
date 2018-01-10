@@ -133,9 +133,12 @@ module.exports = {
     					let command = msg.params[1];
     					let value = msg.params[2];
 
-    					Client.db.setPermissions(msg.guild.id, command, value);
-                        let message = Client.createEmbed("info", "Permission for `" + command + "` set to `" + value +"`");
-                        Client.send(msg, message);
+    					Client.db.setPermissions(msg.guild.id, command, value).then(() => {
+                            let message = Client.createEmbed("info", "Permission for `" + command + "` set to `" + value +"`");
+                            Client.send(msg, message);
+                        }).catch((e) => {
+                            Client.send(msg, Client.createEmbed("fail", "This is not a real command or a wrong permission level"));
+                        });
     				}
     				break;
                 case "ai":

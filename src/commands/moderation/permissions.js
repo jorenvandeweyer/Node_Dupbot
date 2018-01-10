@@ -33,6 +33,10 @@ module.exports = {
 
     			}
     		}
+            if(!disabled.length) disabled.push("-");
+            if(!everyone.length) everyone.push("-");
+            if(!mod.length) mod.push("-");
+            if(!owner.length) owner.push("-");
 
     		let message = Client.createEmbed("info", "Permissions of all commands", "Permissions", [
     			{

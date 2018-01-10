@@ -306,11 +306,13 @@ function getPermissions(guild, command){
 function setPermissions(guild, command, value){
     return new Promise((resolve, reject) => {
         getPermissions(guild, command).then((result) => {
-            if(result[0].value !== "4"){
+            if(result != 4 && value != 4){
                 con.query("UPDATE permissions SET `value`=? WHERE `guild_id`=(SELECT `guild_id` FROM guilds WHERE `guild`=?) AND `command_id`=(SELECT `command_id` FROM commands WHERE `command`=?)", [value, guild, command], (err, result) => {
                     if(err) return reject(err);
                     resolve(result);
                 });
+            } else {
+                reject("can't change permissions to level 4 or reduce their permissions levels");
             }
         });
     });
