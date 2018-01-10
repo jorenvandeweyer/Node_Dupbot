@@ -30,6 +30,10 @@ function execute(EventHandler, msg, params){
                 return text + "\n";
             }).join("\n");
 
+            if(message.length > 2048){
+                message = message.slice(0, 2000) + "\n\n...";
+            }
+
             let embed = EventHandler.Client.createEmbed("info", message, "Reminders");
             if(msg.channel.type === "text" && !msg.channel.permissionsFor(msg.client.user).has("SEND_MESSAGES")) return;
             msg.channel.send(embed).then(resolve, reject);
