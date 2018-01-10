@@ -15,18 +15,19 @@ function execute(EventHandler, msg, params){
             " AND events.action='reminders'",
             " AND events.status='TODO'",
             ` AND events.initiator_id='${msg.author.id}'`,
-            ` AND events.channel_id='${msg.channel.id}'`
+            // ` AND events.channel_id='${msg.channel.id}'`,
+            ` AND guilds.guild=${guild}`
         ]).then((result) => {
 
             let message = result.map((row) => {
                 let data = JSON.parse(row.data);
-                let text = row.execute_at;
+                let text = row.execute_at + ` <#${row.channel_id}>:\n`;
                 if(data.name) {
-                    text += ": `" + data.name + "`";
+                    text += "`" + data.name + "`";
                 } else {
-                    text += ": `You asked me to remind you`";
+                    text += "`You asked me to remind you`";
                 }
-                return text;
+                return text + "\n";
             }).join("\n");
 
             let embed = EventHandler.Client.createEmbed("info", message, "Reminders");

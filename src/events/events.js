@@ -1,6 +1,7 @@
 const EventChecker = require("./eventChecker");
 const fs = require('fs');
 
+
 class EventHandler{
     constructor(){
         this.events = new Map();
@@ -28,7 +29,8 @@ class EventHandler{
                     }
                 }).catch((error) => {
                     if(error.message){
-                        this.Client.send(msg, this.CLient.createEmbed("fail", error.message));
+                        console.log(error.message);
+                        this.Client.send(msg, this.Client.createEmbed("fail", error.message));
                     }
                 });
             }

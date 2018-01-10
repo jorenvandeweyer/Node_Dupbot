@@ -9,9 +9,11 @@ function execute(EventHandler, msg, params){
             " AND events.action='reminders'",
             " AND events.status='TODO'",
             ` AND events.initiator_id='${msg.author.id}'`,
-            ` AND events.channel_id='${msg.channel.id}'`
+            // ` AND events.channel_id='${msg.channel.id}',`
+            ` AND guilds.guild=${guild}`
         ]).then((result) => {
             let ids = result.map(row => row.id);
+            if(ids.length === 0) return reject({message: "No reminders to remove"});
             EventHandler.Client.db.editEvent([
                 ` AND id IN (${ids.join(",")})`
             ], "DELETE").then((result) => {
