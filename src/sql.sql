@@ -136,6 +136,10 @@ INSERT INTO permissions
         INNER JOIN commands ON commands.command = permissions_310865351099285505.command
         ORDER BY commands.command_id ASC;
 
+INSERT INTO permissions 
+    SELECT guilds.guild_id, commands.command_id, commands.permissions_default FROM guilds
+        INNER JOIN commands ON commands.command IN (?)
+
 INSERT INTO stats_users
     SELECT guilds.guild_id, stats_310865351099285505.id, stats_310865351099285505.value, stats_310865351099285505.type FROM stats_310865351099285505
         INNER JOIN guilds ON guilds.guild='310865351099285505';

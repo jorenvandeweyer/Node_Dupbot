@@ -7,7 +7,13 @@ function execute(EventHandler, msg, params){
             });
         }
 
-        let date = EventHandler.createDate(params["date-time"]);
+        let date;
+        if(params.correctDate){
+            date = new Date(params["date-time"]);
+        } else {
+            date = EventHandler.createDate(params["date-time"]);
+        }
+
         let guild = "0";
         if(msg.guild) guild = msg.guild.id;
 
@@ -22,8 +28,17 @@ function execute(EventHandler, msg, params){
             status: "TODO"
         });
 
+        let time;
+        if("original" in params){
+            time = "in " + params.original;
+        } else if("contexts" in params && "date-time.original" in params.contexts[0].parameters){
+            time = params.contexts[0].parameters["date-time.original"];
+        } else {
+            time = "at " + date.toString();
+        }
+
         resolve({
-            message: "Reminder created!"
+            message: `Reminder created! I'll remind you ${time}`
         });
 
     });

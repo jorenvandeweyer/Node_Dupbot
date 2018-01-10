@@ -1,7 +1,13 @@
 function execute(EventHandler, msg, params){
     return new Promise((resolve, reject) => {
 
-        let date = EventHandler.createDate(params["date-time"]);
+        let date;
+        if(params.correctDate){
+            date = new Date(params["date-time"]);
+        } else {
+            date = EventHandler.createDate(params["date-time"]);
+        }
+
         let guild = "0";
         if(msg.guild) guild = msg.guild.id;
 
@@ -15,7 +21,11 @@ function execute(EventHandler, msg, params){
             let message = result.map((row) => {
                 let data = JSON.parse(row.data);
                 let text = row.execute_at;
-                if(data.name) text += ": " + data.name;
+                if(data.name) {
+                    text += ": `" + data.name + "`";
+                } else {
+                    text += ": `You asked me to remind you`";
+                }
                 return text;
             }).join("\n");
 

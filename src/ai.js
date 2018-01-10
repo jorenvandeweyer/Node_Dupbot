@@ -8,7 +8,7 @@ function get(Client, msg){
     if(!msg.input_ai) return;
     let request = app.textRequest(convert(msg.input_ai), {
         sessionId: msg.author.id,
-        timezone: "Europe/Paris"
+        timezone: "Europa/Madrid"
     });
 
     request.on('response', function(response) {
@@ -29,6 +29,7 @@ function get(Client, msg){
             }
 
             if(response.result.action.includes("reminders")){
+                response.result.parameters.contexts = response.result.contexts;
                 Client.events.process(msg, response.result.action, response.result.parameters);
             } else if(response.result.action === "input.unknown"){
                 Client.send(msg, "I didn't understand that :shrug:");

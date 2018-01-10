@@ -65,6 +65,10 @@ function startUp(Client){
                     con.query("INSERT INTO commands(`command`, `permissions_default`) VALUES ?", [commands], (err, result) => {
                         if(err) console.error(err),process.exit();
                         console.log(`[db]Inserted ${result.affectedRows} commands in table commands`);
+                        con.query("INSERT INTO permissions SELECT guilds.guild_id, commands.command_id, commands.permissions_default FROM guilds INNER JOIN commands ON commands.command IN (?) ", [commands.map(arr => arr[0]).join(",")], (err, result) => {
+                            if(err) console.error(err),process.exit();
+                            console.log(`[db]Inserted ${result.affectedRows} commands in table permissions`);
+                        });
                     });
                 }
 

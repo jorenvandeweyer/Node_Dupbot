@@ -12,8 +12,11 @@ function execute(EventHandler, event){
         embed.setTitle("Reminder");
         embed.setColor(16776960);
         if(data.name){
-            embed.setDescription(`I had to remind you to: \`${data.name}\``);
+            embed.setDescription(`You asked me to remind you about:\n\n\`${data.name}\``);
+        } else {
+            embed.setDescription(`You asked me to remind you.`);
         }
+        embed.setFooter(`Created: ${event.created_at}`);
 
         channel.send(`<@${event.target_id}>`, embed).then(() => {
             resolve();

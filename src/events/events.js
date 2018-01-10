@@ -28,7 +28,7 @@ class EventHandler{
                     }
                 }).catch((error) => {
                     if(error.message){
-                        this.Client.send(msg, this.CLient.createEmbed("fail", error.message));                        
+                        this.Client.send(msg, this.CLient.createEmbed("fail", error.message));
                     }
                 });
             }
@@ -50,7 +50,7 @@ class EventHandler{
     }
 
     createDate(string){
-        let date_time = string.replace("Z", " ").split("T");
+        let date_time = string.replace("Z", "").split("T");
         let date_params = {};
 
         if(date_time.length === 2){
@@ -78,7 +78,6 @@ class EventHandler{
             date.setMinutes(time[1]);
             date.setSeconds(time[2]);
         }
-
         return date;
     }
 }
