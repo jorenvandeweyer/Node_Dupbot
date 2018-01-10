@@ -77,6 +77,12 @@ class EventHandler{
             date.setHours(time[0]);
             date.setMinutes(time[1]);
             date.setSeconds(time[2]);
+
+            if(!("day" in date_params)){
+                if(date.getTime() + 5000 < Date.now()){
+                    date = new Date(date.getTime() + 24*60*60*1000);
+                }
+            }
         }
         return date;
     }

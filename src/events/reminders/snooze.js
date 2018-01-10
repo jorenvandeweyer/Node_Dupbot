@@ -30,7 +30,7 @@ function execute(EventHandler, msg, params){
 
         let time;
         if("original" in params){
-            time = "in " + params.original;
+            time = params.original;
         } else if("contexts" in params && "date-time.original" in params.contexts[0].parameters){
             time = params.contexts[0].parameters["date-time.original"];
         } else {
