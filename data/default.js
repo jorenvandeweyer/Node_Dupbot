@@ -1,6 +1,6 @@
 module.exports = {
     adminrole: "",
-    warntime: 3,
+    warntime: 7*24,
     voiceChannel: "",
     musicChannel: "",
     djrole: "",
