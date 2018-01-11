@@ -33,18 +33,14 @@ module.exports = {
                 	} else {
                         // const cahCommands = ["cstart", "cjoin", "cleave", "c", "cscoreboard", "creset"];
                         // const musicCommand = ["play", "skip", "queue"];
-
-                        let box = [{
-                            name: "Everyone",
-                            value: permissions.everyone.join(", ")
-                        },{
-                            name: "Admin only",
-                            value: permissions.mod.join(", ")
-                        },{
-                            name: "Owner only",
-                            value: permissions.owner.join(", ")
-                        }];
-
+                        let embed = new Client.Discord.RichEmbed();
+                        embed.setTitle("Commands");
+                        embed.setColor(3447003)
+                        embed.setURL('https://dupbit.com/dupbot');
+                        embed.addField("Everyone", permissions.everyone.join(", "));
+                        embed.addField("Admin only", permissions.mod.join(", "));
+                        embed.addField("Owner only", permissions.owner.join(", "));
+                        embed.setDescription(prefix + "help <command> or click on the title to go to the help page");
                         // [
                         //     {
                         //         name: "Music",
@@ -55,8 +51,7 @@ module.exports = {
                         //     },
                         // ]
 
-                		message = Client.createEmbed("info", "All available commands, more info " + prefix + "help <command>", "Commands", box);
-                		Client.send(msg, message);
+                		Client.send(msg, embed);
                 	}
             	});
             });
@@ -82,14 +77,14 @@ module.exports = {
                     return true;
                 });
 
-                let box = [{
-                    name: "DM only",
-                    value: commands.keyArray().join(", ")
-                }];
+                let embed = new Client.Discord.RichEmbed();
+                embed.setTitle("Commands");
+                embed.setColor(3447003)
+                embed.setURL('https://dupbit.com/dupbot');
+                embed.addField("DM only", commands.keyArray().join(", "));
+                embed.setDescription(prefix + "help <command> or click on the title to go to the help page");
 
-
-                message = Client.createEmbed("info", "All available commands, more info !help <command>", "Commands", box);
-                Client.send(msg, message);
+                Client.send(msg, embed);
             }
         }
     }

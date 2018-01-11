@@ -16,6 +16,7 @@ module.exports = {
                 let embed = new Client.Discord.RichEmbed();
                 embed.setTitle("=-=-=-=-=-=-= Dupbot =-=-=-=-=-=-=");
                 embed.setColor("RED");
+                embed.setURL("https://dupbit.com/dupbot");
                 embed.setFooter("Made by " + user.username + "#" + user.discriminator, user.avatarURL);
                 embed.setThumbnail(msg.client.user.avatarURL);
                 embed.addField("Guilds", msg.client.guilds.size);
