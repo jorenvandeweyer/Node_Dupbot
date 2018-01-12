@@ -144,6 +144,7 @@ function isCommand(msg, _callback){
 				_callback();
 			}
 		} else if(msg.author.id !== bot.user.id && !msg.author.bot ){
+			if(msg.content.toLowerCase().includes('https://dupbit.com/dupbot')) return;
 			if(msg.content.toLowerCase().includes(msg.client.user.username.toLowerCase())) {
 				msg.interact = true;
 
