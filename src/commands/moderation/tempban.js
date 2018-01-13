@@ -19,6 +19,7 @@ module.exports = {
                     Client.log(msg, user.id, "tempban", reason, days);
                     Client.send(msg, Client.createEmbed("ban", "<@"+ user.id + "> You have been banned :hammer:"))
                     user.send(Client.createEmbed("ban", "You have been banned for " +days + " days.\nReason: " + reason));
+                    //create event
                 }).catch((reason) => {
                     Client.send(msg, Client.createEmbed("fail", reason));
                 });

@@ -11,6 +11,8 @@ module.exports = {
     		messageLimit = 50;
     	}
 
-    	msg.channel.bulkDelete(messageLimit);
+    	msg.channel.bulkDelete(messageLimit).catch((error) => {
+            Client.send(msg, Client.createEmbed("fail", "Amount must be a number between 2 and 100"));
+        });
     }
 };
