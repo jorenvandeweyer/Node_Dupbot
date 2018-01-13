@@ -28,7 +28,6 @@ module.exports = {
     			case "iamrole":
     				if(msg.params.length >= 2){
     					let role = Client.extractRole(msg, 1);
-                        console.log(role);
     					let roles = [];
     					Client.db.getSettings(msg.guild.id, "iam_roles").then((value) => {
     						if(value){
