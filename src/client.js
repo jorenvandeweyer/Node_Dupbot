@@ -26,7 +26,7 @@ function run(){
 		Client.discordbots.set(Client);
 		if(Client.blackList.guilds.includes(guild.id)){
 			key[1].leave().then( () => {
-				console.log("[+]Left guild on blacklist: " + key);
+                Client.bot.shard.send({type: "log", info: `[+]Left guild on blacklist: ${key}`});
 			});
 		} else {
 			Client.db.addGuild(guild.id);
@@ -67,6 +67,7 @@ function recieveMessage(msg){
 					});
 				}
 				command(msg);
+                Client.bot.shard.send({type: "log", info: `[c]${new Date().toString()} ${msg.author.id} ${msg.command} ${msg.params}`});
 			}else if(msg.interact){
 				if(msg.channel.type === "text"){
 					Client.db.getSettings(msg.guild.id, "ai").then((value) => {
@@ -77,9 +78,10 @@ function recieveMessage(msg){
 				} else {
 					Client.ai.get(Client, msg);
 				}
+                Client.bot.shard.send({type: "log", info: `[t]${new Date().toString()} ${msg.channel.type} ${msg.author.id} ${msg.input_ai}`});
+
 			}
 		});
-		console.log(new Date().toISOString() ,msg.author.id, msg.command, msg.params, msg.interact);
 	}).catch((error) => {
 		//no command
 	});
@@ -94,6 +96,7 @@ function recieveMessage(msg){
 }
 
 function setup(){
+    Client.bot.shard.send({type: "connected"});
 	Client.db.setup(Client);
 	Client.events.start(Client);
 	Client.discordbots.set(Client);
@@ -101,7 +104,7 @@ function setup(){
 	for(key of Client.bot.guilds){
 		if(Client.blackList.guilds.includes(key[0])){
 			key[1].leave().then( () => {
-				console.log("[+]Left guild on blacklist: " + key);
+                Client.bot.shard.send({type: "log", info: `[+]Left guild on blacklist: ${key}`});
 			});
 		}
 	}
@@ -112,7 +115,7 @@ function setup(){
 
 	addDirToCommands(`${__dirname}/commands`);
 
-	console.log("[+]setup ready");
+    Client.bot.shard.send({type: "log", info: `[+]setup ready ${Client.bot.guilds.size} guilds connected.`});
 }
 
 /**************/
@@ -256,7 +259,7 @@ function command(msg){
 			} catch(e) {
 				let message = createEmbed("info", ":bomb: :boom: That didn't work out :neutral_face:");
 				send(msg, message);
-				console.log(e);
+                Client.bot.shard.send({type: "log", info: e});
 			}
 		} else {
 			Client.db.getPermissions(msg.guild.id, msg.command).then((value) => {
@@ -275,7 +278,7 @@ function command(msg){
 				} catch(e){
 					let message = createEmbed("info", ":bomb: :boom: That didn't work out :neutral_face:");
 					send(msg, message);
-					console.log(e);
+                    Client.bot.shard.send({type: "log", info: e});
 				}
 			});
 		}

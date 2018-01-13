@@ -8,26 +8,24 @@ module.exports = {
     execute(Client, msg){
         if(msg.params.includes("--fetch")){
             let message = Client.createEmbed("warning", "<:empty:314349398723264512><:update:264184209617321984>");
-            Client.send(msg, message).then((sendMessage) => {
+            Client.send(msg, message).then((message) => {
                 require('child_process').exec("git pull", (error, stdout, stderr) => {
                     if(error !== null) msg.channel.send(`\`ERROR\` \`\`\`xl\n${clean(error)}\n\`\`\``);
                     if(stderr) msg.channel.send(`\`ERROR\` \`\`\`xl\n${clean(stderr)}\n\`\`\``);
                     console.log(stdout);
-                    let channelId = msg.client.user.lastMessage.channel.id;
-                    let messageId = msg.client.user.lastMessage.id;
-                    msg.client.channels.get(channelId).fetchMessage(messageId).then(message => {
-                        message.edit({embed:{color:3447003 , description:"<:empty:314349398723264512><a:loading:393852367751086090>"}}).then(() => {
-                            Client.listener.emit("reload");
-                            Client.db.close();
-                        });
+                    message.edit({embed:{color:3447003 , description:"<:empty:314349398723264512><a:loading:393852367751086090>"}}).then((message) => {
+                        Client.bot.shard.send({type: "reload", msg:{ id: message.id, channel: message.channel.id}});
+                        Client.db.close();
+                        process.exit();
                     });
                 });
             });
         } else {
             let message = Client.createEmbed("info", "<:empty:314349398723264512><a:loading:393852367751086090>");
-        	Client.send(msg, message).then(() => {
-        		Client.listener.emit("reload");
+        	Client.send(msg, message).then((message) => {
+                Client.bot.shard.send({type: "reload", msg:{ id: message.id, channel: message.channel.id}});
                 Client.db.close();
+                process.exit();
         	});
         }
     }
