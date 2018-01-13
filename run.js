@@ -2,7 +2,6 @@
 
 const Discord = require('discord.js');
 const events = require("events");
-const fs = require("fs");
 const serverSettings = require("./serverSettings");
 
 let handler = require('./handler.js');
