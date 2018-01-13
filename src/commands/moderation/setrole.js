@@ -6,8 +6,8 @@ module.exports = {
     args: 2,
     guildOnly: true,
     execute(Client, msg){
-        userID = Client.serverManager.extractID(msg, 0);
-    	roleID = Client.serverManager.extractRoleID(msg, 1);
+        userID = Client.extractID(msg, 0);
+    	roleID = Client.extractRoleID(msg, 1);
 
         msg.guild.members.get(userID).addRole(roleID).then((member) => {
             Client.send(msg, Client.createEmbed("succes", `Assigned <@&${roleID}> to <@${member.id}>`));

@@ -27,7 +27,7 @@ module.exports = {
     				break;
     			case "iamrole":
     				if(msg.params.length >= 2){
-    					let role = Client.serverManager.extractRole(msg, 1);
+    					let role = Client.extractRole(msg, 1);
                         console.log(role);
     					let roles = [];
     					Client.db.getSettings(msg.guild.id, "iam_roles").then((value) => {
@@ -72,7 +72,7 @@ module.exports = {
                     break;
     			case "admin":
     				if(msg.params.length >= 2){
-    					roleID = Client.serverManager.extractRoleID(msg, 1);
+    					roleID = Client.extractRoleID(msg, 1);
     					if(roleID){
     						Client.db.setSettings(msg.guild.id, "adminrole", roleID).then(() => {
     							let message = Client.createEmbed("succes", "Adminrole set to <@&" + roleID + ">");
@@ -104,7 +104,7 @@ module.exports = {
     				break;
                 case "dj":
                     if(msg.params.length >= 2){
-                        let roleID = Client.serverManager.extractRoleID(msg, 1);
+                        let roleID = Client.extractRoleID(msg, 1);
                         if(roleID){
                             Client.db.setSettings(msg.guild.id, "djrole", roleID).then(() => {
                                 message = Client.createEmbed("succes", "DJ role set to <@&" + roleID + ">");
@@ -195,12 +195,12 @@ module.exports = {
                     });
                     break;
                 default:
-    				let message = Client.createEmbed("info", msg.client.commands.get("set").description);
+    				let message = Client.createEmbed("info", Client.commands.get("set").description);
     				Client.send(msg, message);
     				break;
     		}
     	} else {
-    		let message = Client.createEmbed("info", msg.client.commands.get("set").description);
+    		let message = Client.createEmbed("info", Client.commands.get("set").description);
     		Client.send(msg, message);
     	}
     }

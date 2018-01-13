@@ -7,7 +7,7 @@ module.exports = {
     guildOnly: true,
     execute(Client, msg){
         if (msg.params.length >= 1){
-            let targetID = Client.serverManager.extractID(msg, 0)
+            let targetID = Client.extractID(msg, 0)
     		if(targetID){
                 msg.params.shift();
                 let days = msg.params.shift();

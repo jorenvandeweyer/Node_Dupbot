@@ -36,7 +36,7 @@ function get(Client, msg){
             } else if(response.result.fulfillment.messages[0].speech){
                 let text = convertBack(response.result.fulfillment.messages[0].speech);
                 text = personalize(Client, msg, text);
-                Client.send(msg, text, () => {
+                Client.send(msg, text).then(() => {
                     Client.command.call(Client, msg);
                 });
             } else {
@@ -69,7 +69,7 @@ function convertBack(phrase){
 function personalize(Client, msg, response){
     return response
       .replace(/BOTNAME/g, msg.client.user.username)
-      .replace(/CREATOR/g, Client.bot.botOwner.username + "#" + Client.bot.botOwner.discriminator);
+      .replace(/CREATOR/g, Client.botOwner.username + "#" + Client.botOwner.discriminator);
 }
 
 module.exports = {

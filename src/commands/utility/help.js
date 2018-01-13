@@ -6,14 +6,14 @@ module.exports = {
     args: 0,
     execute(Client, msg){
         if(msg.channel.type == "text"){
-            Client.getPrefix(msg, (prefix) => {
+            Client.getPrefix(msg).then((prefix) => {
                 Client.db.getPermissions(msg.guild.id, "allPermissions").then((permissions) => {
 
                     permissions = sortPermissions(permissions);
 
                     if (msg.params.length >= 1){
                 		let helpmsg = "No command";
-                        let command = msg.client.commands.get(msg.params[0]);
+                        let command = Client.commands.get(msg.params[0]);
                         if (command){
                             if(permissions.keys[command.name] == 0){
                                 helpmsg = `The command \`${command.name}\` is disabled`;
@@ -59,7 +59,7 @@ module.exports = {
 
             if (msg.params.length >= 1){
                 let helpmsg = "No command";
-                let command = msg.client.commands.get(msg.params[0]);
+                let command = Client.commands.get(msg.params[0]);
                 if (command){
                     if(command.usage){
                             helpmsg = `\`!${command.name} ${command.usage}\``;
@@ -70,7 +70,7 @@ module.exports = {
                 message = Client.createEmbed("info", helpmsg);
                 Client.send(msg, message);
             } else {
-                let commands = msg.client.commands.clone();
+                let commands = Client.commands.clone();
 
                 commands = commands.filter((command) => {
                     if(command.guildOnly || command.defaultPermission > 3) return false;

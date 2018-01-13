@@ -6,8 +6,8 @@ module.exports = {
     args: 2,
     guildOnly: true,
     execute(Client, msg){
-		if(Client.serverManager.extractID(msg, 0)){
-            let targetID = Client.serverManager.extractID(msg, 0);
+		if(Client.extractID(msg, 0)){
+            let targetID = Client.extractID(msg, 0);
 
             msg.params.shift();
 			let reason = msg.params.join(" ");

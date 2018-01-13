@@ -6,7 +6,7 @@ module.exports = {
     args: 1,
     guildOnly: true,
     execute(Client, msg){
-        let userID = Client.serverManager.extractID(msg, 0);
+        let userID = Client.extractID(msg, 0);
         msg.guild.members.get(userID).setMute(false).then((member) => {
             Client.send(msg, Client.createEmbed("warn", `<@${member.id}> Unmuted :ok_hand:`));
         }).catch((reason) => {

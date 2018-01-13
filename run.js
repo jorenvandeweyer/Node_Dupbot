@@ -34,8 +34,6 @@ listener.on("reload", function(){
 
 function login(reboot, channelId, messageId){
 	client = new Discord.Client();
-	client.commands = new Discord.Collection();
-	client.Discord = Discord;
 
 	if(__filename == serverSettings.filePath){
 		client.login(serverSettings.token); //dupbit
@@ -45,7 +43,7 @@ function login(reboot, channelId, messageId){
 
 	client.on('ready', () => {
 	    console.log("\n--" + client.user.username + " connected with ID: " + client.user.id + "\n");
-	    handler.setup(client, listener);
+	    handler.setup(client, listener, Discord);
 
 		if(reboot){
 			client.channels.get(channelId).fetchMessage(messageId).then(message => {message.edit({embed:{color:4193355, description:"<:check:314349398811475968>"}})});

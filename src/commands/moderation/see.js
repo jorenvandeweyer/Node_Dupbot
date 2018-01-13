@@ -20,7 +20,7 @@ module.exports = {
             });
         } else {
             if (msg.params.length >= 1){
-                let userID = Client.serverManager.extractID(msg, 0);
+                let userID = Client.extractID(msg, 0);
 
                 Client.db.getModlog(msg.guild.id, userID).then((result) => {
                     if(result.length){

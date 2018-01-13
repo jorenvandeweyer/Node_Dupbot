@@ -8,10 +8,10 @@ module.exports = {
     execute(Client, msg){
         if(msg.params.includes("--fetch")){
             let message = Client.createEmbed("warning", "<:empty:314349398723264512><:update:264184209617321984>");
-            Client.send(msg, message, (sendMessage) => {
-                require('child_process').exec("git pull", function(error, stdout, stderr){
-                    if(error !== null) msg.channel.send(`\`ERROR\` \`\`\`xl\n${Client.clean(error)}\n\`\`\``);
-                    if(stderr) msg.channel.send(`\`ERROR\` \`\`\`xl\n${Client.clean(stderr)}\n\`\`\``);
+            Client.send(msg, message).then((sendMessage) => {
+                require('child_process').exec("git pull", (error, stdout, stderr) => {
+                    if(error !== null) msg.channel.send(`\`ERROR\` \`\`\`xl\n${clean(error)}\n\`\`\``);
+                    if(stderr) msg.channel.send(`\`ERROR\` \`\`\`xl\n${clean(stderr)}\n\`\`\``);
                     console.log(stdout);
                     let channelId = msg.client.user.lastMessage.channel.id;
                     let messageId = msg.client.user.lastMessage.id;
@@ -25,10 +25,17 @@ module.exports = {
             });
         } else {
             let message = Client.createEmbed("info", "<:empty:314349398723264512><a:loading:393852367751086090>");
-        	Client.send(msg, message, function(){
+        	Client.send(msg, message).then(() => {
         		Client.listener.emit("reload");
                 Client.db.close();
         	});
         }
     }
 };
+
+function clean(text) {
+  if (typeof(text) === "string")
+    return text.replace(/`/g, "`" + String.fromCharCode(8203)).replace(/@/g, "@" + String.fromCharCode(8203));
+  else
+      return text;
+}

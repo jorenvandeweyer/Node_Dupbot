@@ -6,7 +6,7 @@ module.exports = {
     args: 1,
     guildOnly: true,
     execute(Client, msg){
-        let userID = Client.serverManager.extractID(msg, 0);
+        let userID = Client.extractID(msg, 0);
 
         msg.guild.fetchMember(userID).then((member) => {
             msg.params.shift();
@@ -28,7 +28,7 @@ module.exports = {
                 Client.send(msg, Client.createEmbed("fail", `My permissions are not high enough to kick <@${member.id}>`));
             }
         }).catch((reason) => {
-            Client.send(msg, Client.createEmbed("fail", "This is not a valid member."));    
+            Client.send(msg, Client.createEmbed("fail", "This is not a valid member."));
         });
     }
 };

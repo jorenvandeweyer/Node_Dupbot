@@ -90,14 +90,14 @@ function createGraphs(self, msg, start, end){
 
             createImageStreamB(x_green, y_green, y_red).then((stream) => {
                 let attachment = new self.Discord.Attachment(stream);
-                self.send(msg, attachment, () =>{
+                self.send(msg, attachment).then(() =>{
                     chartNodeB.destroy();
                 });
             });
 
             createImageStreamL(x_total, y_total_cum).then((stream) => {
                 let attachment = new self.Discord.Attachment(stream);
-                self.send(msg, attachment, () =>{
+                self.send(msg, attachment).then(() =>{
                     chartNodeL.destroy();
                 });
             });

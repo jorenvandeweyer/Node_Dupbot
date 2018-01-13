@@ -31,7 +31,7 @@ function startUp(Client){
                 if(err) console.error(err),process.exit();
                 let commands = [];
 
-                for(let command of Client.bot.commands){
+                for(let command of Client.commands){
                     commands.push([command[0], command[1].defaultPermission]);
                 }
 
@@ -53,7 +53,7 @@ function startUp(Client){
                     }
                 }
 
-                for(let command of Client.bot.commands){
+                for(let command of Client.commands){
                     if(!db_commands.has(command[0])){
                         commands.push([command[0], command[1].defaultPermission]);
                     } else {
@@ -73,7 +73,7 @@ function startUp(Client){
                 }
 
                 for(let command of db_commands){
-                    if(!Client.bot.commands.has(command[0])){
+                    if(!Client.commands.has(command[0])){
                         con.query("DELETE FROM commands WHERE `command`=?", [command[0]], (err, result) => {
                             if(err) console.error(err),process.exit();
                             console.log(`[db]Deleted ${command[0]} command from table commands`);

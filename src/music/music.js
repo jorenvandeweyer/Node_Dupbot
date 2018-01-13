@@ -107,7 +107,7 @@ function addSongToQueue(Client, msg, id){
 		});
 
 		if(!Client.bot.voiceConnections.get(msg.guild.id)){
-			Client.joinVoiceChannel(msg, function(){
+			Client.joinVoiceChannel(msg).then(() => {
 				playSong(Client, msg);
 			});
 		}
@@ -185,7 +185,7 @@ function addPlaylistToQueue(Client, msg, id, shuffle){
 		});
 
 		if(!Client.bot.voiceConnections.get(msg.guild.id)){
-			Client.joinVoiceChannel(msg, () => {
+			Client.joinVoiceChannel(msg).then(() => {
 				playSong(msg);
 			});
 		}
@@ -286,7 +286,7 @@ function playSong(Client, msg){
                 embed.setFooter("Requested by " + video.username, video.avatar);
                 embed.setThumbnail(video.thumbnail);
 
-				Client.sendChannel(msg, channelId, embed, addSongFeedback);
+				Client.sendChannel(msg, channelId, embed).then(addSongFeedback);
 			}
 		});
 	} else if(video.type === "playlist"){

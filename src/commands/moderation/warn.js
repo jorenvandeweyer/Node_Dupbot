@@ -6,7 +6,7 @@ module.exports = {
     args: 1,
     guildOnly: true,
     execute(Client, msg){
-		let targetID = Client.serverManager.extractID(msg, 0);
+		let targetID = Client.extractID(msg, 0);
 
         msg.guild.fetchMember(targetID).then((member) => {
             msg.params.shift();
@@ -27,7 +27,7 @@ module.exports = {
                         let spoofedMessage = msg;
                         spoofedMessage.params = [member.id, "3 active warnings"] ;
                         spoofedMessage.author = msg.client.user;
-                        Client.bot.commands.get("kick").execute(Client, spoofedMessage);
+                        Client.commands.get("kick").execute(Client, spoofedMessage);
                     }
                 });
             });
