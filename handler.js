@@ -468,7 +468,7 @@ const Client = {
 	log: log,
 	extractID: extractID,
 	extractRoleID: extractRoleID,
-	extractRole: extractRoleID,
+	extractRole: extractRole,
 
 	send: send,
 	sendChannel: sendChannel,
