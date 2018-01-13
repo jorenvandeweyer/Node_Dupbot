@@ -19,7 +19,7 @@ module.exports = {
               let gdaxData = new GdaxData(data);
               if(msg.params.includes("--stats")){
                   getInfo(Client, msg, (data) => {
-                      let embed = new msg.client.Discord.RichEmbed();
+                      let embed = new Client.RichEmbed();
                       embed.setColor("RED")
                       embed.setTitle("Trade stats for: " + msg.author.username)
 
@@ -56,7 +56,7 @@ module.exports = {
                   let type = msg.params[index+1];
                   let amount = msg.params[index+2];
                   getInfo(Client, msg, (data) => {
-                      let embed = new msg.client.Discord.RichEmbed();
+                      let embed = new Client.RichEmbed();
                       embed.setColor("RED");
 
                       if(parseFloat(amount) <= parseFloat(data["EUR"])){
@@ -75,7 +75,7 @@ module.exports = {
                   let index = msg.params.indexOf("--sell");
                   let value = msg.params[index+1];
                   getInfo(Client, msg, (data) => {
-                      let embed = new msg.client.Discord.RichEmbed();
+                      let embed = new Client.RichEmbed();
                       embed.setColor("RED");
 
                       if(parseFloat(value) <= parseFloat(data["BTC"])){
@@ -96,14 +96,14 @@ module.exports = {
                   Client.db.setBtc(msg.guild.id, msg.author.id, "start", 100);
                   Client.db.setBtc(msg.guild.id, msg.author.id, "EUR", 100);
                   Client.db.setBtc(msg.guild.id, msg.author.id, "BTC", 0);
-                  let embed = new msg.client.Discord.RichEmbed();
+                  let embed = new Client.RichEmbed();
                   embed.setColor("RED")
                     .setTitle("Reset for user: " + msg.author.username);
                   Client.send(msg, embed);
               } else if(msg.params.includes("--convert")){
                   let index = msg.params.indexOf("--convert");
                   let value = msg.params[index+1];
-                  let embed = new msg.client.Discord.RichEmbed();
+                  let embed = new Client.RichEmbed();
                   embed.setColor("RED")
 
                   if(value.includes("EUR")){
@@ -120,7 +120,7 @@ module.exports = {
                   Client.send(msg, embed);
 
               } else if(msg.params.includes("--full")){
-                  let embed = new msg.client.Discord.RichEmbed();
+                  let embed = new Client.RichEmbed();
                   embed.setTitle("Bitcoin")
                     .setColor("RED")
                     .setDescription("Info fetched from Gdax")
@@ -130,7 +130,7 @@ module.exports = {
                   Client.send(msg, embed);
 
               } else {
-                  let embed = new msg.client.Discord.RichEmbed();
+                  let embed = new Client.RichEmbed();
                   embed.setDescription(`**Bid:** ${gdaxData.bid} **Ask:** ${gdaxData.ask}`)
                     .setColor("RED");
                   Client.send(msg, embed);

@@ -31,7 +31,7 @@ module.exports = {
                 return presence.status === "dnd";
             });
 
-            let embed = new Client.Discord.RichEmbed();
+            let embed = new Client.RichEmbed();
             embed.setTitle("=-=-=-=-= "+ guild.name +" =-=-=-=-=");
             embed.setColor("RED");
             embed.setFooter("Created at " + guild.createdAt, guild.iconURL);

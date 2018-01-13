@@ -28,12 +28,12 @@ module.exports = {
             if(err) return console.log(err);
             let color = JSON.parse(body)[0];
 
-            let embed = new Client.Discord.RichEmbed();
+            let embed = new Client.RichEmbed();
             embed.setTitle(color.title);
             embed.setDescription("```\nColor: #" + color.hex + " \nRGB: " + color.rgb.red + " " + color.rgb.green + " " + color.rgb.blue + "\n```");
             embed.setImage(color.imageUrl);
             embed.setColor(parseInt(color.hex, 16));
-            
+
             Client.send(msg, embed);
         });
     }

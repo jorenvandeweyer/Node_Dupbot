@@ -7,7 +7,7 @@ module.exports = {
     execute(Client, msg){
         if(msg.params.includes("--remove")){
             let index = msg.params.indexOf("--remove") + 1;
-            Client.db.con.query(`DELETE FROM modlog_${msg.guild.id} WHERE id=${msg.params[index]}`, (err, result) => {
+            Client.db.con.query(`DELETE FROM modlog WHERE id=${msg.params[index]}`, (err, result) => {
                 if(err) return;
                 Client.db.getSettings(msg.guild.id, "logchannel").then((channelId) => {
                     let embed = Client.createEmbed("succes", "Removed log");
@@ -25,7 +25,7 @@ module.exports = {
                 Client.db.getModlog(msg.guild.id, userID).then((result) => {
                     if(result.length){
                         let format = formatEntries(result);
-                        let embed = new Client.Discord.RichEmbed();
+                        let embed = new Client.RichEmbed();
                         embed.setTitle("Modlog");
                         embed.setColor("BLUE");
                         embed.setDescription(`All events related to <@${userID}>`);

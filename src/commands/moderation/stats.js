@@ -25,7 +25,7 @@ module.exports = {
                     if(result.length === 0){
                         await this.fetchAllMessages();
                     } else {
-                        let embed = new Client.Discord.RichEmbed();
+                        let embed = new Client.RichEmbed();
                         let members = "";
                         let percentage = "";
                         let total = 0;
@@ -51,7 +51,7 @@ module.exports = {
             }
 
             async fetchAllMessages(){
-                Client.send(msg, Client.createEmbed("info", "<:empty:314349398723264512> Fetching messages <a:loading:393852367751086090>"), async (message) => {
+                Client.send(msg, Client.createEmbed("info", "<:empty:314349398723264512> Fetching messages <a:loading:393852367751086090>")).then(async (message) => {
                     for(let channel of this.channels){
                         if(!channel[1].permissionsFor(msg.client.user).has("VIEW_CHANNEL"))continue;
                         await this.fetchAllMessagesChannel(channel[1], msg.guild.createdTimestamp)
@@ -88,12 +88,13 @@ module.exports = {
             updateDatabase(){
                 let values = [];
                 for(let id in this.stats){
-                    values.push([id, this.stats[id], "MSG_SENT"]);
+                    Client.db.setStats_users(msg.guild.id, id, "MSG_SENT", this.stats[id]);
+                    // values.push([id, this.stats[id], "MSG_SENT"]);
                 }
 
-                Client.db.executeStatement("INSERT INTO stats_" + msg.guild.id + " (id, value, type) VALUES ?", values).then((result) => {
-                    console.log(result);
-                });
+                // Client.db.executeStatement("INSERT INTO stats_" + msg.guild.id + " (id, value, type) VALUES ?", values).then((result) => {
+                //     console.log(result);
+                // });
             }
         }
 

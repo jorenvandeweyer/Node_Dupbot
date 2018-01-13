@@ -7,7 +7,7 @@ module.exports = {
     execute(Client, msg){
         if(msg.params.includes("--create")){
             if(Client.currentEmbed == undefined){
-                Client.currentEmbed = new Client.Discord.RichEmbed();
+                Client.currentEmbed = new Client.RichEmbed();
             } else {
                 Client.send(msg, Client.createEmbed("info", "there is already one existing embed"));
             }

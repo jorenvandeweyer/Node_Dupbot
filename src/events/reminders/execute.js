@@ -7,7 +7,7 @@ function execute(EventHandler, event){
             return reject();
         };
 
-        let embed = new EventHandler.Client.Discord.RichEmbed();
+        let embed = new EventHandler.Client.RichEmbed();
 
         embed.setTitle("Reminder");
         embed.setColor(16776960);

@@ -10,7 +10,7 @@ module.exports = {
     	for(song in Client.music.queue.get(msg.guild.id)){
     		let playlist = "";
     		if(Client.music.queue.get(msg.guild.id)[song].type == "playlist"){
-    			playlist = " | Playlist " + Client.queue.get(msg.guild.id)[song].songs.length + " songs left";
+    			playlist = " | Playlist " + Client.music.queue.get(msg.guild.id)[song].songs.length + " songs left";
     		}
     		message += song + ": " + Client.music.queue.get(msg.guild.id)[song].title + playlist + "\n";
     	}

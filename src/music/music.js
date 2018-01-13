@@ -51,7 +51,7 @@ function nextSong(Client, msg){
 	}
 	if(msg.params.length > 0){
 		if(msg.params[0] === "playlist"){
-			squeue.get(msg.guild.id).length[0].type = "skipPlaylist";
+			queue.get(msg.guild.id)[0].type = "skipPlaylist";
 		}
 	}
 
@@ -93,7 +93,7 @@ function addSongToQueue(Client, msg, id){
 
         queue.get(msg.guild.id).push(song);
 
-        let embed = new Client.Discord.RichEmbed();
+        let embed = new Client.RichEmbed();
         embed.setTitle(song.title);
         embed.setColor("BLUE");
         embed.setFooter("Queued by " + song.username, song.avatar);
@@ -171,14 +171,14 @@ function addPlaylistToQueue(Client, msg, id, shuffle){
 		if(!queue.has(msg.guild.id)) queue.set(msg.guild.id, new Array());
 		queue.get(msg.guild.id).push(playlist);
 
-        let embed = new Client.Discord.RichEmbed();
+        let embed = new Client.RichEmbed();
         embed.setTitle(playlist.title);
         embed.setColor(3447003);
         embed.setFooter("Queued by " + playlist.username, playlist.avatar);
 
 		Client.db.getSettings(msg.guild.id, "musicChannel").then((channelId) => {
 			if(channelId){
-				sendChannel(msg, channelId, embed);
+				Client.sendChannel(msg, channelId, embed);
 			} else {
 				send(msg, embed);
 			}
@@ -186,7 +186,7 @@ function addPlaylistToQueue(Client, msg, id, shuffle){
 
 		if(!Client.bot.voiceConnections.get(msg.guild.id)){
 			Client.joinVoiceChannel(msg).then(() => {
-				playSong(msg);
+				playSong(Client, msg);
 			});
 		}
 
@@ -277,7 +277,7 @@ function playSong(Client, msg){
 
 		Client.db.getSettings(msg.guild.id, "musicChannel").then((channelId) => {
 			if(channelId){
-                let embed = new Client.Discord.RichEmbed();
+                let embed = new Client.RichEmbed();
                 embed.setTitle("=-=-=-=-=-=-= Song =-=-=-=-=-=-=");
                 embed.setColor(0x5a00b1);
                 embed.addField("Now Streaming", video.title);
@@ -303,7 +303,7 @@ function playSong(Client, msg){
 		YouTubeVideo(video.songs[video.current].videoID, (obj) => {
 			Client.db.getSettings(msg.guild.id, "musicChannel").then((channelId) => {
 				if(channelId){
-                    let embed = new Client.Discord.RichEmbed();
+                    let embed = new Client.RichEmbed();
                     embed.setTitle("=-=-=-=-=-=-= Playlist =-=-=-=-=-=-=");
                     embed.setColor(0x5a00b1);
                     embed.addField(video.title, video.songs.length + " songs left in playlist || shuffle " + shuffleValue);
@@ -313,7 +313,7 @@ function playSong(Client, msg){
                     embed.setFooter("Requested by " + video.username, video.avatar);
                     embed.setThumbnail(obj.thumbnail);
 
-                    sendChannel(msg, channelId, embed, addSongFeedback);
+                    Client.sendChannel(msg, channelId, embed, addSongFeedback);
 				}
 			});
 		});

@@ -19,7 +19,7 @@ module.exports = {
                     });
                 }
             } else {
-                let embed = new Client.Discord.RichEmbed();
+                let embed = new Client.RichEmbed();
                 embed.setTitle(`Banned members (${users.size}):`);
                 embed.setColor("RED");
                 let body = "";

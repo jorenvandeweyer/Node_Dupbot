@@ -15,7 +15,7 @@ module.exports = {
             let image = data[0];
             let referal = "?utm_source=dupbot&utm_medium=referral"
 
-            let currentEmbed = new Client.Discord.RichEmbed();
+            let currentEmbed = new Client.RichEmbed();
             currentEmbed.setTitle(`Result for: ${msg.params.join(" ")}`)
                 .setURL(image.links.html + referal)
                 .setAuthor(`Author: ${image.user.name}`, image.user.profile_image.small , image.user.links.html + referal)

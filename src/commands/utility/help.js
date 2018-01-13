@@ -33,7 +33,7 @@ module.exports = {
                 	} else {
                         // const cahCommands = ["cstart", "cjoin", "cleave", "c", "cscoreboard", "creset"];
                         // const musicCommand = ["play", "skip", "queue"];
-                        let embed = new Client.Discord.RichEmbed();
+                        let embed = new Client.RichEmbed();
                         embed.setTitle("Commands");
                         embed.setColor(3447003)
                         embed.setURL('https://dupbit.com/dupbot');
@@ -77,7 +77,7 @@ module.exports = {
                     return true;
                 });
 
-                let embed = new Client.Discord.RichEmbed();
+                let embed = new Client.RichEmbed();
                 embed.setTitle("Commands");
                 embed.setColor(3447003)
                 embed.setURL('https://dupbit.com/dupbot');

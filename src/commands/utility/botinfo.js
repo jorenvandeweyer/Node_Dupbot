@@ -13,7 +13,7 @@ module.exports = {
                     members+=guild[1].memberCount;
                 }
 
-                let embed = new Client.Discord.RichEmbed();
+                let embed = new Client.RichEmbed();
                 embed.setTitle("=-=-=-=-=-=-= Dupbot =-=-=-=-=-=-=");
                 embed.setColor("RED");
                 embed.setURL("https://dupbit.com/dupbot");

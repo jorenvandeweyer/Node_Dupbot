@@ -31,7 +31,7 @@ function execute(EventHandler, msg, params){
         let time;
         if("original" in params){
             time = params.original;
-        } else if("contexts" in params && "date-time.original" in params.contexts[0].parameters){
+        } else if("contexts" in params && params.contexts[0] && "date-time.original" in params.contexts[0].parameters){
             time = params.contexts[0].parameters["date-time.original"];
         } else {
             time = "at " + date.toString();
