@@ -1,34 +1,23 @@
-const fs = require('fs');
-
 module.exports = class Servers{
     constructor(Client){
         this.Client = Client;
         this.bot = Client.bot;
     }
 
-    getOwner(msg){
-        let guild = msg.guild.id;
-        return this.bot.guilds.get(guild).ownerID;
-    }
-
-    getRoles(msg){
-		return msg.member.roles.keyArray();
+	isAdmin(msg){
+        return msg.channel.type === "dm" || (msg.channel.type === "text" && (msg.member.hasPermission("ADMINISTRATOR") || msg.member.id === msg.guild.ownerID));
 	}
 
-	isOwner(msg){
-		return msg.author.id == this.getOwner(msg);
-	}
-
-	isAdmin(msg, adminRole){
-            return this.isOwner(msg) || msg.author.id == this.Client.serverSettings.botOwner || this.getRoles(msg).includes(adminRole);
+	isMod(msg, adminRole){
+            return this.isAdmin(msg) || msg.member.roles.has(adminRole);
 	}
 
     getPermissionLevel(msg, adminRole, support){
-        if(msg.author.id == this.Client.serverSettings.botOwner && support == true){
+        if(msg.author.id === this.Client.serverSettings.botOwner && support == true){
             return 4;
-        } else if(this.isOwner(msg)){
+        } else if(this.isAdmin(msg)){
             return 3;
-        } else if(this.isAdmin(msg, adminRole)){
+        } else if(this.isMod(msg, adminRole)){
             return 2;
         } else {
             return 1;
@@ -79,18 +68,4 @@ module.exports = class Servers{
             return msg.guild.roles.get(msg.params[pos]);
         }
     }
-
-	getUsername(msg, userID){
-		return this.bot.users.get(userID).username;
-	}
-
-	getNick(msg, userID){
-		return this.bot.guilds.get(msg.guild.id).members.get(userID).nickname;
-	}
-
-	isVoiceChannel(msg, channelID){
-		if(msg.guild.channels.keyArray().includes(channelID)){
-			return msg.guild.channels.get(channelID).type == "voice";
-		}
-	}
 }
