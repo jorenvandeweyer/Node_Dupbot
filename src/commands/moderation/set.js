@@ -32,7 +32,7 @@ module.exports = {
     					let roles = [];
     					Client.db.getSettings(msg.guild.id, "iam_roles").then((value) => {
     						if(value){
-    							roles = value[0].value.split(",");
+    							roles = value.split(",");
 
     							let index = roles.indexOf(role.id.toString());
     							if( index >= 0){
