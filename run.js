@@ -1,57 +1,21 @@
-#!/usr/bin/env nodejs
+const { ShardingManager } = require('discord.js');
+const {token, dev_token} = require('./serverSettings.json');
 
-const Discord = require('discord.js');
-const events = require("events");
-const serverSettings = require("./serverSettings");
+let login_token;
+let args = [];
 
-let handler = require('./handler.js');
+if(!process.argv.includes("--dev")){
+    login_token = token;
+} else {
+    login_token = dev_token;
+    args.push("--dev");
+}
 
-/**************/
-/*****VARS*****/
-/**************/
 
-var client;// = new Discord.Client();
-const listener = new events.EventEmitter();
-
-/***************/
-/***Listeners***/
-/***************/
-
-login();
-
-listener.on("reload", function(){
-	let channelId = client.user.lastMessage.channel.id;
-	let messageId = client.user.lastMessage.id;
-	client.destroy();
-	console.log("\n[*]reloading files\n");
-	delete require.cache[require.resolve('./handler.js')];
-	Object.keys(require.cache).forEach(function(key) {
-		if(!key.includes("node_modules")) delete require.cache[key];
-	});
-	handler = require('./handler.js');
-	login(true, channelId, messageId);
+const manager = new ShardingManager('./src/client.js', {
+    token: login_token,
+    shardArgs: args,
 });
 
-function login(reboot, channelId, messageId){
-	client = new Discord.Client();
-
-	if(__filename == serverSettings.filePath){
-		client.login(serverSettings.token); //dupbit
-	} else {
-		client.login(serverSettings.dev_token); //devbot
-	}
-
-	client.on('ready', () => {
-	    console.log("\n--" + client.user.username + " connected with ID: " + client.user.id + "\n");
-	    handler.setup(client, listener, Discord);
-
-		if(reboot){
-			client.channels.get(channelId).fetchMessage(messageId).then(message => {message.edit({embed:{color:4193355, description:"<:check:314349398811475968>"}})});
-		}
-	});
-
-	client.on('message', msg => {
-		handler.recieveMessage(msg);
-	});
-
-}
+manager.spawn();
+manager.on('launch', shard => console.log(`Launched shard ${shard.id}`));
