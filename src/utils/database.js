@@ -418,7 +418,6 @@ function setStats_guild(guild, type, value){
         let timestamp = Date.now().toString();
         con.query("INSERT INTO stats_guild SELECT guilds.guild_id, ?, ?, ? FROM guilds WHERE guilds.guild=?", [type, timestamp, value, guild], (err, result) => {
             if(err) return reject(err);
-            console.log(type);
             resolve(result);
         });
     });

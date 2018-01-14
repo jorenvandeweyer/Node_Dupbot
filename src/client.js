@@ -33,6 +33,10 @@ function run(){
 		}
 	});
 
+    Client.bot.on("guildDelete", (guild) => {
+        Client.bot.shard.send({type: "log", info: `[+]Left guild: ${guild.id}`});
+    });
+
 	Client.bot.on("guildMemberRemove", (member) => {
 		Client.db.setServerStats(member.guild.id, "guildMemberRemove", member.id);
 	});
