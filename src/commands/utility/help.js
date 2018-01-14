@@ -124,6 +124,11 @@ function sortPermissions(permissions){
 
         }
     }
+    if(!disabled.length) disabled.push("-");
+    if(!everyone.length) everyone.push("-");
+    if(!mod.length) mod.push("-");
+    if(!owner.length) owner.push("-");
+    
     return {
         disabled: disabled,
         everyone: everyone,
