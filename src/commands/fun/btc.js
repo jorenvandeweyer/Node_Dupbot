@@ -55,6 +55,7 @@ module.exports = {
                   let index = msg.params.indexOf("--buy");
                   let type = msg.params[index+1];
                   let amount = msg.params[index+2];
+                  if(!type || !amount) return;
                   getInfo(Client, msg, (data) => {
                       let embed = new Client.RichEmbed();
                       embed.setColor("RED");
@@ -74,6 +75,7 @@ module.exports = {
               } else if(msg.params.includes("--sell")){
                   let index = msg.params.indexOf("--sell");
                   let value = msg.params[index+1];
+                  if(!value) return;
                   getInfo(Client, msg, (data) => {
                       let embed = new Client.RichEmbed();
                       embed.setColor("RED");
@@ -93,6 +95,7 @@ module.exports = {
               } else if(msg.params.includes("--reset")){
                   let index = msg.params.indexOf("--reset");
                   let value = msg.params[index+1];
+                  if(!value) return;
                   Client.db.setBtc(msg.guild.id, msg.author.id, "start", 100);
                   Client.db.setBtc(msg.guild.id, msg.author.id, "EUR", 100);
                   Client.db.setBtc(msg.guild.id, msg.author.id, "BTC", 0);
@@ -103,6 +106,7 @@ module.exports = {
               } else if(msg.params.includes("--convert")){
                   let index = msg.params.indexOf("--convert");
                   let value = msg.params[index+1];
+                  if(!value) return;
                   let embed = new Client.RichEmbed();
                   embed.setColor("RED")
 
