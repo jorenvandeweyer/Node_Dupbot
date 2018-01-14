@@ -46,9 +46,7 @@ function run(){
 	});
 
 	Client.bot.on("guildMemberAdd", (member) => {
-		Client.db.getSettings(member.guild.id, "welcome").then((welcome) => {
-			if(welcome == true) Client.welcome(Client, member);
-		});
+		Client.welcome(Client, member);
 		Client.db.setServerStats(member.guild.id, "guildMemberAdd", member.id);
 		Client.db.getStats_users(member.guild.id, "all").then((memberx) => {
 			if(memberx.length){
