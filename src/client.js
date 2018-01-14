@@ -6,27 +6,27 @@ const Discord = require('discord.js');
 /***************/
 
 function run(){
-    Client.bot = new Discord.Client();
+	Client.bot = new Discord.Client();
 
-    if(!process.argv.includes("--dev")){
-        Client.prefix = Client.serverSettings.prefix;
-        Client.mysql_db = Client.serverSettings.mysql_db;
-        Client.bot.login(Client.serverSettings.token);
-    } else {
-        Client.prefix = Client.serverSettings.prefix_dev;
-        Client.mysql_db = Client.serverSettings.mysql_db_dev;
-        Client.bot.login(Client.serverSettings.dev_token);
-    }
+	if(!process.argv.includes("--dev")){
+		Client.prefix = Client.serverSettings.prefix;
+		Client.mysql_db = Client.serverSettings.mysql_db;
+		Client.bot.login(Client.serverSettings.token);
+	} else {
+		Client.prefix = Client.serverSettings.prefix_dev;
+		Client.mysql_db = Client.serverSettings.mysql_db_dev;
+		Client.bot.login(Client.serverSettings.dev_token);
+	}
 
-    Client.bot.on('ready', setup);
+	Client.bot.on('ready', setup);
 
-    Client.bot.on('message', recieveMessage);
+	Client.bot.on('message', recieveMessage);
 
-    Client.bot.on("guildCreate", (guild) => {
+	Client.bot.on("guildCreate", (guild) => {
 		Client.discordbots.set(Client);
 		if(Client.blackList.guilds.includes(guild.id)){
 			key[1].leave().then( () => {
-                Client.bot.shard.send({type: "log", info: `[+]Left guild on blacklist: ${key}`});
+				Client.bot.shard.send({type: "log", info: `[+]Left guild on blacklist: ${key}`});
 			});
 		} else {
 			Client.db.addGuild(guild.id);
@@ -46,6 +46,9 @@ function run(){
 	});
 
 	Client.bot.on("guildMemberAdd", (member) => {
+		Client.db.getSettings(member.guild.id, "welcome").then((welcome) => {
+			if(welcome == true) Client.welcome(Client, member);
+		});
 		Client.db.setServerStats(member.guild.id, "guildMemberAdd", member.id);
 		Client.db.getStats_users(member.guild.id, "all").then((memberx) => {
 			if(memberx.length){
@@ -67,7 +70,7 @@ function recieveMessage(msg){
 					});
 				}
 				command(msg);
-                Client.bot.shard.send({type: "log", info: `[c]${new Date().toString()} ${msg.author.id} ${msg.command} ${msg.params}`});
+				Client.bot.shard.send({type: "log", info: `[c]${new Date().toString()} ${msg.author.id} ${msg.command} ${msg.params}`});
 			}else if(msg.interact){
 				if(msg.channel.type === "text"){
 					Client.db.getSettings(msg.guild.id, "ai").then((value) => {
@@ -78,7 +81,7 @@ function recieveMessage(msg){
 				} else {
 					Client.ai.get(Client, msg);
 				}
-                Client.bot.shard.send({type: "log", info: `[t]${new Date().toString()} ${msg.channel.type} ${msg.author.id} ${msg.input_ai}`});
+				Client.bot.shard.send({type: "log", info: `[t]${new Date().toString()} ${msg.channel.type} ${msg.author.id} ${msg.input_ai}`});
 
 			}
 		});
@@ -96,7 +99,7 @@ function recieveMessage(msg){
 }
 
 function setup(){
-    Client.bot.shard.send({type: "connected"});
+	Client.bot.shard.send({type: "connected"});
 	Client.db.setup(Client);
 	Client.events.start(Client);
 	Client.discordbots.set(Client);
@@ -104,7 +107,7 @@ function setup(){
 	for(key of Client.bot.guilds){
 		if(Client.blackList.guilds.includes(key[0])){
 			key[1].leave().then( () => {
-                Client.bot.shard.send({type: "log", info: `[+]Left guild on blacklist: ${key}`});
+				Client.bot.shard.send({type: "log", info: `[+]Left guild on blacklist: ${key}`});
 			});
 		}
 	}
@@ -115,7 +118,7 @@ function setup(){
 
 	addDirToCommands(`${__dirname}/commands`);
 
-    Client.bot.shard.send({type: "log", info: `[+]setup ready ${Client.bot.guilds.size} guilds connected.`});
+	Client.bot.shard.send({type: "log", info: `[+]setup ready ${Client.bot.guilds.size} guilds connected.`});
 }
 
 /**************/
@@ -125,13 +128,13 @@ function setup(){
 function log(msg, userID, sort, reason, time){
 
 	let data = {
-        user: userID,
-        type: sort,
-        mod: msg.author.id,
-        timestamp: Date.now(),
-        reason: reason,
-        time: time
-    };
+		user: userID,
+		type: sort,
+		mod: msg.author.id,
+		timestamp: Date.now(),
+		reason: reason,
+		time: time
+	};
 
 	Client.db.setModlog(msg.guild.id, data);
 
@@ -259,7 +262,7 @@ function command(msg){
 			} catch(e) {
 				let message = createEmbed("info", ":bomb: :boom: That didn't work out :neutral_face:");
 				send(msg, message);
-                Client.bot.shard.send({type: "log", info: e});
+				Client.bot.shard.send({type: "log", info: e});
 			}
 		} else {
 			Client.db.getPermissions(msg.guild.id, msg.command).then((value) => {
@@ -278,7 +281,7 @@ function command(msg){
 				} catch(e){
 					let message = createEmbed("info", ":bomb: :boom: That didn't work out :neutral_face:");
 					send(msg, message);
-                    Client.bot.shard.send({type: "log", info: e});
+					Client.bot.shard.send({type: "log", info: e});
 				}
 			});
 		}
@@ -449,20 +452,21 @@ function joinVoiceChannel(msg){
 }
 
 const Client = {
-    serverSettings: require("../serverSettings.json"),
-    blackList: require("../blackList.json"),
+	serverSettings: require("../serverSettings.json"),
+	blackList: require("../blackList.json"),
 
 	music: require("./music/music"),
 	cah: require("./minigames/cahgamehandler"),
-    events: require("./events/events"),
+	events: require("./events/events"),
 	graphs: require("./utils/graphs"),
 	discordbots: require("./utils/discordbots"),
 	ai: require("./utils/ai"),
 	antispam: require("./utils/antispam"),
 	db: require("./utils/database"),
+	welcome: require("./utils/welcome"),
 
-    RichEmbed: Discord.RichEmbed,
-    Attachment: Discord.Attachment,
+	RichEmbed: Discord.RichEmbed,
+	Attachment: Discord.Attachment,
 
 	commands: new Map(),
 
@@ -483,5 +487,5 @@ const Client = {
 };
 
 if(require.main === module){
-    run();
+	run();
 }

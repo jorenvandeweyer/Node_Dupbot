@@ -149,6 +149,10 @@ function startUp(Client){
                     con.query("INSERT INTO settings_default(`setting`, `value_default`) VALUES ?", [settings_q], (err, result) => {
                         if(err) console.error(err),process.exit();
                         console.log(`[db]Inserted ${result.affectedRows} settings in table settings_default`);
+                        con.query(`INSERT INTO settings SELECT guilds.guild_id, settings_default.setting_id, settings_default.value_default FROM guilds INNER JOIN settings_default ON settings_default.setting IN ('${settings_q.map(arr => arr[0]).join("','")}')`, [], (err, result) => {
+                            if(err) console.error(err),process.exit();
+                            console.log(`[db]Inserted ${result.affectedRows} settings in table settings`);
+                        });
                     });
                 }
 

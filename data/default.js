@@ -11,5 +11,7 @@ module.exports = {
     max_iam_roles: -1,
     support: true,
     prefix: "",
-    botupdates: true
+    botupdates: true,
+    welcome: "",
+    welcomeChannel: ""
 }

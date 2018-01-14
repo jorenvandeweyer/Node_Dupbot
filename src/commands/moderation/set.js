@@ -193,6 +193,26 @@ module.exports = {
                         })
                     });
                     break;
+                case "welcome":
+                    msg.params.shift();
+                    let welcomeMessage = msg.params.join(" ");
+                    Client.db.setSettings(msg.guild.id, "welcome", welcomeMessage).then(() => {
+                        if(welcomeMessage){
+                            Client.send(msg, Client.createEmbed("succes", "Welcome message set to:")).then(() => {
+                                Client.welcome(Client, msg.member);
+                            });
+                        } else {
+                            Client.send(msg, Client.createEmbed("succes", "Welcome message removed."));
+                        }
+                    });
+                    break;
+                case "welcomeChannel":
+                    Client.db.setSettings(msg.guild.id, "welcomeChannel", msg.channel.id).then(() => {
+                        Client.send(msg, Client.createEmbed("succes", "Welcome Channel set")).then(() => {
+                            Client.welcome(Client, msg.member);
+                        });
+                    });
+                    break;
                 default:
     				let message = Client.createEmbed("info", Client.commands.get("set").description);
     				Client.send(msg, message);
