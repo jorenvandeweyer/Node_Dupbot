@@ -35,6 +35,6 @@ manager.on('message', (shard, message) => {
 });
 
 function log(shard, message){
-    if(message.error) return console.log(`Shard[${shard.id}] : ${message.error.file}:${message.error.line} ${message.error.reason}`);
-    if(message.info) return console.log(`Shard[${shard.id}] : ${message.info}`);
+    if(message.error) return console.log(`Shard[${shard.id}]:${message.error.file}:${message.error.line} ${message.error.reason}`);
+    if(message.info) return console.log(`Shard[${shard.id}]:${message.info}`);
 }
