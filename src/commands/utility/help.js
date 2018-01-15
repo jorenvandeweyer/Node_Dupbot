@@ -71,10 +71,8 @@ module.exports = {
                 Client.send(msg, message);
             } else {
                 let commands = Client.commands.clone();
-
                 commands = commands.filter((command) => {
-                    if(command.guildOnly || command.defaultPermission > 3) return false;
-                    return true;
+                    return !(command.guildOnly || command.defaultPermission > 3);
                 });
 
                 let embed = new Client.RichEmbed();
@@ -82,7 +80,7 @@ module.exports = {
                 embed.setColor(3447003)
                 embed.setURL('https://dupbit.com/dupbot');
                 embed.addField("DM only", commands.keyArray().join(", "));
-                embed.setDescription(prefix + "help <command> or click on the title to go to the help page");
+                embed.setDescription(Client.prefix + "help <command> or click on the title to go to the help page");
 
                 Client.send(msg, embed);
             }
@@ -128,7 +126,7 @@ function sortPermissions(permissions){
     if(!everyone.length) everyone.push("-");
     if(!mod.length) mod.push("-");
     if(!owner.length) owner.push("-");
-    
+
     return {
         disabled: disabled,
         everyone: everyone,

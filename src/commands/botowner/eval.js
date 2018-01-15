@@ -4,7 +4,7 @@ module.exports = {
     usage: "<code>",
     defaultPermission: 4,
     args: 1,
-    guildOnly: true,
+    guildOnly: false,
     execute(Client, msg){
         try{
     		const code = msg.params.join(" ");

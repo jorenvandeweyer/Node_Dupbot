@@ -4,7 +4,7 @@ module.exports = {
     defaultPermission: 4,
     failPermission: "You can't reload the bot",
     args: 0,
-    guildOnly: true,
+    guildOnly: false,
     execute(Client, msg){
         if(msg.params.includes("--fetch")){
             let message = Client.createEmbed("warning", "<:empty:314349398723264512><:update:264184209617321984>");

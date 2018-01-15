@@ -86,9 +86,7 @@ function startUp(Client){
         if(!db_tables.includes("guilds")){
             con.query("CREATE TABLE guilds (`guild_id` INT UNSIGNED AUTO_INCREMENT, `guild` VARCHAR(32) UNIQUE, PRIMARY KEY (`guild_id`))", (err, result) => {
                 if(err) console.error(err),process.exit();
-                con.query("INSERT INTO guilds (`guild`) VALUES ('0')", (err, result) => {
-                    if(err) console.error(err),process.exit();
-                });
+                addGuild("0");
                 for(let guild of Client.bot.guilds){
                     addGuild(guild[0]);
                 }

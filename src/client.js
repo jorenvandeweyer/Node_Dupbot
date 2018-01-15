@@ -257,69 +257,45 @@ function command(msg){
 		return msg.channel.send(createEmbed("fail", reply));
 	}
 
-	try {
-		if(!command.guildOnly && msg.channel.type !== "text"){
-			try{
-				command.execute(Client, msg);
-			} catch(e) {
-				let message = createEmbed("info", ":bomb: :boom: That didn't work out :neutral_face:");
-				send(msg, message);
-				Client.bot.shard.send({type: "log", info: e});
-			}
-		} else {
-			Client.db.getPermissions(msg.guild.id, msg.command).then((value) => {
-				// console.log("------ " + msg.permissionLevel + "/" + value + " : " + msg.command);
-				if (value === undefined || value === 0) return;
+    let guild = "0";
+    if(msg.channel.type === "text") guild = msg.guild.id;
 
-				try{
-					if(msg.permissionLevel >= value){
-						command.execute(Client, msg);
-					} else {
-						if(command.failPermission !== undefined){
-							let message = createEmbed("info", command.failPermission);
-							send(msg, message);
-						}
-					}
-				} catch(e){
-					let message = createEmbed("info", ":bomb: :boom: That didn't work out :neutral_face:");
-					send(msg, message);
-					Client.bot.shard.send({type: "log", info: e});
-				}
-			});
-		}
-	}
-	catch (error) {
-		console.error(error);
-		msg.reply(":bomb: :boom: That didn't work out :neutral_face:");
-	}
+    Client.db.getPermissions(guild, msg.command).then((value) => {
+        if(value === undefined || value === 0) return;
+
+        try {
+            if(msg.permissionLevel >= value){
+                command.execute(Client, msg);
+            } else {
+                if(command.failPermission){
+                    send(msg, createEmbed("info", command.failPermission));
+                }
+            }
+        } catch(e) {
+            let message = createEmbed("info", ":bomb: :boom: That didn't work out :neutral_face:");
+            send(msg, message);
+            Client.bot.shard.send({type: "log", info: e});
+        }
+    });
 }
 
 function isCommand(msg){
 	return new Promise((resolve, reject) => {
-		getPrefix(msg).then((prefix) => {
-			if(msg.author.bot) return reject("Message sent by bot");
+        if(msg.author.bot) return reject("Message sent by bot");
 
+		getPrefix(msg).then((prefix) => {
 			if(msg.content.slice(0, prefix.length) === prefix){
 				msg.params = msg.content.slice(prefix.length).split(" ");
 				msg.command = msg.params.shift().toLowerCase();
 				msg.isCommand = true;
-				if(msg.channel.type === "text"){
-					Client.db.getSettings(msg.guild.id, "adminrole").then((role) => {
-						Client.db.getSettings(msg.guild.id, "support").then((support) => {
-							if(msg.member == null){
-								msg.guild.fetchMember(msg.author.id).then((member) => {
-									msg.member = member;
-									msg.permissionLevel = getPermissionLevel(msg, role, support);
-									resolve();
-								});
-							} else {
-								msg.permissionLevel = getPermissionLevel(msg, role, support);
-								resolve();
-							}
-						});
-					});
+
+				if(msg.channel.type === "text" && msg.member == null){
+					msg.guild.fetchMember(msg.author.id).then((member) => {
+						msg.member = member;
+						resolve(msg);
+					}).catch(reject);
 				} else {
-					resolve();
+					resolve(msg);
 				}
 			} else if(msg.content.toLowerCase().includes(msg.client.user.username.toLowerCase())) {
 				if(msg.content.toLowerCase().includes('https://dupbit.com/dupbot')) return reject("url to dupbot");
@@ -337,24 +313,36 @@ function isCommand(msg){
 				}
 
 				msg.input_ai = words.join(" ");
-				if(msg.channel.type === "text"){
-					Client.db.getSettings(msg.guild.id, "adminrole").then((role) => {
-						msg.permissionLevel = getPermissionLevel(msg, role);
-						resolve();
-					});
-				} else {
-					resolve();
-				}
+
+                resolve(msg);
 
 			} else if(msg.channel.type === "dm"){
 				msg.interact = true;
 				msg.input_ai = msg.content;
-				resolve();
+				resolve(msg);
 			} else {
 				reject("No command");
 			}
 		});
-	});
+	}).then((msg) => {
+        return new Promise((resolve, reject) => {
+            let guild = "0";
+            if(msg.channel.type === "text") guild = msg.guild.id;
+            Client.db.getSettings(guild, "adminrole").then((role) => {
+                Client.db.getSettings(guild, "support").then((support) => {
+                    if(msg.channel.type === "text" && msg.member == null){
+                        msg.guild.fetchMember(msg.author.id).then((member) => {
+                            msg.member = member;
+                            msg.permissionLevel = getPermissionLevel(msg, role, support);
+                            resolve(msg);
+                        });
+                    }
+                    msg.permissionLevel = getPermissionLevel(msg, role, support);
+                    resolve(msg);
+                }).catch(reject);
+            }).catch(reject);
+        });
+    });
 }
 
 function getPrefix(msg){
@@ -383,7 +371,7 @@ function addDirToCommands(path){
 	}
 }
 
-function getPermissionLevel(msg, adminRole, support){
+function getPermissionLevel(msg, adminRole="", support=true){
 	if(msg.author.id === Client.serverSettings.botOwner && support == true){
 		return 4;
 	} else if(msg.channel.type === "dm" || (msg.channel.type === "text" && (msg.member.hasPermission("ADMINISTRATOR") || msg.member.id === msg.guild.ownerID))){
@@ -469,8 +457,9 @@ const Client = {
 
 	RichEmbed: Discord.RichEmbed,
 	Attachment: Discord.Attachment,
+    Collection: Discord.Collection,
 
-	commands: new Map(),
+	commands: new Discord.Collection(),
 
 	command: command,
 
