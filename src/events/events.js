@@ -1,35 +1,34 @@
 const EventChecker = require("./eventChecker");
-const fs = require('fs');
+const fs = require("fs");
 
 
-class EventHandler{
-    constructor(){
+class EventHandler {
+    constructor() {
         this.events = new Map();
         this.events.set("reminders", setup_reminders());
     }
 
-    start(Client){
+    start(Client) {
         this.Client = Client;
         this.eventChecker = new EventChecker(Client);
         this.eventChecker.on("events", (events) => {
-            for(let i = 0; i < events.length; i++){
+            for (let i = 0; i < events.length; i++) {
                 this.setStatus(events[i].id, "BUSY");
                 this.execute(events[i]);
             }
         });
     }
 
-    process(msg, action, params){
+    process(msg, action, params) {
         action = action.split(".");
-        if(this.events.has(action[0])){
-            if(this.events.get(action[0]).has(action[1])){
+        if (this.events.has(action[0])) {
+            if (this.events.get(action[0]).has(action[1])) {
                 this.events.get(action[0]).get(action[1]).execute(this, msg, params).then((feedback) => {
-                    if(feedback.message){
+                    if (feedback.message) {
                         this.Client.send(msg, this.Client.createEmbed("info", feedback.message));
                     }
                 }).catch((error) => {
-                    if(error.message){
-                        console.log(error.message);
+                    if (error.message) {
                         this.Client.send(msg, this.Client.createEmbed("fail", error.message));
                     }
                 });
@@ -37,51 +36,51 @@ class EventHandler{
         }
     }
 
-    execute(event){
-        if(this.events.has(event.action)){
-            this.events.get(event.action).get("execute").execute(this, event).then((feedback) => {
+    execute(event) {
+        if (this.events.has(event.action)) {
+            this.events.get(event.action).get("execute").execute(this, event).then(() => {
                 this.setStatus(event.id, "DONE");
-            }).catch((error) => {
+            }).catch(() => {
                 this.setStatus(event.id, "FAIL");
-            })
+            });
         }
     }
 
-    setStatus(id, status){
+    setStatus(id, status) {
         this.Client.db.updateEvent(id, status);
     }
 
-    createDate(string){
+    createDate(string) {
         let date_time = string.replace("Z", "").split("T");
         let date_params = {};
 
-        if(date_time.length === 2){
+        if (date_time.length === 2) {
             date_params.day = date_time[0];
             date_params.time = date_time[1];
         } else {
-            if(date_time[0].includes("-")){
+            if (date_time[0].includes("-")) {
                 date_params.day = date_time[0];
-            } else if(date_time[0].includes(":")){
+            } else if (date_time[0].includes(":")) {
                 date_params.time = date_time[0];
             }
         }
 
         let date = new Date();
 
-        if("day" in date_params){
+        if ("day" in date_params) {
             let day = date_params.day.split("-");
             date.setFullYear(day[0]);
             date.setMonth(parseInt(day[1]) - 1);
             date.setDate(day[2]);
         }
-        if("time" in date_params){
+        if ("time" in date_params) {
             let time = date_params.time.split(":");
             date.setHours(time[0]);
             date.setMinutes(time[1]);
             date.setSeconds(time[2]);
 
-            if(!("day" in date_params)){
-                if(date.getTime() + 5000 < Date.now()){
+            if (!("day" in date_params)) {
+                if (date.getTime() + 5000 < Date.now()) {
                     date = new Date(date.getTime() + 24*60*60*1000);
                 }
             }
@@ -92,11 +91,11 @@ class EventHandler{
 
 module.exports = new EventHandler();
 
-function setup_reminders(){
+function setup_reminders() {
     let reminders = new Map();
 
     let files = fs.readdirSync(`${__dirname}/reminders`);
-    for(let file of files){
+    for (let file of files) {
         reminders.set(file.split(".")[0], require(`${__dirname}/reminders/${file}`));
     }
     return reminders;

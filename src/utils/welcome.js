@@ -1,8 +1,8 @@
 module.exports = (Client, member) => {
     Client.db.getSettings(member.guild.id, "welcome").then((welcomeMessage) => {
-        if(!welcomeMessage) return;
+        if (!welcomeMessage) return;
         Client.db.getSettings(member.guild.id, "welcomeChannel").then((welcomeChannel) => {
-            if(!welcomeChannel) return;
+            if (!welcomeChannel) return;
 
             let embed = new Client.RichEmbed();
             embed.setColor("RED");
@@ -11,11 +11,11 @@ module.exports = (Client, member) => {
             embed.addField("What now?", welcomeMessage);
             embed.setThumbnail(member.user.avatarURL);
 
-            if(!member.guild.channels.get(welcomeChannel).permissionsFor(Client.bot.user).has("SEND_MESSAGES")) return;
+            if (!member.guild.channels.get(welcomeChannel).permissionsFor(Client.bot.user).has("SEND_MESSAGES")) return;
 
             member.guild.channels.get(welcomeChannel).send(embed).then((message) => {
                 message.react("👋");
             });
         });
-    })
+    });
 };

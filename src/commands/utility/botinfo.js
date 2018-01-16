@@ -5,11 +5,11 @@ module.exports = {
     description: "!botinfo",
     defaultPermission: 1,
     args: 0,
-    execute(Client, msg){
+    execute (Client, msg) {
         Client.db.getStats_bot("messages").then((messages) => {
-            msg.client.fetchUser(botOwner).then( (user) => {
+            msg.client.fetchUser(botOwner).then((user) => {
                 let members = 0;
-                for(let guild of msg.client.guilds){
+                for (let guild of msg.client.guilds) {
                     members+=guild[1].memberCount;
                 }
 

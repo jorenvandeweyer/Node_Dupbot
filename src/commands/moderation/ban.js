@@ -5,15 +5,15 @@ module.exports = {
     failPermission: "You can't ban people :point_up:",
     args: 2,
     guildOnly: true,
-    execute(Client, msg){
-		if(Client.extractID(msg, 0)){
+    execute (Client, msg) {
+        if (Client.extractID(msg, 0)) {
             let targetID = Client.extractID(msg, 0);
 
             msg.params.shift();
-			let reason = msg.params.join(" ");
+            let reason = msg.params.join(" ");
 
             msg.guild.fetchMember(targetID).then((member) => {
-                if(member.bannable){
+                if (member.bannable) {
                     member.ban({
                         days: 7,
                         reason: reason
@@ -27,9 +27,9 @@ module.exports = {
                 } else {
                     Client.send(msg, Client.createEmbed("fail", `My permissions are not high enought to ban <@${member.id}>`));
                 }
-            }).catch((reason) => {
+            }).catch(() => {
                 Client.send(msg, Client.createEmbed("fail", "This is not a valid member."));
             });
-		}
+        }
     }
 };

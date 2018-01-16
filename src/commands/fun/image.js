@@ -6,14 +6,15 @@ module.exports = {
     usage: "<query>",
     defaultPermission: 1,
     args: 0,
-    execute(Client, msg){
+    execute (Client, msg) {
         let query = "";
-        if(msg.params.length) query = "&query=" + msg.params.join("-");
-        Request.get('https://api.unsplash.com/photos/random?count=1&client_id=' + Client.serverSettings.unsplash_clientid + query, (err, res, body) => {
-            if(res.statusCode !== 200) return;
+        if (msg.params.length) query = "&query=" + msg.params.join("-");
+        Request.get(`https://api.unsplash.com/photos/random?count=1&client_id=${Client.serverSettings.unsplash_clientid}${query}`, (err, res, body) => {
+            if (err) return Client.sys("error", err);
+            if (res.statusCode !== 200) return;
             let data = JSON.parse(body);
             let image = data[0];
-            let referal = "?utm_source=dupbot&utm_medium=referral"
+            let referal = "?utm_source=dupbot&utm_medium=referral";
 
             let currentEmbed = new Client.RichEmbed();
             currentEmbed.setTitle(`Result for: ${msg.params.join(" ")}`)

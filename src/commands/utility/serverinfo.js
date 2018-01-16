@@ -4,7 +4,7 @@ module.exports = {
     defaultPermission: 1,
     args: 0,
     guildOnly: true,
-    execute(Client, msg){
+    execute (Client, msg) {
         msg.guild.fetchMembers().then((guild) => {
             let members = guild.memberCount;
             let channels = guild.channels;

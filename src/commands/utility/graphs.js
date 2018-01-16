@@ -5,7 +5,7 @@ module.exports = {
     usage: "<start> <end> (yyyy-mm-dd)",
     args: 0,
     guildOnly: true,
-    execute(Client, msg){
+    execute (Client, msg) {
         Client.graphs.get(Client, msg);
     }
 };

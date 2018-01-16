@@ -1,20 +1,20 @@
-function execute(EventHandler, event){
+function execute(EventHandler, event) {
     return new Promise((resolve, reject) => {
         let data = JSON.parse(event.data);
 
         let channel = EventHandler.Client.bot.channels.get(event.channel_id);
-        if(channel.type === "text" && !channel.permissionsFor(EventHandler.Client.bot.user).has("SEND_MESSAGES")){
+        if (channel.type === "text" && !channel.permissionsFor(EventHandler.Client.bot.user).has("SEND_MESSAGES")) {
             return reject();
-        };
+        }
 
         let embed = new EventHandler.Client.RichEmbed();
 
         embed.setTitle("Reminder");
         embed.setColor(16776960);
-        if(data.name){
+        if (data.name) {
             embed.setDescription(`You asked me to remind you about:\n\n\`${data.name}\``);
         } else {
-            embed.setDescription(`You asked me to remind you.`);
+            embed.setDescription("You asked me to remind you.");
         }
         embed.setFooter(`Created: ${event.created_at}`);
 

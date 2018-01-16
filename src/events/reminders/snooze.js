@@ -1,21 +1,21 @@
-function execute(EventHandler, msg, params){
+function execute(EventHandler, msg, params) {
     return new Promise((resolve, reject) => {
 
-        if(!("date-time" in params)){
+        if (!("date-time" in params)) {
             return reject({
                 message: "No date or time specified. Try again."
             });
         }
 
         let date;
-        if(params.correctDate){
+        if (params.correctDate) {
             date = new Date(params["date-time"]);
         } else {
             date = EventHandler.createDate(params["date-time"]);
         }
 
         let guild = "0";
-        if(msg.guild) guild = msg.guild.id;
+        if (msg.guild) guild = msg.guild.id;
 
         EventHandler.Client.db.setEvent({
             execute_at: date.getTime(),
@@ -29,9 +29,9 @@ function execute(EventHandler, msg, params){
         });
 
         let time;
-        if("original" in params){
+        if ("original" in params) {
             time = params.original;
-        } else if("contexts" in params && params.contexts[0] &&  "date-time.original" in params.contexts[0].parameters){
+        } else if ("contexts" in params && params.contexts[0] &&  "date-time.original" in params.contexts[0].parameters) {
             time = params.contexts[0].parameters["date-time.original"];
         } else {
             time = "at " + date.toString();
@@ -46,4 +46,4 @@ function execute(EventHandler, msg, params){
 
 module.exports = {
     execute: execute
-}
+};

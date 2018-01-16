@@ -4,8 +4,8 @@ module.exports = {
     defaultPermission: 1,
     args: 0,
     guildOnly: true,
-    execute(Client, msg){
-        message = Client.createEmbed("info", msg.member.roles.keyArray().map(x => ("<@&" + x + ">")).join(", "), "Roles");
-    	Client.send(msg, message);
+    execute (Client, msg) {
+        let message = Client.createEmbed("info", msg.member.roles.keyArray().map(x => ("<@&" + x + ">")).join(", "), "Roles");
+        Client.send(msg, message);
     }
 };

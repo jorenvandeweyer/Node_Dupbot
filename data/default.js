@@ -14,4 +14,4 @@ module.exports = {
     botupdates: true,
     welcome: "",
     welcomeChannel: ""
-}
+};

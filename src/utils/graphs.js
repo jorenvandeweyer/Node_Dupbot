@@ -1,11 +1,11 @@
-const ChartjsNode = require('chartjs-node');
+const ChartjsNode = require("chartjs-node");
 
 let chartNodeB, chartNodeL;
 
-function createGraphs(Client, msg, start, end){
+function createGraphs(Client, msg, start, end) {
     let creationTime = msg.guild.createdTimestamp;
     msg.guild.fetchMembers().then( (guild) => {
-        let members = guild.members.sort(function(a, b){return a.joinedTimestamp-b.joinedTimestamp});
+        let members = guild.members.sort((a, b) => {return a.joinedTimestamp-b.joinedTimestamp;});
 
         let x_green = [];
         let y_green = [];
@@ -16,14 +16,14 @@ function createGraphs(Client, msg, start, end){
         let y_total = [];
 
         getData(Client, msg, (joins, leaves, firstRecord) => {
-            for(key of members){
+            for (let key of members) {
                 let time = key[1].joinedAt.toISOString().split("T")[0];
 
                 let timestamp = key[1].joinedTimestamp;
-                if(timestamp < creationTime || timestamp < start || timestamp > end) continue;
-                if(timestamp >= firstRecord) break;
+                if (timestamp < creationTime || timestamp < start || timestamp > end) continue;
+                if (timestamp >= firstRecord) break;
 
-                if(x_green.includes(time)){
+                if (x_green.includes(time)) {
                     let index = x_green.indexOf(time);
                     y_green[index]++;
                 } else {
@@ -32,15 +32,15 @@ function createGraphs(Client, msg, start, end){
                 }
             }
 
-            if(joins){
-                for(let i = 0; i<joins.length; i++){
+            if (joins) {
+                for (let i = 0; i<joins.length; i++) {
                     let timestamp = parseInt(joins[i].timestamp);
-                    if(timestamp < start || timestamp > end) continue;
+                    if (timestamp < start || timestamp > end) continue;
 
                     let time = new Date(timestamp);
                     time = time.toISOString().split("T")[0];
 
-                    if(x_green.includes(time)){
+                    if (x_green.includes(time)) {
                         let index = x_green.indexOf(time);
                         y_green[index]++;
                     } else {
@@ -53,15 +53,15 @@ function createGraphs(Client, msg, start, end){
             x_total = x_green.slice(0);
             y_total = y_green.slice(0);
 
-            if(leaves){
-                for (let i = 0; i<leaves.length; i++){
+            if (leaves) {
+                for (let i = 0; i<leaves.length; i++) {
                     let timestamp = parseInt(leaves[i].timestamp);
-                    if(timestamp < start || timestamp > end) continue;
+                    if (timestamp < start || timestamp > end) continue;
 
                     let time = new Date(timestamp);
                     time = time.toISOString().split("T")[0];
 
-                    if(x_red.includes(time)){
+                    if (x_red.includes(time)) {
                         let index = x_red.indexOf(time);
                         y_red[index]++;
                     } else {
@@ -69,7 +69,7 @@ function createGraphs(Client, msg, start, end){
                         y_red.push(1);
                     }
 
-                    if(x_total.includes(time)){
+                    if (x_total.includes(time)) {
                         let index = x_total.indexOf(time);
                         y_total[index]--;
                     } else {
@@ -82,7 +82,7 @@ function createGraphs(Client, msg, start, end){
 
             let y_total_cum = [0];
 
-            for(let i = 0; i < x_total.length; i++){
+            for (let i = 0; i < x_total.length; i++) {
                 y_total_cum[i+1] = y_total[i] + y_total_cum[i];
             }
 
@@ -106,16 +106,16 @@ function createGraphs(Client, msg, start, end){
     });
 }
 
-function getData(Client, msg, _callback){
+function getData(Client, msg, _callback) {
     Client.db.getStats_guild(msg.guild.id, "guildMemberAdd").then((joins) => {
         Client.db.getStats_guild(msg.guild.id, "guildMemberRemove").then((leaves) => {
             let firstRecord = Infinity;
-            if(joins.length){
+            if (joins.length) {
                 firstRecord = joins[0].timestamp;
             }
-            if(leaves.length){
+            if (leaves.length) {
                 let timestamp = leaves[0].timestamp;
-                if(timestamp < firstRecord){
+                if (timestamp < firstRecord) {
                     firstRecord = timestamp;
                 }
             }
@@ -124,17 +124,17 @@ function getData(Client, msg, _callback){
     });
 }
 
-function get(Client, msg){
+function get(Client, msg) {
     let start = 0;
     let end = Infinity;
-    if(msg.params.length >= 2){
+    if (msg.params.length >= 2) {
         start = Date.parse(msg.params[0]);
         end = Date.parse(msg.params[1]) + 1*24*60*60*1000;
 
-        if(start == NaN){
+        if (isNaN(start)) {
             start = 0;
         }
-        if(end == NaN){
+        if (isNaN(NaN)) {
             end = Infinity;
         }
     }
@@ -145,7 +145,7 @@ module.exports = {
     get: get
 };
 
-function createImageStreamL(dates, joins){
+function createImageStreamL(dates, joins) {
     chartNodeL = new ChartjsNode(800, 600);
     return chartNodeL.drawChart({
         type: "line",
@@ -154,7 +154,7 @@ function createImageStreamL(dates, joins){
             datasets: [
                 {
                     label: "First",
-                    backgroundColor: 'rgba(53, 255, 53, 1)',
+                    backgroundColor: "rgba(53, 255, 53, 1)",
                     borderWidth: 1,
                     data: joins,
                     pointRadius: 0
@@ -176,11 +176,11 @@ function createImageStreamL(dates, joins){
             },
         }
     }).then(() => {
-        return chartNodeL.getImageBuffer('image/png');
+        return chartNodeL.getImageBuffer("image/png");
     });
 }
 
-function createImageStreamB(dates, joins, leaves){
+function createImageStreamB(dates, joins, leaves) {
     chartNodeB = new ChartjsNode(600, 600);
     return chartNodeB.drawChart({
         type: "bar",
@@ -189,12 +189,12 @@ function createImageStreamB(dates, joins, leaves){
             datasets: [
                 {
                     label: "Leaves",
-                    backgroundColor: 'rgba(255, 53, 53, 1)',
+                    backgroundColor: "rgba(255, 53, 53, 1)",
                     borderWidth: 1,
                     data: leaves,
                 }, {
                     label: "Joins",
-                    backgroundColor: 'rgba(53, 255, 53, 1)',
+                    backgroundColor: "rgba(53, 255, 53, 1)",
                     borderWidth: 1,
                     data: joins,
                 }
@@ -215,6 +215,6 @@ function createImageStreamB(dates, joins, leaves){
             }
         }
     }).then(() => {
-        return chartNodeB.getImageBuffer('image/png');
+        return chartNodeB.getImageBuffer("image/png");
     });
 }
