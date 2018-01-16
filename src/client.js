@@ -62,9 +62,8 @@ function run() {
 
 function recieveMessage(msg) {
     isCommand(msg).then((msg) => {
-        if ((msg.interact || msg.isCommand) && Client.antispam.check(Client, msg)) {
-            return msg;
-        }
+        if (!msg.interact && !msg.isCommand) return msg;
+        if (Client.antispam.check(Client, msg)) return msg;
 
         if (msg.isCommand) {
             command(msg);
@@ -74,6 +73,7 @@ function recieveMessage(msg) {
         return msg;
     }).then((msg) => {
         Client.db.setStats_bot("messages", 1);
+        if(msg.channel.type !== "text") return;
         Client.db.getStats_users(msg.guild.id, msg.author.id).then((member) => {
             if (member) Client.db.setStats_users(msg.guild.id, msg.author.id, "MSG_SENT", 1);
         });
