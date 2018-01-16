@@ -94,7 +94,7 @@ function addSongToQueue(Client, msg, id) {
 
         let embed = new Client.RichEmbed();
         embed.setTitle(song.title);
-        embed.setColor("BLUE");
+        embed.setColor(Client.statusColors.get("purple"));
         embed.setFooter("Queued by " + song.username, song.avatar);
 
         Client.db.getSettings(msg.guild.id, "musicChannel").then((channelId) => {
@@ -172,7 +172,7 @@ function addPlaylistToQueue(Client, msg, id, shuffle) {
 
         let embed = new Client.RichEmbed();
         embed.setTitle(playlist.title);
-        embed.setColor(3447003);
+        embed.setColor(Client.statusColors.get("purple"));
         embed.setFooter("Queued by " + playlist.username, playlist.avatar);
 
         Client.db.getSettings(msg.guild.id, "musicChannel").then((channelId) => {
@@ -277,7 +277,7 @@ function playSong(Client, msg) {
             if (channelId) {
                 let embed = new Client.RichEmbed();
                 embed.setTitle("=-=-=-=-=-=-= Song =-=-=-=-=-=-=");
-                embed.setColor(0x5a00b1);
+                embed.setColor(Client.statusColors.get("purple"));
                 embed.addField("Now Streaming", video.title);
                 embed.addField("Duration", video.duration);
                 embed.addField("Channel", video.channel);
@@ -303,7 +303,7 @@ function playSong(Client, msg) {
                 if (channelId) {
                     let embed = new Client.RichEmbed();
                     embed.setTitle("=-=-=-=-=-=-= Playlist =-=-=-=-=-=-=");
-                    embed.setColor(0x5a00b1);
+                    embed.setColor(Client.statusColors.get("purple"));
                     embed.addField(video.title, video.songs.length + " songs left in playlist || shuffle " + shuffleValue);
                     embed.addField("Now Streaming", obj.title);
                     embed.addField("Duration", obj.duration);

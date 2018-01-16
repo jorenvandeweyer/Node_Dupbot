@@ -39,7 +39,7 @@ function see(Client, msg) {
                 let format = formatEntries(result);
                 let embed = new Client.RichEmbed();
                 embed.setTitle("Modlog");
-                embed.setColor("BLUE");
+                embed.setColor(Client.statusColors.get("info"));
                 embed.setDescription(`All events related to <@${userID}>`);
                 embed.addField("Warnings:", format.warn);
                 embed.addField("Kicks:", format.kick);

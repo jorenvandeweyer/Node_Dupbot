@@ -23,7 +23,9 @@ module.exports = {
                     let warnMessage = `You have been warned on **${msg.guild.name}**\n\nYou have ${active}/3 active warnings.`;
                     if (reason) warnMessage += "\nReason: " + reason;
 
-                    member.send(Client.createEmbed("warning", warnMessage));
+                    member.send(Client.createEmbed("warning", warnMessage)).catch((reason) => {
+                        Client.send(msg, Client.createEmbed("fail", reason.message));
+                    });
 
                     if (active >= 3) {
                         let spoofedMessage = msg;

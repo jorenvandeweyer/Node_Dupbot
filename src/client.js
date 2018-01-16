@@ -182,32 +182,32 @@ function log(msg, userID, sort, reason, time) {
     switch (sort) {
         case "warn":
             embed.setTitle("Warning");
-            embed.setColor(15908236);
+            embed.setColor(Client.statusColors.get(sort));
             embed.setDescription(`**Mod**: <@${data.mod}>\n**Member:** <@${data.user}>\n**Reason:** ${data.reason}`);
             break;
         case "kick":
             embed.setTitle("Kick");
-            embed.setColor(16028993);
+            embed.setColor(Client.statusColors.get(sort));
             embed.setDescription(`**Mod**: <@${data.mod}>\n**Kicked**: <@${data.user}>\n**Reason**: ${data.reason}`);
             break;
         case "ban":
             embed.setTitle("Ban");
-            embed.setColor(16007746);
+            embed.setColor(Client.statusColors.get(sort));
             embed.setDescription(`**Mod**: <@${data.mod}>\n**Banned**: <@${data.user}>\n**Reason**: ${data.reason}`);
             break;
         case "tempban":
             embed.setTitle("Temp Ban");
-            embed.setColor(16007746);
+            embed.setColor(Client.statusColors.get(sort));
             embed.setDescription(`"**Mod**: <@${data.mod}>\n**Tempbanned**: <@${data.user}>\n**Days**: ${data.time} days\n**Reason**: ${data.reason}`);
             break;
         case "unban":
             embed.setTitle("Unban");
-            embed.setColor(4193355);
+            embed.setColor(Client.statusColors.get(sort));
             embed.setDescription(`**Mod**: <@${data.mod}>\n**Unbanned**: <@${data.user}>`);
             break;
         case "note":
             embed.setTitle("Note");
-            embed.setColor("WHITE");
+            embed.setColor(Client.statusColors.get(sort));
             embed.setDescription(`**Mod**: <@${data.mod}>\n**Note about**: <@${data.user}>\n**Content**: ${data.reason}`);
             break;
     }
@@ -221,42 +221,10 @@ function log(msg, userID, sort, reason, time) {
 
 function createEmbed(colorName, description, title, fields, footer) {
     let color;
-    switch (colorName) {
-        case "info":
-            color = 3447003;
-            break;
-
-        case "ban":
-            color = 16007746;
-            break;
-
-        case "kick":
-            color = 16028993;
-            break;
-
-        case "warn":
-            color = 15908236;
-            break;
-
-        case "unban":
-            color = 4193355;
-            break;
-
-        case "succes":
-            color = 4193355;
-            break;
-
-        case "fail":
-            color = 15908236;
-            break;
-
-        case "purple":
-            color = 0x5a00b1;
-            break;
-
-        default:
-            color = 3447003;
-            break;
+    if (Client.statusColors.has(colorName)) {
+        color = Client.statusColors.get(colorName);
+    } else {
+        color = Client.statusColors.get("default");
     }
 
     return {
@@ -487,6 +455,7 @@ function joinVoiceChannel(msg) {
 const Client = {
     serverSettings: require("../serverSettings.json"),
     blackList: require("../blackList.json"),
+    statusColors: require("../data/statusColors"),
 
     music: require("./music/music"),
     cah: require("./minigames/cahgamehandler"),

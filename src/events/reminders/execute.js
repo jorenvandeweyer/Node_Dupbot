@@ -10,7 +10,7 @@ function execute(EventHandler, event) {
         let embed = new EventHandler.Client.RichEmbed();
 
         embed.setTitle("Reminder");
-        embed.setColor(16776960);
+        embed.setColor(EventHandler.Client.statusColors.get("yellow"));
         if (data.name) {
             embed.setDescription(`You asked me to remind you about:\n\n\`${data.name}\``);
         } else {

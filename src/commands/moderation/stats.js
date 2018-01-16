@@ -41,7 +41,7 @@ module.exports = {
                         embed.addField("Percentage", percentage,true);
                         embed.setTitle(`Sent messages (${total} messages)`);
                         embed.setDescription("\n");
-                        embed.setColor(3447003);
+                        embed.setColor(Client.statusColors.get("info"));
 
                         Client.send(msg, embed);
                     }
