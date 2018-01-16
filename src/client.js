@@ -73,10 +73,11 @@ function recieveMessage(msg) {
         return msg;
     }).then((msg) => {
         Client.db.setStats_bot("messages", 1);
-        if (msg.channel.type !== "text") return;
-        Client.db.getStats_users(msg.guild.id, msg.author.id).then((member) => {
-            if (member) Client.db.setStats_users(msg.guild.id, msg.author.id, "MSG_SENT", 1);
-        });
+        if (msg.channel.type === "text" && !msg.webhookID) {
+            Client.db.getStats_users(msg.guild.id, msg.author.id).then((member) => {
+                if (member) Client.db.setStats_users(msg.guild.id, msg.author.id, "MSG_SENT", 1);
+            });
+        }
     });
 }
 
@@ -123,6 +124,10 @@ function sys (type, obj) {
     } else if (type === "err") {
         Client.bot.shard.send({
             type: "log", info:obj
+        });
+    } else if (type === "error") {
+        Client.bot.shard.send({
+            type: "log", info: `[error]${JSON.stringify(obj)}`
         });
     } else {
         Client.bot.shard.send({
@@ -214,7 +219,7 @@ function log(msg, userID, sort, reason, time) {
     });
 }
 
-function createEmbed(colorName, info, title, fields, footer) {
+function createEmbed(colorName, description, title, fields, footer) {
     let color;
     switch (colorName) {
         case "info":
@@ -255,12 +260,12 @@ function createEmbed(colorName, info, title, fields, footer) {
     }
 
     return {
-        embed:{
-            color: color,
-            description: info,
-            title: title,
-            fields: fields,
-            footer: footer
+        embed: {
+            color,
+            description,
+            title,
+            fields,
+            footer
         }
     };
 }
@@ -313,11 +318,11 @@ function execute(msg) {
 
 function isCommand(msg) {
     return new Promise((resolve, reject) => {
-        if (msg.author.bot) return resolve(msg);
+        if (msg.author.bot || msg.webhookID) return resolve(msg);
 
         getPrefix(msg).then((prefix) => {
             msg.prefix = prefix;
-            if (msg.content.slice(0, prefix.length) === prefix) {
+            if (msg.content.slice(0, prefix.length).toLowerCase() === prefix.toLowerCase()) {
                 msg.params = msg.content.slice(prefix.length).split(" ");
                 msg.command = msg.params.shift().toLowerCase();
                 msg.isCommand = true;
@@ -370,7 +375,7 @@ function isCommand(msg) {
                             msg.member = member;
                             msg.permissionLevel = getPermissionLevel(msg, role, support);
                             resolve(msg);
-                        });
+                        }).catch(reject);
                     }
                     msg.permissionLevel = getPermissionLevel(msg, role, support);
                     resolve(msg);
@@ -417,36 +422,29 @@ function getPermissionLevel(msg, adminRole="", support=true) {
     }
 }
 
-function extractID(msg, pos) {
-    if (msg.mentions.users.first()) {
-        return msg.mentions.users.first().id;
-    } else {
-        return msg.params[pos];
-    }
-}
+async function extractMember(msg, pos) {
+    if (msg.mentions.members.size) return msg.mentions.members.first();
 
-function extractRoleID(msg, pos) {
-    if (msg.mentions.roles.first()) {
-        return msg.mentions.roles.first().id;
-    } else if (msg.content.includes("<@&")) {
-        let id = msg.content.split("<@&")[1].split(">")[0];
-        if (msg.guild.roles.has(id)) {
-            return msg.guild.roles.get(id).id;
-        }
-    }
-    return msg.params[pos];
+    let userId = msg.params[pos];
+    if (msg.guild.members.has(userId)) return msg.guild.members.get(userId);
+
+    return msg.guild.fetchMember(userId).then((member) => {
+        return member;
+    }).catch(() => {
+        return null;
+    });
 }
 
 function extractRole(msg, pos) {
-    if (msg.mentions.roles.first()) {
-        return msg.mentions.roles.first();
-    } else if (msg.content.includes("<@&")) {
-        let id = msg.content.split("<@&")[1].split(">")[0];
-        if (msg.guild.roles.has(id)) {
-            return msg.guild.roles.get(id);
-        }
+    if (msg.mentions.roles.size) return msg.mentions.roles.first();
+    if (msg.content.match(/<@&\d+>/)) {
+        let roleId = msg.content.match(/<@&\d+>/)[1];
+        if (msg.guild.roles.has(roleId)) return msg.guild.roles.get(roleId);
     }
-    return msg.guild.roles.get(msg.params[pos]);
+    let role = msg.guild.roles.find(role => role.name.toLowerCase() === msg.params[pos].toLowerCase());
+    if (role) return role;
+    if (msg.guild.roles.has(msg.params[pos])) return msg.guild.roles.get(msg.params[pos]);
+    return null;
 }
 
 function send(msg, message) {
@@ -504,24 +502,23 @@ const Client = {
     Attachment: Discord.Attachment,
     Collection: Discord.Collection,
 
-    sys: sys,
+    sys,
 
     commands: new Discord.Collection(),
 
-    execute: execute,
+    execute,
 
-    getPrefix: getPrefix,
+    getPrefix,
 
-    createEmbed: createEmbed,
+    createEmbed,
 
-    log: log,
-    extractID: extractID,
-    extractRoleID: extractRoleID,
-    extractRole: extractRole,
+    log,
+    extractRole,
+    extractMember,
 
-    send: send,
-    sendChannel: sendChannel,
-    joinVoiceChannel: joinVoiceChannel,
+    send,
+    sendChannel,
+    joinVoiceChannel,
 };
 
 if (require.main === module) {

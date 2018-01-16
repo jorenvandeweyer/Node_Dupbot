@@ -22,14 +22,14 @@ module.exports = {
                 let message = Client.createEmbed("info", "You can't kill people :point_up:");
                 return Client.send(msg, message);
             }
-            if (Client.extractID(msg)) {
-                msg.member.guild.fetchMember(Client.extractID(msg)).then((member) => {
+            Client.extractMember(msg, 0).then((member) => {
+                if (member) {
                     member.kick().then(() => {
                         let message = Client.createEmbed("kick", member.user.username + " died...");
                         Client.send(msg, message);
                     });
-                });
-            }
+                }
+            });
         }
     }
 };

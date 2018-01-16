@@ -6,29 +6,28 @@ module.exports = {
     args: 1,
     guildOnly: true,
     execute (Client, msg) {
-        let userID = Client.extractID(msg, 0);
+        Client.extractMember(msg, 0).then((member) => {
+            if (member === null) {
+                return Client.send(msg, Client.createEmbed("fail", "This is not a valid member"));
+            }
+            if (!member.kickable) {
+                return Client.send(msg, Client.createEmbed("fail", "Missing Permissions"));
+            }
 
-        msg.guild.fetchMember(userID).then((member) => {
             msg.params.shift();
             let reason = msg.params.join(" ");
 
-            if (member.kickable) {
-                member.kick(reason).then((member) =>{
-                    Client.send(msg, Client.createEmbed("kick", "<@" + member.id + "> You have been kicked :wave:"));
-                    Client.log(msg, member.id, "kick", reason);
+            member.kick(reason).then((member) =>{
+                Client.log(msg, member.id, "kick", reason);
+                Client.send(msg, Client.createEmbed("kick", `${member} You have been kicked :wave:`));
 
-                    let kickMessage = "You have been kicked";
-                    if (reason) kickMessage = "You are kicked because: " + reason;
+                let kickMessage = "You have been kicked";
+                if (reason) kickMessage = "You are kicked because: " + reason;
 
-                    member.send(Client.createEmbed("kick", kickMessage));
-                }).catch((reason) => {
-                    Client.send(msg, Client.createEmbed("fail", reason));
-                });
-            } else {
-                Client.send(msg, Client.createEmbed("fail", `My permissions are not high enough to kick <@${member.id}>`));
-            }
-        }).catch(() => {
-            Client.send(msg, Client.createEmbed("fail", "This is not a valid member."));
+                member.send(Client.createEmbed("kick", kickMessage));
+            }).catch((reason) => {
+                Client.send(msg, Client.createEmbed("fail", reason.message));
+            });
         });
     }
 };

@@ -6,13 +6,22 @@ module.exports = {
     args: 2,
     guildOnly: true,
     execute (Client, msg) {
-        let userID = Client.extractID(msg, 0);
-        let roleID = Client.extractRoleID(msg, 1);
+        Client.extractMember(msg, 0).then((member) => {
+            if (member === null) {
+                return Client.send(msg, Client.createEmbed("fail", "This is not a valid member"));
+            }
 
-        msg.guild.members.get(userID).removeRole(roleID).then((member) => {
-            Client.send(msg, Client.createEmbed("succes", `Removed <@&${roleID}> from <@${member.id}>`));
-        }).catch(() => {
-            Client.send(msg, Client.createEmbed("fail", "Not a valid role or user"));
+            let role = Client.extractRole(msg, 1);
+
+            if (role === null) {
+                return Client.send(msg, Client.createEmbed("fail", "This is not a valid role"));
+            }
+
+            member.removeRole(role).then((member) => {
+                Client.send(msg, Client.createEmbed("succes", `Removed ${role} from ${member}`));
+            }).catch((reason) => {
+                Client.send(msg, Client.createEmbed("fail", reason.message));
+            });
         });
     }
 };

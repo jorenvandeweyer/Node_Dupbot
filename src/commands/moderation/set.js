@@ -135,10 +135,10 @@ function maxiamroles (Client, msg) {
 
 function admin (Client, msg) {
     if (msg.params.length >= 2) {
-        let roleID = Client.extractRoleID(msg, 1);
-        if (roleID) {
-            Client.db.setSettings(msg.guild.id, "adminrole", roleID).then(() => {
-                let message = Client.createEmbed("succes", "Adminrole set to <@&" + roleID + ">");
+        let role = Client.extractRole(msg, 1);
+        if (role) {
+            Client.db.setSettings(msg.guild.id, "adminrole", role.id).then(() => {
+                let message = Client.createEmbed("succes", `Adminrole set to ${role}`);
                 Client.send(msg, message);
             });
         }
@@ -170,10 +170,10 @@ function music (Client, msg) {
 
 function dj (Client, msg) {
     if (msg.params.length >= 2) {
-        let roleID = Client.extractRoleID(msg, 1);
-        if (roleID) {
-            Client.db.setSettings(msg.guild.id, "djrole", roleID).then(() => {
-                let message = Client.createEmbed("succes", "DJ role set to <@&" + roleID + ">");
+        let role = Client.extractRole(msg, 1);
+        if (role) {
+            Client.db.setSettings(msg.guild.id, "djrole", role.id).then(() => {
+                let message = Client.createEmbed("succes", `DJ role set to ${role}`);
                 Client.send(msg, message);
             });
         }

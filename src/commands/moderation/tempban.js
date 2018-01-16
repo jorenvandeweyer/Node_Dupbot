@@ -7,23 +7,26 @@ module.exports = {
     guildOnly: true,
     execute (Client, msg) {
         if (msg.params.length >= 1) {
-            let targetID = Client.extractID(msg, 0);
-            if (targetID) {
+            Client.extractMember(msg, 0).then((member) => {
+                if (member === null) {
+                    Client.send(msg, Client.createEmbed("fail", "Not a member"));
+                }
+
                 msg.params.shift();
                 let days = msg.params.shift();
                 let reason = msg.params.join(" ");
 
-                msg.guild.ban(targetID, {
+                member.ban({
                     reason: reason
                 }).then((user) => {
                     Client.log(msg, user.id, "tempban", reason, days);
-                    Client.send(msg, Client.createEmbed("ban", "<@"+ user.id + "> You have been banned :hammer:"));
+                    Client.send(msg, Client.createEmbed("ban", `${user} You have been banned :hammer:`));
                     user.send(Client.createEmbed("ban", "You have been banned for " +days + " days.\nReason: " + reason));
                     //create event
                 }).catch((reason) => {
-                    Client.send(msg, Client.createEmbed("fail", reason));
+                    Client.send(msg, Client.createEmbed("fail", reason.message));
                 });
-            }
+            });
         }
     }
 };

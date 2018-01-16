@@ -6,9 +6,11 @@ module.exports = {
     args: 1,
     guildOnly: true,
     execute (Client, msg) {
-        let targetID = Client.extractID(msg, 0);
+        Client.extractMember(msg, 0).then((member) => {
+            if (member === null) {
+                return Client.send(msg, Client.createEmbed("fail", "Not a member"));
+            }
 
-        msg.guild.fetchMember(targetID).then((member) => {
             msg.params.shift();
             let reason = msg.params.join(" ");
 
