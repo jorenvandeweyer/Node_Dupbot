@@ -1,6 +1,5 @@
 module.exports = {
     name: "trigger",
-    description: "!trigger",
     usage: "@user",
     defaultPermission: 1,
     args: 0,

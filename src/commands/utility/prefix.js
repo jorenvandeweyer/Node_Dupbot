@@ -1,6 +1,5 @@
 module.exports = {
     name: "prefix",
-    description: "!ping",
     defaultPermission: 1,
     args: 0,
     guildOnly: true,

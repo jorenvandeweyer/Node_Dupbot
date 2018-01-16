@@ -3,7 +3,6 @@ const publicClient = new Gdax.PublicClient("BTC-EUR");
 
 module.exports = {
     name: "btc",
-    description: "btc",
     usage: "< --full, --convert 10EUR, --stats, --buy BTC 20EUR, --sell 0.1BTC, --reset >",
     defaultPermission: 1,
     args: 0,

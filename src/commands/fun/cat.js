@@ -3,7 +3,6 @@ const {thecatapi} = require("../../../serverSettings.json");
 
 module.exports = {
     name: "cat",
-    description: "cat",
     defaultPermission: 1,
     args: 0,
     execute (Client, msg) {

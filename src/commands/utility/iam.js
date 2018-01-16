@@ -1,6 +1,5 @@
 module.exports = {
     name: "iam",
-    description: "!iam <role>",
     usage: "<role>",
     defaultPermission: 1,
     args: 0,

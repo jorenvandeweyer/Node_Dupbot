@@ -1,8 +1,7 @@
 module.exports = {
     name: "help",
-    description: "!help <command>",
-    defaultPermission: 1,
     usage: "<command>",
+    defaultPermission: 1,
     args: 0,
     execute (Client, msg) {
         if (msg.channel.type == "text") {

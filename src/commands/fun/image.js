@@ -2,7 +2,6 @@ const Request = require("request");
 
 module.exports = {
     name: "image",
-    description: "!image",
     usage: "<query>",
     defaultPermission: 1,
     args: 0,

@@ -1,7 +1,7 @@
 module.exports = {
     name: "remindme",
-    defaultPermission: 1,
     usage: "<time> 'Content to remind about within quotes'",
+    defaultPermission: 1,
     args: 0,
     execute (Client, msg) {
         let content = msg.params.join(" ");

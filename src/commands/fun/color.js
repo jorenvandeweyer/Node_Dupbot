@@ -2,9 +2,8 @@ const request = require("request");
 
 module.exports = {
     name: "color",
-    description: "color",
-    defaultPermission: 1,
     usage: "<rgb, hex>",
+    defaultPermission: 1,
     args: 0,
     execute (Client, msg) {
         let url = "";

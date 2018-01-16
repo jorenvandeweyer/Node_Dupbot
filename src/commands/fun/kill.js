@@ -1,6 +1,5 @@
 module.exports = {
     name: "kill",
-    description: "!kill [@user]",
     usage: "[@user]",
     defaultPermission: 0,
     args: 0,

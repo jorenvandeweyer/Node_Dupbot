@@ -2,7 +2,6 @@ const request = require("request");
 
 module.exports = {
     name: "joke",
-    description: "!joke",
     defaultPermission: 1,
     args: 0,
     execute (Client, msg) {

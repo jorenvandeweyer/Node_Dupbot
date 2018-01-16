@@ -1,6 +1,5 @@
 module.exports = {
     name: "serverinfo",
-    description: "serverinfo",
     defaultPermission: 1,
     args: 0,
     guildOnly: true,

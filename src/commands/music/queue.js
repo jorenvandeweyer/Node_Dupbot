@@ -1,6 +1,5 @@
 module.exports = {
     name: "queue",
-    description: "!queue",
     defaultPermission: 1,
     args: 0,
     guildOnly: true,

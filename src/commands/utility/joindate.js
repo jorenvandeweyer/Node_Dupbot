@@ -1,6 +1,5 @@
 module.exports = {
     name: "joindate",
-    description: "!joindate",
     usage: "<userid>",
     defaultPermission: 1,
     args: 1,

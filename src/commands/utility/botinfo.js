@@ -2,7 +2,6 @@ const {botOwner} = require("../../../serverSettings.json");
 
 module.exports = {
     name: "botinfo",
-    description: "!botinfo",
     defaultPermission: 1,
     args: 0,
     execute (Client, msg) {

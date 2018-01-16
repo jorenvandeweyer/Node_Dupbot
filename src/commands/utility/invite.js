@@ -1,6 +1,5 @@
 module.exports = {
     name: "invite",
-    description: "!invite",
     defaultPermission: 1,
     args: 0,
     execute (Client, msg) {
