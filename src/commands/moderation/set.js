@@ -57,12 +57,12 @@ module.exports = {
                     welcomeChannel(Client, msg);
                     break;
                 default: {
-                    let message = Client.createEmbed("info", Client.commands.get("set").description);
+                    let message = Client.createEmbed("info", Client.commands.get("set").usage);
                     Client.send(msg, message);
                 }
             }
         } else {
-            let message = Client.createEmbed("info", Client.commands.get("set").description);
+            let message = Client.createEmbed("info", Client.commands.get("set").usage);
             Client.send(msg, message);
         }
     }
