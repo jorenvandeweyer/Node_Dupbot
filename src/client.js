@@ -73,7 +73,7 @@ function recieveMessage(msg) {
         return msg;
     }).then((msg) => {
         Client.db.setStats_bot("messages", 1);
-        if(msg.channel.type !== "text") return;
+        if (msg.channel.type !== "text") return;
         Client.db.getStats_users(msg.guild.id, msg.author.id).then((member) => {
             if (member) Client.db.setStats_users(msg.guild.id, msg.author.id, "MSG_SENT", 1);
         });
@@ -303,7 +303,7 @@ function execute(msg) {
                     send(msg, createEmbed("info", command.failPermission));
                 }
             }
-        } catch(e) {
+        } catch (e) {
             let message = createEmbed("info", ":bomb: :boom: That didn't work out :neutral_face:");
             send(msg, message);
             Client.sys("log", e);
