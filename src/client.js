@@ -415,6 +415,13 @@ function extractRole(msg, pos) {
     return null;
 }
 
+function extractChannel(msg, pos) {
+    if (msg.mentions.channels.size) return msg.mentions.channels.first();
+    let channel = msg.guild.channels.find(role => role.name.toLowerCase() === msg.params[pos] || role.id === msg.params[pos]);
+    if (channel) return channel;
+    return null;
+}
+
 function send(msg, message) {
     return new Promise((resolve, reject) => {
         if (msg.channel.type === "text" && !msg.channel.permissionsFor(msg.client.user).has("SEND_MESSAGES")) return reject("No SEND_MESSAGES permission");
@@ -484,6 +491,7 @@ const Client = {
     log,
     extractRole,
     extractMember,
+    extractChannel,
 
     send,
     sendChannel,
