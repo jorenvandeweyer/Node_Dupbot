@@ -1,6 +1,6 @@
 module.exports = {
     name: "set",
-    usage: "<warntime, log, iamrole, maxiamroles, admin, deleteCommands, perm, music, voice, dj, prefix> <opt>",
+    usage: "<warntime, log, iamrole, maxiamroles, admin, deleteCommands, perm, ai, music, voice, dj, prefix, support, welcome, welcomeChannel, botupdates> <opt>",
     defaultPermission: 3,
     failPermission: "You can't edit the settings",
     args: 0,
@@ -56,6 +56,10 @@ module.exports = {
                 case "welcomeChannel":
                     welcomeChannel(Client, msg);
                     break;
+                default: {
+                    let message = Client.createEmbed("info", Client.commands.get("set").description);
+                    Client.send(msg, message);
+                }
             }
         } else {
             let message = Client.createEmbed("info", Client.commands.get("set").description);
