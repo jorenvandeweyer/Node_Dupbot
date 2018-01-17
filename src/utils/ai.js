@@ -40,7 +40,7 @@ function get(Client, msg) {
                     Client.execute.call(Client, msg);
                 });
             } else {
-                Client.command.call(Client, msg);
+                Client.execute.call(Client, msg);
             }
         }
     });
