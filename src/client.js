@@ -127,7 +127,7 @@ function sys (type, obj) {
         });
     } else if (type === "error") {
         Client.bot.shard.send({
-            type: "log", info: `[error]${JSON.stringify(obj)}`
+            type: "log", info: `[error]${obj.toString()}`
         });
     } else {
         Client.bot.shard.send({
@@ -279,7 +279,7 @@ function execute(msg) {
         } catch (e) {
             let message = createEmbed("info", ":bomb: :boom: That didn't work out :neutral_face:");
             send(msg, message);
-            Client.sys("log", e);
+            Client.sys("error", e);
         }
     });
 }

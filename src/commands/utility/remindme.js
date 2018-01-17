@@ -72,7 +72,7 @@ function extractTimeSmarter(str) {
                     createDate.setSeconds(0);
                 }
                 if (date === null) {
-                    if (createDate().getTime() + 5000 < Date.now()) {
+                    if (createDate.getTime() + 5000 < Date.now()) {
                         createDate = new Date(createDate.getTime() + 24*60*60*1000);
                     }
                 }
