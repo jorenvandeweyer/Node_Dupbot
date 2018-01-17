@@ -20,12 +20,16 @@ async function text (Client, msg) {
     if (msg.params.length >= 1) {
         let helpmsg = "No command";
         let command = Client.commands.get(msg.params[0]);
+        let embed = new Client.RichEmbed();
+        embed.setColor(Client.statusColors.get("info"));
         if (command) {
             if (permissions.keys[command.name] == 0) {
                 helpmsg = `The command \`${command.name}\` is disabled`;
             } else if (msg.permissionLevel < permissions.keys[command.name]) {
                 helpmsg = `You don't have access to \`${command.name}\``;
             } else {
+                embed.setURL(`https://dupbit.com/dupbot#${command.name}`);
+                embed.setTitle(`Dupbot#${command.name}`);
                 if (command.usage) {
                     helpmsg = `\`${prefix}${command.name} ${command.usage}\``;
                 } else {
@@ -33,12 +37,12 @@ async function text (Client, msg) {
                 }
             }
         }
-        let message = Client.createEmbed("info", helpmsg);
-        Client.send(msg, message);
+        embed.setDescription(helpmsg);
+        Client.send(msg, embed);
     } else {
         let embed = new Client.RichEmbed();
         embed.setTitle("Commands");
-        embed.setColor(3447003);
+        embed.setColor(Client.statusColors.get("info"));
         embed.setURL("https://dupbit.com/dupbot");
         embed.addField("Everyone", permissions.everyone.join(", "));
         embed.addField("Admin only", permissions.mod.join(", "));
@@ -53,15 +57,19 @@ function dm (Client, msg) {
     if (msg.params.length >= 1) {
         let helpmsg = "No command";
         let command = Client.commands.get(msg.params[0]);
+        let embed = new Client.RichEmbed();
+        embed.setColor(Client.statusColors.get("info"));
         if (command) {
+            embed.setURL(`https://dupbit.com/dupbot#${command.name}`);
+            embed.setTitle(`Dupbot#${command.name}`);
             if (command.usage) {
                 helpmsg = `\`!${command.name} ${command.usage}\``;
             } else {
                 helpmsg = `\`!${command.name}\``;
             }
         }
-        let message = Client.createEmbed("info", helpmsg);
-        Client.send(msg, message);
+        embed.setDescription(helpmsg);
+        Client.send(msg, embed);
     } else {
         let commands = Client.commands.clone();
         commands = commands.filter((command) => {
