@@ -9,3 +9,4 @@ create serverSettings.json and fill in the nessecary fields.
 ```
 node run.js
 ```
+test
