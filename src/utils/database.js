@@ -60,23 +60,21 @@ function setup(c) {
     startUp(Client);
 }
 
-let queries;
-
 async function startUp(Client) {
     await query(queries.tables.commands);
-    Logger.info("[db]Created commands table")
+    Logger.info("[db]Created commands table");
     await query(queries.tables.guilds);
-    Logger.info("[db]Created guilds table")
+    Logger.info("[db]Created guilds table");
     await query(queries.tables.settings_default);
-    Logger.info("[db]Created settings_default table")
+    Logger.info("[db]Created settings_default table");
     await query(queries.tables.stats_bot);
-    Logger.info("[db]Created permissions table")
+    Logger.info("[db]Created permissions table");
     await query(queries.tables.permissions);
-    Logger.info("[db]Created permissions table")
+    Logger.info("[db]Created permissions table");
     await query(queries.tables.settings);
-    Logger.info("[db]Created settings table")
+    Logger.info("[db]Created settings table");
     await query(queries.tables.stats_cah);
-    Logger.info("[db]Created stats_cah table")
+    Logger.info("[db]Created stats_cah table");
     await query(queries.tables.stats_guild);
     Logger.info("[db]Created stats_guild table");
     await query(queries.tables.stats_users);
@@ -90,139 +88,81 @@ async function startUp(Client) {
 
     await query("INSERT IGNORE INTO stats_bot VALUES ('messages', 0)");
 
-    await query("SELECT guild FROM guilds").then((result) => {
+    await query("SELECT guild FROM guilds").then(async (result) => {
         result = result.map(row => row.guild);
         await addGuild("0");
         const guilds = Client.bot.guilds.filter(guild => !result.includes(guild.id));
         for (let guild in guilds) {
-            console.log(guild.id);
+            Logger.log(guild.id);
             await addGuild(guild.id);
         }
-    }).catch(e => Logger.error(e));
+    });
 
-    await query("SELECT * FROM commands").then((result) => {
-
-    }).catch(e => Logger.error(e));
-
-}
-
-function startUp(Client) {
-        if (!db_tables.includes("commands")) {
-            con.query("CREATE TABLE commands (`command_id` INT UNSIGNED AUTO_INCREMENT, `command` VARCHAR(64) UNIQUE, `permissions_default` INT UNSIGNED, PRIMARY KEY (`command_id`))", (err) => {
-                if (err) return Client.sys("error", err);
-                let commands = [];
-
-                for (let command of Client.commands) {
-                    commands.push([command[0], command[1].defaultPermission]);
-                }
-
-                if (commands.length) {
-                    con.query("INSERT INTO commands(`command`, `permissions_default`) VALUES ?", [commands], (err, result) => {
-                        if (err) return Client.sys("error", err);
-                        Client.sys("log", `[db]Inserted ${result.affectedRows} commands in table commands`);
-                    });
-                }
-            });
-        } else {
-            con.query("SELECT * FROM commands", (err, result) => {
-                if (err) return Client.sys("error", err);
-                let db_commands = new Map();
-                let commands = [];
-                if (result.length) {
-                    for (let i = 0; i < result.length; i++) {
-                        db_commands.set(result[i].command, result[i].permissions_default);
-                    }
-                }
-
-                for (let command of Client.commands) {
-                    if (!db_commands.has(command[0])) {
-                        commands.push([command[0], command[1].defaultPermission]);
-                    } else {
-                        //check for update default permissions
-                    }
-                }
-
-                if (commands.length) {
-                    con.query("INSERT INTO commands(`command`, `permissions_default`) VALUES ?", [commands], (err, result) => {
-                        if (err) return Client.sys("error", err);
-                        Client.sys("log", `[db]Inserted ${result.affectedRows} commands in table commands`);
-                        con.query("INSERT INTO permissions SELECT guilds.guild_id, commands.command_id, commands.permissions_default FROM guilds INNER JOIN commands ON commands.command IN (?) ", [commands.map(arr => arr[0]).join(",")], (err, result) => {
-                            if (err) return Client.sys("error", err);
-                            Client.sys("log", `[db]Inserted ${result.affectedRows} commands in table permissions`);
-                        });
-                    });
-                }
-
-                for (let command of db_commands) {
-                    if (!Client.commands.has(command[0])) {
-                        con.query("DELETE FROM commands WHERE `command`=?", [command[0]], (err) => {
-                            if (err) return Client.sys("error", err);
-                            Client.sys("log", `[db]Deleted ${command[0]} command from table commands`);
-                        });
-                    }
-                }
-            });
+    await query("SELECT * FROM commands").then(async (result) => {
+        let db_commands = new Map();
+        let commands = [];
+        if (result.length) {
+            for (let i = 0; i < result.length; i++) {
+                db_commands.set(result[i].command, result[i].permissions_default);
+            }
         }
 
-        if (!db_tables.includes("settings_default")) {
-            con.query("CREATE TABLE settings_default (`setting_id` INT UNSIGNED AUTO_INCREMENT, `setting`VARCHAR(64) UNIQUE, `value_default` TEXT, PRIMARY KEY (`setting_id`))", (err) =>{
-                if (err) return Client.sys("error", err);
-                let settings_q = [];
-
-                for (let setting in settings) {
-                    settings_q.push([setting, settings[setting]]);
-                }
-
-                if (settings_q.length) {
-                    con.query("INSERT INTO settings_default(`setting`, `value_default`) VALUES ?", [settings_q], (err, result) => {
-                        if (err) return Client.sys("error", err);
-                        Client.sys("log", `[db]Inserted ${result.affectedRows} settings in table settings_default`);
-                    });
-                }
-            });
-        } else {
-            con.query("SELECT * FROM settings_default", (err, result) => {
-                if (err) return Client.sys("error", err);
-                let db_settings = new Map();
-                let settings_q = [];
-                if (result.length) {
-                    for (let i = 0; i < result.length; i++) {
-                        db_settings.set(result[i].setting, result[i].value_default);
-                    }
-                }
-
-                for (let setting in settings) {
-                    if (!db_settings.has(setting)) {
-                        settings_q.push([setting, settings[setting]]);
-                    } else {
-                        //check for update default values
-                    }
-                }
-
-                if (settings_q.length) {
-                    con.query("INSERT INTO settings_default(`setting`, `value_default`) VALUES ?", [settings_q], (err, result) => {
-                        if (err) return Client.sys("error", err);
-                        Client.sys("log", `[db]Inserted ${result.affectedRows} settings in table settings_default`);
-                        con.query(`INSERT INTO settings SELECT guilds.guild_id, settings_default.setting_id, settings_default.value_default FROM guilds INNER JOIN settings_default ON settings_default.setting IN ('${settings_q.map(arr => arr[0]).join("','")}')`, [], (err, result) => {
-                            if (err) return Client.sys("error", err);
-                            Client.sys("log", `[db]Inserted ${result.affectedRows} settings in table settings`);
-                        });
-                    });
-                }
-
-                for (let setting of db_settings) {
-                    if (!(setting[0] in settings)) {
-                        con.query("DELETE FROM settings_default WHERE `setting`=?", [setting[0]], (err) => {
-                            if (err) return Client.sys("error", err);
-                            Client.sys("log", `[db]Deleted ${setting[0]} settining from table settings_default`);
-                        });
-                    }
-                }
-            });
+        for (let command of Client.commands) {
+            if (!db_commands.has(command[0])) {
+                commands.push([command[0], command[1].defaultPermission]);
+            } else {
+                //check for update default permissions
+            }
         }
 
-}
+        if (commands.length) {
+            let rows = await query("INSERT INTO commands(`command`, `permissions_default`) VALUES ?", [commands]);
+            Logger.info(`[db]Inserted ${rows.affectedRows} commands in table commands`);
+            let rows2 = await query("INSERT INTO permissions SELECT guilds.guild_id, commands.command_id, commands.permissions_default FROM guilds INNER JOIN commands ON commands.command IN (?) ", [commands.map(arr => arr[0]).join(",")]);
+            Logger.info(`[db]Inserted ${rows2.affectedRows} commands in table permissions`);
+        }
 
+        for (let command of db_commands) {
+            if (!Client.commands.has(command[0])) {
+                await query("DELETE FROM commands WHERE `command`=?", [command[0]]);
+                Logger.info(`[db]Deleted ${command[0]} command from table commands`);
+            }
+        }
+    });
+
+    await query("SELECT * FROM settings_default").then(async (result) => {
+        let db_settings = new Map();
+        let settings_q = [];
+        if (result.length) {
+            for (let i = 0; i < result.length; i++) {
+                db_settings.set(result[i].setting, result[i].value_default);
+            }
+        }
+
+        for (let setting in settings) {
+            if(!db_settings.has(setting)) {
+                settings_q.push([setting, settings[setting]]);
+            } else {
+                //check for update default values
+            }
+        }
+
+        if (settings_q.length)  {
+            let rows = await query("INSERT INTO settings_default(`setting`, `value_default`) VALUES ?", [settings_q]);
+            Logger.info(`[db]Inserted ${rows.affectedRows} settings in table settings_default`);
+            let rows2 = await query(`INSERT INTO settings SELECT guilds.guild_id, settings_default.setting_id, settings_default.value_default FROM guilds INNER JOIN settings_default ON settings_default.setting IN ('${settings_q.map(arr => arr[0]).join("','")}')`);
+            Logger.info(`[db]Inserted ${rows2.affectedRows} settings in table settings`);
+        }
+
+        for (let setting of db_settings) {
+            if (!(setting[0] in settings)) {
+                await query("DELETE FROM settings_default WHERE `setting`=?", [setting[0]]);
+                Logger.info(`[db]Deleted ${setting[0]} settining from table settings_default`);
+            }
+        }
+    });
+
+}
 
 async function addGuild(guild) {
     await query("INSERT INTO guilds (`guild`) VALUES (?)", [guild]);
@@ -266,7 +206,7 @@ async function setPermissions(guild, command, value) {
     if (result != 4 && value != 4) {
         return await query("UPDATE permissions SET `value`=? WHERE `guild_id`=(SELECT `guild_id` FROM guilds WHERE `guild`=?) AND `command_id`=(SELECT `command_id` FROM commands WHERE `command`=?)", [value, guild, command]);
     } else {
-        return Promise.reject("can't change permissions to level 4 or reduce their permissions levels")
+        return Promise.reject("can't change permissions to level 4 or reduce their permissions levels");
     }
 }
 
@@ -461,8 +401,6 @@ module.exports = {
     addGuild,
     deleteGuild,
     rebuildGuild,
-    deleteTable,
-    rebuildTable,
     getPermissions,
     setPermissions,
     getSettings,
