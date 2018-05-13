@@ -28,6 +28,7 @@
   },
   "devDependencies": {},
   "scripts": {
+    "start": "node run.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

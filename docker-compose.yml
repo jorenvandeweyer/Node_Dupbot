@@ -1,0 +1,7 @@
+version: "3"
+services:
+  web:
+    build: .
+    volumes:
+      - ./src/:/usr/src/app/src/
+    restart: always
