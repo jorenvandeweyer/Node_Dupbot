@@ -1,20 +1,12 @@
 const { ShardingManager } = require("discord.js");
-const {token, dev_token} = require("./serverSettings.json");
+const { token } = require("./serverSettings.json");
 
-let login_token;
 let args = [];
-
-if (!process.argv.includes("--dev")) {
-    login_token = token;
-} else {
-    login_token = dev_token;
-    args.push("--dev");
-}
 
 const map = new Map();
 
 const manager = new ShardingManager("./src/client.js", {
-    token: login_token,
+    token,
     shardArgs: args,
 });
 

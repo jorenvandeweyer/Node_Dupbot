@@ -8,15 +8,9 @@ const Discord = require("discord.js");
 function run() {
     Client.bot = new Discord.Client();
 
-    if (!process.argv.includes("--dev")) {
-        Client.prefix = Client.serverSettings.prefix;
-        Client.mysql_db = Client.serverSettings.mysql_db;
-        Client.bot.login(Client.serverSettings.token);
-    } else {
-        Client.prefix = Client.serverSettings.prefix_dev;
-        Client.mysql_db = Client.serverSettings.mysql_db_dev;
-        Client.bot.login(Client.serverSettings.dev_token);
-    }
+    Client.prefix = Client.serverSettings.prefix;
+    Client.mysql_db = Client.serverSettings.mysql_db;
+    Client.bot.login(Client.serverSettings.token);
 
     Client.bot.on("ready", setup);
 
