@@ -162,7 +162,7 @@ function addPlaylistToQueue(Client, msg, id, shuffle) {
                 };
                 playlist.songs.push(song);
             } catch(e) {
-                Client.sys("error", e);
+                Client.Logger.error(`Shard[${Client.shard.id}]: ${e}`);
             }
 
         }

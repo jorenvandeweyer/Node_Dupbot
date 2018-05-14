@@ -19,6 +19,7 @@
     "libsodium-wrappers": "^0.5.4",
     "mysql": "^2.15.0",
     "node-opus": "^0.2.7",
+    "nodemon": "^1.17.4",
     "opusscript": "^0.0.3",
     "plotly": "^1.0.6",
     "sqlite3": "^3.1.13",
@@ -28,7 +29,7 @@
   },
   "devDependencies": {},
   "scripts": {
-    "start": "node run.js",
+    "start": "nodemon run.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

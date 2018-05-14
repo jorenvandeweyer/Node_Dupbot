@@ -17,7 +17,7 @@ function remove(Client, msg) {
     let index = msg.params.indexOf("--remove") + 1;
     //cross guild removal needs to be fixed.
     Client.db.con.query("DELETE FROM modlog WHERE id=?", [msg.params[index]], (err) => {
-        if (err) return Client.sys("error", err);
+        if (err) return Client.Logger.error(`Shard[${Client.shard.id}]: ${err}`);
         Client.db.getSettings(msg.guild.id, "logchannel").then((channelId) => {
             let embed = Client.createEmbed("succes", "Removed log");
             if (channelId) {

@@ -8,7 +8,7 @@ function set(Client) {
         json: true,
         body: {"server_count": Client.bot.guilds.size}
     }, (err) => {
-        if (err) return Client.sys("log", "[-]discordbotapi error?");
+        if (err) return Client.Logger.error(`Shard[${Client.shard.id}]: discordbotapi error?`);
         // console.log(`[+]${Client.bot.guilds.size} guilds connected.`);
     });
 
@@ -19,7 +19,7 @@ function set(Client) {
         json: true,
         body: {"server_count": Client.bot.guilds.size}
     }, (err) => {
-        if (err) return Client.sys("log", "[-]discordbotapi error?");
+        if (err) return Client.Logger.error(`Shard[${Client.shard.id}]: discordbotapi error?`);
         // console.log(`[+]${Client.bot.guilds.size} guilds connected.`);
     });
 }

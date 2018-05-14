@@ -61,40 +61,40 @@ function setup(c) {
 }
 
 async function startUp(Client) {
-    await query(queries.tables.commands);
-    Logger.info("[db]Created commands table");
-    await query(queries.tables.guilds);
-    Logger.info("[db]Created guilds table");
-    await query(queries.tables.settings_default);
-    Logger.info("[db]Created settings_default table");
-    await query(queries.tables.stats_bot);
-    Logger.info("[db]Created permissions table");
-    await query(queries.tables.permissions);
-    Logger.info("[db]Created permissions table");
-    await query(queries.tables.settings);
-    Logger.info("[db]Created settings table");
-    await query(queries.tables.stats_cah);
-    Logger.info("[db]Created stats_cah table");
-    await query(queries.tables.stats_guild);
-    Logger.info("[db]Created stats_guild table");
-    await query(queries.tables.stats_users);
-    Logger.info("[db]Created stats_user table");
-    await query(queries.tables.modlog);
-    Logger.info("[db]Created modlog table");
-    await query(queries.tables.btc);
-    Logger.info("[db]Created btc table");
-    await query(queries.tables.events);
-    Logger.info("[db]Created events table");
+    let result = await query(queries.tables.commands);
+    if (!result.warningCount) Logger.info("[db]Created commands table");
+    result = await query(queries.tables.guilds);
+    if (!result.warningCount) Logger.info("[db]Created guilds table");
+    result = await query(queries.tables.settings_default);
+    if (!result.warningCount) Logger.info("[db]Created settings_default table");
+    result = await query(queries.tables.stats_bot);
+    if (!result.warningCount) Logger.info("[db]Created permissions table");
+    result = await query(queries.tables.permissions);
+    if (!result.warningCount) Logger.info("[db]Created permissions table");
+    result = await query(queries.tables.settings);
+    if (!result.warningCount) Logger.info("[db]Created settings table");
+    result = await query(queries.tables.stats_cah);
+    if (!result.warningCount) Logger.info("[db]Created stats_cah table");
+    result = await query(queries.tables.stats_guild);
+    if (!result.warningCount) Logger.info("[db]Created stats_guild table");
+    result = await query(queries.tables.stats_users);
+    if (!result.warningCount) Logger.info("[db]Created stats_user table");
+    result = await query(queries.tables.modlog);
+    if (!result.warningCount) Logger.info("[db]Created modlog table");
+    result = await query(queries.tables.btc);
+    if (!result.warningCount) Logger.info("[db]Created btc table");
+    result = await query(queries.tables.events);
+    if (!result.warningCount) Logger.info("[db]Created events table");
 
     await query("INSERT IGNORE INTO stats_bot VALUES ('messages', 0)");
 
     await query("SELECT guild FROM guilds").then(async (result) => {
         result = result.map(row => row.guild);
-        await addGuild("0");
+        if (!result.includes("0")) await addGuild("0");
         const guilds = Client.bot.guilds.filter(guild => !result.includes(guild.id));
-        for (let guild in guilds) {
-            Logger.log(guild.id);
-            await addGuild(guild.id);
+        for (let guild of guilds) {
+            Logger.log(guild[0]);
+            await addGuild(guild[0]);
         }
     });
 
@@ -118,7 +118,7 @@ async function startUp(Client) {
         if (commands.length) {
             let rows = await query("INSERT INTO commands(`command`, `permissions_default`) VALUES ?", [commands]);
             Logger.info(`[db]Inserted ${rows.affectedRows} commands in table commands`);
-            let rows2 = await query("INSERT INTO permissions SELECT guilds.guild_id, commands.command_id, commands.permissions_default FROM guilds INNER JOIN commands ON commands.command IN (?) ", [commands.map(arr => arr[0]).join(",")]);
+            let rows2 = await query(`INSERT INTO permissions SELECT guilds.guild_id, commands.command_id, commands.permissions_default FROM guilds INNER JOIN commands ON commands.command IN ('${commands.map(arr => arr[0]).join("','")}')`);
             Logger.info(`[db]Inserted ${rows2.affectedRows} commands in table permissions`);
         }
 

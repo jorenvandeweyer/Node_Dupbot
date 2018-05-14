@@ -7,7 +7,7 @@ module.exports = {
     args: 0,
     execute (Client, msg) {
         request(`http://thecatapi.com/api/images/get?format=xml&api_key=${thecatapi}`, (err, res, body) => {
-            if (err) return Client.sys("error", err);
+            if (err) return Client.Logger.error(`Shard[${Client.shard.id}]: ${err}`);
             Client.send(msg, {
                 embed:{
                     title: ":heart_eyes_cat: :heart_eyes_cat: :heart_eyes_cat:",

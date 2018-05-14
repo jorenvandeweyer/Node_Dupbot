@@ -1,5 +1,6 @@
 const fs = require("fs");
 const Discord = require("discord.js");
+const Logger = require("./utils/logger");
 
 /***************/
 /****Exports****/
@@ -7,11 +8,10 @@ const Discord = require("discord.js");
 
 function run() {
     Client.bot = new Discord.Client();
-
+    Client.shard = new Discord.ShardClientUtil(Client.bot);
     Client.prefix = Client.serverSettings.prefix;
     Client.mysql_db = Client.serverSettings.mysql_db;
     Client.bot.login(Client.serverSettings.token);
-
     Client.bot.on("ready", setup);
 
     Client.bot.on("message", recieveMessage);
@@ -20,7 +20,7 @@ function run() {
         Client.discordbots.set(Client);
         if (Client.blackList.guilds.includes(guild.id)) {
             guild.leave().then(() => {
-                Client.sys("log", `[+]Left guild on blacklist: ${guild.id}`);
+                Logger.info(`Shard[${Client.shard.id}]:[+]Left guild on blacklist: ${guild.id}`);
             });
         } else {
             Client.db.addGuild(guild.id);
@@ -28,7 +28,7 @@ function run() {
     });
 
     Client.bot.on("guildDelete", (guild) => {
-        Client.sys("log", `[+]Left guild: ${guild.id}`);
+        Logger.info(`Shard[${Client.shard.id}]:[+]Left guild: ${guild.id}`);
     });
 
     Client.bot.on("guildMemberRemove", (member) => {
@@ -82,7 +82,8 @@ function command(msg) {
         });
     }
     execute(msg);
-    Client.sys("cmd", msg);
+    Logger.log(`Shard[${Client.shard.id}]: ${msg.author.id} ${msg.command} ${msg.params}`);
+
 }
 
 function interact(msg) {
@@ -90,49 +91,17 @@ function interact(msg) {
         Client.db.getSettings(msg.guild.id, "ai").then((value) => {
             if (+value || msg.interactName) {
                 Client.ai.get(Client, msg);
-                Client.sys("tlb", msg);
+                Logger.log(`Shard[${Client.shard.id}]: ${msg.channel.type} ${msg.author.id} ${msg.input_ai}`);
             }
         });
     } else {
         Client.ai.get(Client, msg);
-        Client.sys("tlb", msg);
+        Logger.log(`Shard[${Client.shard.id}]: ${msg.channel.type} ${msg.author.id} ${msg.input_ai}`);
     }
-}
-
-function sys (type, obj) {
-    if (type === "log") {
-        Client.bot.shard.send({
-            type: "log",
-            info: obj
-        });
-    } else if (type === "cmd") {
-        Client.bot.shard.send({
-            type: "log",
-            info: `[c]${new Date().toString()} ${obj.author.id} ${obj.command} ${obj.params}`
-        });
-    } else if (type === "tlb") {
-        Client.bot.shard.send({
-            type: "log",
-            info:`[t]${new Date().toString()} ${obj.channel.type} ${obj.author.id} ${obj.input_ai}`
-        });
-    } else if (type === "err") {
-        Client.bot.shard.send({
-            type: "log", info:obj
-        });
-    } else if (type === "error") {
-        Client.bot.shard.send({
-            type: "log", info: `[error]${obj.toString()}`
-        });
-    } else {
-        Client.bot.shard.send({
-            type: type
-        });
-    }
-
 }
 
 function setup() {
-    Client.sys("connected");
+    Client.bot.shard.send({type: "connected"});
     Client.db.setup(Client);
     Client.events.start(Client);
     Client.discordbots.set(Client);
@@ -140,7 +109,7 @@ function setup() {
     for (let key of Client.bot.guilds) {
         if (Client.blackList.guilds.includes(key[0])) {
             key[1].leave().then( () => {
-                Client.sys("log", `[+]Left guild on blacklist: ${key}`);
+                Logger.info(`Shard[${Client.shard.id}]:[+]Left guild on blacklist: ${key}`);
             });
         }
     }
@@ -150,8 +119,7 @@ function setup() {
     });
 
     addDirToCommands(`${__dirname}/commands`);
-
-    Client.sys("log", `[+]setup ready ${Client.bot.guilds.size} guilds connected.`);
+    Logger.success(`Shard[${Client.shard.id}]:[+]setup ready ${Client.bot.guilds.size} guilds connected.`);
 }
 
 /**************/
@@ -273,7 +241,7 @@ function execute(msg) {
         } catch (e) {
             let message = createEmbed("info", ":bomb: :boom: That didn't work out :neutral_face:");
             send(msg, message);
-            Client.sys("error", e);
+            Logger.error(`Shard[${Client.shard.id}]:${e}`);
         }
     });
 }
@@ -343,12 +311,8 @@ function isCommand(msg) {
                     resolve(msg);
                 }).catch(reject);
             }).catch(reject);
-        }).catch((error) => {
-            Client.sys("error", error);
-        });
-    }).catch((error) => {
-        Client.sys("error", error);
-    });
+        }).catch(error => Logger.error(`Shard[${Client.shard.id}]:${error}`));
+    }).catch(error => Logger.error(`Shard[${Client.shard.id}]:${error}`));
 }
 
 async function getPrefix(msg) {
@@ -420,18 +384,14 @@ function send(msg, message) {
     return new Promise((resolve, reject) => {
         if (msg.channel.type === "text" && !msg.channel.permissionsFor(msg.client.user).has("SEND_MESSAGES")) return reject("No SEND_MESSAGES permission");
         msg.channel.send(message).then(resolve, reject);
-    }).catch((error) => {
-        Client.sys("error", error);
-    });
+    }).catch(error => Logger.error(`Shard[${Client.shard.id}]:${error}`));
 }
 
 function sendChannel(msg, channelId, message) {
     return new Promise((resolve, reject) => {
         if (!msg.guild.channels.get(channelId).permissionsFor(msg.client.user).has("SEND_MESSAGES")) return reject("No SEND_MESSAGES permission");
         msg.guild.channels.get(channelId).send(message).then(resolve, reject);
-    }).catch((error) => {
-        Client.sys("error", error);
-    });
+    }).catch(error => Logger.error(`Shard[${Client.shard.id}]:${error}`));
 }
 
 function joinVoiceChannel(msg) {
@@ -448,9 +408,7 @@ function joinVoiceChannel(msg) {
                     .then(resolve, reject);
             }
         });
-    }).catch((error) => {
-        Client.sys("error", error);
-    });
+    }).catch(error => Logger.error(`Shard[${Client.shard.id}]:${error}`));
 }
 
 const Client = {
@@ -472,7 +430,7 @@ const Client = {
     Attachment: Discord.Attachment,
     Collection: Discord.Collection,
 
-    sys,
+    Logger,
 
     commands: new Discord.Collection(),
 

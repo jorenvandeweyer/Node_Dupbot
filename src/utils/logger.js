@@ -27,6 +27,10 @@ function log (stream) {
     output(Colors.WHITE, stream);
 }
 
+function success (stream) {
+    output(Colors.GREEN, stream);
+}
+
 function output(color, text) {
     Console.log(`${color}${date} | ${text}\x1b[0m`);
 }
@@ -35,4 +39,5 @@ module.exports = {
     error,
     info,
     log,
+    success,
 };
