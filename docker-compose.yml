@@ -4,4 +4,10 @@ services:
     build: .
     volumes:
       - ./src/:/usr/src/app/src/
+      - ./serverSettings.json:/usr/src/app/serverSettings.json
     restart: always
+    networks:
+      - dupbit_prime
+networks:
+  dupbit_prime:
+    external: true
