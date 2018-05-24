@@ -6,7 +6,7 @@
   "dependencies": {
     "apiai": "^4.0.3",
     "bufferutil": "^3.0.3",
-    "cah_game": "^1.4.0",
+    "cah_game": "^1.4.1",
     "chart.js": "^2.7.1",
     "chartjs-node": "^1.6.0",
     "dialogflow": "^0.1.0",
