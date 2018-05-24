@@ -62,7 +62,7 @@ module.exports = {
 
             async fetchAllMessagesChannel(channel, after) {
                 await channel.fetchMessages({after: after, limit: 100}).then( async (messages) => {
-                    Client.sys("log", `${channel.id}: ${this.requests}`);
+                    Client.Logger.log( `Shard[${Client.shard.id}]: ${channel.id}: ${this.requests}`);
                     this.requests++;
 
                     messages = messages.sort( (a, b) => {

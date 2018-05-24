@@ -1,29 +1,22 @@
 const { ShardingManager } = require("discord.js");
-const {token, dev_token} = require("./serverSettings.json");
+const { token } = require("./serverSettings.json");
+const Logger = require("./src/utils/logger");
 
-let login_token;
 let args = [];
-
-if (!process.argv.includes("--dev")) {
-    login_token = token;
-} else {
-    login_token = dev_token;
-    args.push("--dev");
-}
 
 const map = new Map();
 
 const manager = new ShardingManager("./src/client.js", {
-    token: login_token,
+    token,
     shardArgs: args,
 });
 
 manager.spawn();
-manager.on("launch", shard => Console.log(`Shard[X]:[+]Launched Shard[${shard.id}]`));
+manager.on("launch", shard => Logger.success(`Shard[X]:[+]Launched Shard[${shard.id}]`));
 
 manager.on("message", (shard, message) => {
     if (message.type === "log") {
-        return Console.log(`Shard[${shard.id}]:${message.info}`);
+        Logger.log(`Shard[${shard.id}]:${message.info}`);
     } else if (message.type === "reload") {
         map.set(shard.id, message.msg);
     } else if (message.type === "connected") {
@@ -33,9 +26,3 @@ manager.on("message", (shard, message) => {
         }
     }
 });
-
-class Console {
-    static log(msg) {
-        process.stdout.write(`${msg}\n`);
-    }
-}

@@ -62,7 +62,7 @@ module.exports = {
                                 messages.push(message);
                             });
                         } catch(e) {
-                            Client.sys("error", e);
+                            Client.Logger.error(`Shard[${Client.shard.id}]: ${e}`);
                         }
 
                     }

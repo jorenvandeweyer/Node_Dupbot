@@ -8,7 +8,7 @@ module.exports = {
     args: 0,
     execute (Client, msg) {
         publicClient.getProductOrderBook((error, response, data) => {
-            if (error) return Client.sys("error", error);
+            if (error) return Client.Logger.error(`Shard[${Client.shard.id}]: ${error}`);
 
             let gdaxData = new GdaxData(data);
             if (msg.params.includes("--stats")) {

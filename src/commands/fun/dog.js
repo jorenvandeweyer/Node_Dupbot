@@ -6,7 +6,7 @@ module.exports = {
     args: 0,
     execute (Client, msg) {
         request("https://api.thedogapi.co.uk/v2/dog.php", (err, res, body) => {
-            if (err) return Client.sys("error", err);
+            if (err) return Client.Logger.error(`Shard[${Client.shard.id}]: ${err}`);
             Client.send(msg, {
                 embed:{
                     title: ":dog: :dog: :dog:",

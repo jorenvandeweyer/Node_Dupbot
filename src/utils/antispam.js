@@ -38,7 +38,7 @@ class Antispam {
         if (this.keys.filter(x => x === msg.author.id + "," + msg.command).length > 5) {
             this.ignore.set(msg.author.id, Date.now());
             msg.author.send(Client.createEmbed("ban", "The bot will ignore you for 10 minutes because you were flooding it.")).catch((err) => {
-                Client.sys("error", err);
+                Client.Logger.error(`Shard[${Client.shard.id}]: ${err}`);
             });
         } else {
             this.keys.push(msg.author.id + "," + msg.command);

@@ -9,7 +9,7 @@ module.exports = {
         let query = "";
         if (msg.params.length) query = "&query=" + msg.params.join("-");
         Request.get(`https://api.unsplash.com/photos/random?count=1&client_id=${Client.serverSettings.unsplash_clientid}${query}`, (err, res, body) => {
-            if (err) return Client.sys("error", err);
+            if (err) return Client.Logger.error(`Shard[${Client.shard.id}]: ${err}`);
             if (res.statusCode !== 200) return;
             let data = JSON.parse(body);
             let image = data[0];

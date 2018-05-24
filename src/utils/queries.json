@@ -1,0 +1,16 @@
+{
+    "tables": {
+        "commands": "CREATE TABLE IF NOT EXISTS commands (`command_id` INT UNSIGNED AUTO_INCREMENT, `command` VARCHAR(64) UNIQUE, `permissions_default` INT UNSIGNED, PRIMARY KEY (`command_id`))",
+        "guilds": "CREATE TABLE IF NOT EXISTS guilds (`guild_id` INT UNSIGNED AUTO_INCREMENT, `guild` VARCHAR(32) UNIQUE, PRIMARY KEY (`guild_id`))",
+        "settings_default": "CREATE TABLE IF NOT EXISTS settings_default (`setting_id` INT UNSIGNED AUTO_INCREMENT, `setting`VARCHAR(64) UNIQUE, `value_default` TEXT, PRIMARY KEY (`setting_id`))",
+        "stats_bot": "CREATE TABLE IF NOT EXISTS stats_bot (`stat` VARCHAR(64),`value` BIGINT(255),PRIMARY KEY (`stat`))",
+        "permissions": "CREATE TABLE IF NOT EXISTS permissions (`guild_id` INT UNSIGNED, `command_id` INT UNSIGNED, `value` INT UNSIGNED, FOREIGN KEY (`command_id`) REFERENCES commands(`command_id`) ON DELETE CASCADE ON UPDATE CASCADE, FOREIGN KEY (`guild_id`) REFERENCES guilds(`guild_id`) ON DELETE CASCADE ON UPDATE CASCADE, UNIQUE `combined_index` (`guild_id`, `command_id`))",
+        "settings": "CREATE TABLE IF NOT EXISTS settings (`guild_id` INT UNSIGNED, `setting_id` INT UNSIGNED, `value` TEXT, FOREIGN KEY (`setting_id`) REFERENCES settings_default(`setting_id`) ON DELETE CASCADE ON UPDATE CASCADE, FOREIGN KEY (`guild_id`) REFERENCES guilds(`guild_id`) ON DELETE CASCADE ON UPDATE CASCADE, UNIQUE `combined_index` (`guild_id`, `setting_id`))",
+        "stats_cah": "CREATE TABLE IF NOT EXISTS stats_cah (`guild_id` INT UNSIGNED, `user_id` VARCHAR(32), `points` INT UNSIGNED, FOREIGN KEY (`guild_id`) REFERENCES guilds(`guild_id`) ON DELETE CASCADE ON UPDATE CASCADE, UNIQUE `combined_index` (`guild_id`, `user_id`))",
+        "stats_guild": "CREATE TABLE IF NOT EXISTS stats_guild (`guild_id` INT UNSIGNED, `type` VARCHAR(64), `timestamp` VARCHAR(32), `value` VARCHAR(32), FOREIGN KEY (`guild_id`) REFERENCES guilds(`guild_id`) ON DELETE CASCADE ON UPDATE CASCADE)",
+        "stats_users": "CREATE TABLE IF NOT EXISTS stats_users (`guild_id` INT UNSIGNED, `user_id` VARCHAR(32), `value` INT UNSIGNED, `type` VARCHAR(16), FOREIGN KEY (`guild_id`) REFERENCES guilds(`guild_id`) ON DELETE CASCADE ON UPDATE CASCADE, UNIQUE `combined_index` (`guild_id`, `user_id`))",
+        "modlog": "CREATE TABLE IF NOT EXISTS modlog (`id` INT UNSIGNED AUTO_INCREMENT, `guild_id` INT UNSIGNED, `user` VARCHAR(32), `type` VARCHAR(16), `mod` VARCHAR(32), `timestamp` VARCHAR(32), `reason` VARCHAR(255), `time` VARCHAR(32), FOREIGN KEY (`guild_id`) REFERENCES guilds(`guild_id`) ON DELETE CASCADE ON UPDATE CASCADE, PRIMARY KEY (`id`))",
+        "btc": "CREATE TABLE IF NOT EXISTS btc (`guild_id` INT UNSIGNED, `user_id` VARCHAR(32), `value` DOUBLE(32,8), `type` VARCHAR(5), FOREIGN KEY (`guild_id`) REFERENCES guilds(`guild_id`) ON DELETE CASCADE ON UPDATE CASCADE)",
+        "events": "CREATE TABLE IF NOT EXISTS events (`id` INT UNSIGNED AUTO_INCREMENT, `created_at` TIMESTAMP(3) NOT NULL DEFAULT current_timestamp, `execute_at` TIMESTAMP(3) NOT NULL, `guild_id` INT UNSIGNED, `channel_id` VARCHAR(32), `initiator_id` VARCHAR(32), `action` VARCHAR(64), `target_id` VARCHAR(32), `data` TEXT, `status` VARCHAR(16), FOREIGN KEY (`guild_id`) REFERENCES guilds(`guild_id`) ON DELETE CASCADE ON UPDATE CASCADE, PRIMARY KEY (`id`))"
+    }
+}

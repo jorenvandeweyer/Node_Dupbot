@@ -8,7 +8,7 @@ module.exports = {
         Client.bot.user.setActivity(msg.params.join(" ")).then(() => {
             Client.send(msg, Client.createEmbed("succes", "Status changed"));
         }).catch((e) => {
-            Client.sys("error", e);
+            Client.Logger.error(`Shard[${Client.shard.id}]: ${e}`);
         });
     }
 };

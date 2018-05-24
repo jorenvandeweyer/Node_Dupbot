@@ -24,7 +24,7 @@ module.exports = {
         }
 
         request(url, (err, res, body) => {
-            if (err) return Client.sys("error", err);
+            if (err) return Client.Logger.error(`Shard[${Client.shard.id}]: ${err}`);
             let color = JSON.parse(body)[0];
 
             let embed = new Client.RichEmbed();
