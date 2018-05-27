@@ -2,126 +2,135 @@ const ChartjsNode = require("chartjs-node");
 
 let chartNodeB, chartNodeL;
 
-function createGraphs(Client, msg, start, end) {
-    let creationTime = msg.guild.createdTimestamp;
-    msg.guild.fetchMembers().then( (guild) => {
-        let members = guild.members.sort((a, b) => {return a.joinedTimestamp-b.joinedTimestamp;});
+async function createGraphs(Client, msg, start, end) {
+    const creationTime = msg.guild.createdTimestamp;
+    const guild = await msg.guild.fetchMembers();
 
-        let x_green = [];
-        let y_green = [];
-        let x_red = [];
-        let y_red = [];
+    const members = guild.members.sort((a, b) => a.joinedTimestamp-b.joinedTimestamp);
 
-        let x_total = [];
-        let y_total = [];
+    let x_green = [];
+    let y_green = [];
+    let x_red = [];
+    let y_red = [];
 
-        getData(Client, msg, (joins, leaves, firstRecord) => {
-            for (let key of members) {
-                let time = key[1].joinedAt.toISOString().split("T")[0];
+    let x_total = [];
+    let y_total = [];
 
-                let timestamp = key[1].joinedTimestamp;
-                if (timestamp < creationTime || timestamp < start || timestamp > end) continue;
-                if (timestamp >= firstRecord) break;
+    const data = await getData(Client, msg);
 
-                if (x_green.includes(time)) {
-                    let index = x_green.indexOf(time);
-                    y_green[index]++;
-                } else {
-                    x_green.push(time);
-                    y_green.push(1);
-                }
+    const joins = data.joins;
+    const leaves = data.leaves;
+    const firstRecord = data.firstRecord;
+
+    for (let key of members) {
+        let time = key[1].joinedAt.toISOString().split("T")[0];
+
+        let timestamp = key[1].joinedTimestamp;
+        if (timestamp < creationTime || timestamp < start || timestamp > end) continue;
+        if (timestamp >= firstRecord) break;
+
+        if (x_green.includes(time)) {
+            let index = x_green.indexOf(time);
+            y_green[index]++;
+        } else {
+            x_green.push(time);
+            y_green.push(1);
+        }
+    }
+
+    if (joins) {
+        for (let i = 0; i<joins.length; i++) {
+            let timestamp = parseInt(joins[i].timestamp);
+            if (timestamp < start || timestamp > end) continue;
+
+            let time = new Date(timestamp);
+            time = time.toISOString().split("T")[0];
+
+            if (x_green.includes(time)) {
+                let index = x_green.indexOf(time);
+                y_green[index]++;
+            } else {
+                x_green.push(time);
+                y_green.push(1);
+            }
+        }
+    }
+
+    x_total = x_green.slice(0);
+    y_total = y_green.slice(0);
+
+    if (leaves) {
+        for (let i = 0; i<leaves.length; i++) {
+            let timestamp = parseInt(leaves[i].timestamp);
+            if (timestamp < start || timestamp > end) continue;
+
+            let time = new Date(timestamp);
+            time = time.toISOString().split("T")[0];
+
+            if (x_red.includes(time)) {
+                let index = x_red.indexOf(time);
+                y_red[index]++;
+            } else {
+                x_red.push(time);
+                y_red.push(1);
             }
 
-            if (joins) {
-                for (let i = 0; i<joins.length; i++) {
-                    let timestamp = parseInt(joins[i].timestamp);
-                    if (timestamp < start || timestamp > end) continue;
-
-                    let time = new Date(timestamp);
-                    time = time.toISOString().split("T")[0];
-
-                    if (x_green.includes(time)) {
-                        let index = x_green.indexOf(time);
-                        y_green[index]++;
-                    } else {
-                        x_green.push(time);
-                        y_green.push(1);
-                    }
-                }
+            if (x_total.includes(time)) {
+                let index = x_total.indexOf(time);
+                y_total[index]--;
+            } else {
+                x_total.push(time);
+                y_total.push(-1);
             }
 
-            x_total = x_green.slice(0);
-            y_total = y_green.slice(0);
+        }
+    }
 
-            if (leaves) {
-                for (let i = 0; i<leaves.length; i++) {
-                    let timestamp = parseInt(leaves[i].timestamp);
-                    if (timestamp < start || timestamp > end) continue;
+    let y_total_cum = [0];
 
-                    let time = new Date(timestamp);
-                    time = time.toISOString().split("T")[0];
+    for (let i = 0; i < x_total.length; i++) {
+        y_total_cum[i+1] = y_total[i] + y_total_cum[i];
+    }
 
-                    if (x_red.includes(time)) {
-                        let index = x_red.indexOf(time);
-                        y_red[index]++;
-                    } else {
-                        x_red.push(time);
-                        y_red.push(1);
-                    }
+    y_total_cum = y_total_cum.slice(1);
 
-                    if (x_total.includes(time)) {
-                        let index = x_total.indexOf(time);
-                        y_total[index]--;
-                    } else {
-                        x_total.push(time);
-                        y_total.push(-1);
-                    }
+    createImageStreamB(x_green, y_green, y_red).then((stream) => {
+        let attachment = new Client.Attachment(stream);
+        Client.send(msg, attachment).then(() =>{
+            chartNodeB.destroy();
+        });
+    });
 
-                }
-            }
-
-            let y_total_cum = [0];
-
-            for (let i = 0; i < x_total.length; i++) {
-                y_total_cum[i+1] = y_total[i] + y_total_cum[i];
-            }
-
-            y_total_cum = y_total_cum.slice(1);
-
-            createImageStreamB(x_green, y_green, y_red).then((stream) => {
-                let attachment = new Client.Attachment(stream);
-                Client.send(msg, attachment).then(() =>{
-                    chartNodeB.destroy();
-                });
-            });
-
-            createImageStreamL(x_total, y_total_cum).then((stream) => {
-                let attachment = new Client.Attachment(stream);
-                Client.send(msg, attachment).then(() =>{
-                    chartNodeL.destroy();
-                });
-            });
-
+    createImageStreamL(x_total, y_total_cum).then((stream) => {
+        let attachment = new Client.Attachment(stream);
+        Client.send(msg, attachment).then(() =>{
+            chartNodeL.destroy();
         });
     });
 }
 
-function getData(Client, msg, _callback) {
-    Client.db.getStats_guild(msg.guild.id, "guildMemberAdd").then((joins) => {
-        Client.db.getStats_guild(msg.guild.id, "guildMemberRemove").then((leaves) => {
-            let firstRecord = Infinity;
-            if (joins.length) {
-                firstRecord = joins[0].timestamp;
-            }
-            if (leaves.length) {
-                let timestamp = leaves[0].timestamp;
-                if (timestamp < firstRecord) {
-                    firstRecord = timestamp;
-                }
-            }
-            _callback(joins, leaves, firstRecord);
-        });
-    });
+async function getData(Client, msg) {
+    const joins = await Client.db.getStats_guild(msg.guild.id, "guildMemberAdd");
+    const leaves = await Client.db.getStats_guild(msg.guild.id, "guildMemberRemove");
+
+    let firstRecord = Infinity;
+
+    if (joins && joins.length) {
+        firstRecord = joins[0].timestamp;
+    }
+
+    if (leaves && leaves.length) {
+        const timestamp = leaves[0].timestamp;
+        if (timestamp < firstRecord) {
+            firstRecord = timestamp;
+        }
+    }
+
+    return {
+        joins,
+        leaves,
+        firstRecord
+    };
 }
 
 function get(Client, msg) {

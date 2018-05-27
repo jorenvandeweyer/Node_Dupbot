@@ -1,21 +1,21 @@
-module.exports = (Client, member) => {
-    Client.db.getSettings(member.guild.id, "welcome").then((welcomeMessage) => {
-        if (!welcomeMessage) return;
-        Client.db.getSettings(member.guild.id, "welcomeChannel").then((welcomeChannel) => {
-            if (!welcomeChannel) return;
+module.exports = async (Client, member) => {
+    const content = await Client.db.getSettings(member.guild.id, "welcome");
+    const channel = await Client.db.getSettings(member.guild.id, "welcomeChannel");
 
-            let embed = new Client.RichEmbed();
-            embed.setColor("RED");
-            embed.setTitle("Welcome");
-            embed.setDescription(`<@${member.id}> joined, say Hi!`);
-            embed.addField("What now?", welcomeMessage);
-            embed.setThumbnail(member.user.avatarURL);
+    if (!channel || !content) return;
 
-            if (!member.guild.channels.get(welcomeChannel).permissionsFor(Client.bot.user).has("SEND_MESSAGES")) return;
+    if (!member.guild.channels.get(channel).permissionsFor(Client.bot.user).has("SEND_MESSAGES")) return;
 
-            member.guild.channels.get(welcomeChannel).send(embed).then((message) => {
-                message.react("👋");
-            });
-        });
-    });
+    const embed = new Client.RichEmbed();
+    embed.setColor("RED");
+    embed.setTitle("Welcome");
+    embed.setDescription(`<@${member.id}> joined, say Hi!`);
+    embed.addField("What now?", content);
+    embed.setThumbnail(member.user.avatarURL);
+
+    const message = await member.guild.channels.get(channel).send(embed);
+
+    if (message) {
+        message.react("👋");
+    }
 };

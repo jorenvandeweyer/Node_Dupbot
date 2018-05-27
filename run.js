@@ -15,9 +15,7 @@ manager.spawn();
 manager.on("launch", shard => Logger.success(`Shard[X]:[+]Launched Shard[${shard.id}]`));
 
 manager.on("message", (shard, message) => {
-    if (message.type === "log") {
-        Logger.log(`Shard[${shard.id}]:${message.info}`);
-    } else if (message.type === "reload") {
+    if (message.type === "reload") {
         map.set(shard.id, message.msg);
     } else if (message.type === "connected") {
         if (map.has(shard.id)) {

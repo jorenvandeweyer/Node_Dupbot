@@ -12,5 +12,36 @@
         "modlog": "CREATE TABLE IF NOT EXISTS modlog (`id` INT UNSIGNED AUTO_INCREMENT, `guild_id` INT UNSIGNED, `user` VARCHAR(32), `type` VARCHAR(16), `mod` VARCHAR(32), `timestamp` VARCHAR(32), `reason` VARCHAR(255), `time` VARCHAR(32), FOREIGN KEY (`guild_id`) REFERENCES guilds(`guild_id`) ON DELETE CASCADE ON UPDATE CASCADE, PRIMARY KEY (`id`))",
         "btc": "CREATE TABLE IF NOT EXISTS btc (`guild_id` INT UNSIGNED, `user_id` VARCHAR(32), `value` DOUBLE(32,8), `type` VARCHAR(5), FOREIGN KEY (`guild_id`) REFERENCES guilds(`guild_id`) ON DELETE CASCADE ON UPDATE CASCADE)",
         "events": "CREATE TABLE IF NOT EXISTS events (`id` INT UNSIGNED AUTO_INCREMENT, `created_at` TIMESTAMP(3) NOT NULL DEFAULT current_timestamp, `execute_at` TIMESTAMP(3) NOT NULL, `guild_id` INT UNSIGNED, `channel_id` VARCHAR(32), `initiator_id` VARCHAR(32), `action` VARCHAR(64), `target_id` VARCHAR(32), `data` TEXT, `status` VARCHAR(16), FOREIGN KEY (`guild_id`) REFERENCES guilds(`guild_id`) ON DELETE CASCADE ON UPDATE CASCADE, PRIMARY KEY (`id`))"
+    },
+    "query": {
+        "getPermissions": "SELECT guilds.guild, commands.command, permissions.value FROM permissions INNER JOIN guilds ON guilds.guild_id=permissions.guild_id INNER JOIN commands ON commands.command_id=permissions.command_id",
+        "setPermissions": "UPDATE permissions SET `value`=? WHERE `guild_id`=(SELECT `guild_id` FROM guilds WHERE `guild`=?) AND `command_id`=(SELECT `command_id` FROM commands WHERE `command`=?)",
+        "getSettings": "SELECT guilds.guild, settings_default.setting, settings.value FROM settings INNER JOIN guilds ON guilds.guild_id=settings.guild_id INNER JOIN settings_default ON settings_default.setting_id=settings.setting_id",
+        "setSettings": "UPDATE settings SET `value`=? WHERE `guild_id`=(SELECT `guild_id` FROM guilds WHERE `guild`=?) AND `setting_id`=(SELECT `setting_id` FROM settings_default WHERE `setting`=?)",
+        "getStats_cah": "SELECT guilds.guild, stats_cah.user_id, stats_cah.points FROM stats_cah INNER JOIN guilds ON guilds.guild_id=stats_cah.guild_id WHERE guilds.guild=?",
+        "setStats_cah": {
+            "update": "UPDATE stats_cah SET `points`=`points`+? WHERE `guild_id`=(SELECT `guild_id` FROM guilds WHERE `guild`=?) AND `user_id`=?",
+            "insert": "INSERT INTO stats_cah SELECT guilds.guild_id, ?, ? FROM guilds WHERE guilds.guild = ?"
+        },
+        "getStats_guild": "SELECT guilds.guild, stats_guild.type, stats_guild.timestamp, stats_guild.value FROM stats_guild INNER JOIN guilds ON guilds.guild_id=stats_guild.guild_id WHERE guilds.guild=? AND stats_guild.type=? ORDER BY timestamp ASC",
+        "setStats_guild": "INSERT INTO stats_guild SELECT guilds.guild_id, ?, ?, ? FROM guilds WHERE guilds.guild=?",
+        "getStats_bot": "SELECT value FROM stats_bot WHERE stat=?",
+        "setStats_bot": "UPDATE stats_bot SET value=value+? WHERE stat=?",
+        "getBtc": "SELECT guilds.guild, btc.user_id, btc.value, btc.type FROM btc INNER JOIN guilds ON guilds.guild_id=btc.guild_id WHERE guilds.guild=? AND btc.user_id=?",
+        "setBtc": {
+            "update": "UPDATE btc SET `value`=? WHERE `guild_id`=(SELECT `guild_id` FROM guilds WHERE `guild`=?) AND `user_id`=? AND `type`=?",
+            "insert": "INSERT INTO btc SELECT guilds.guild_id, ?, ?, ? FROM guilds WHERE guilds.guild = ?"
+        },
+        "getStats_users": "SELECT guilds.guild, stats_users.user_id, stats_users.value, stats_users.type FROM stats_users INNER JOIN guilds ON guilds.guild_id=stats_users.guild_id WHERE guilds.guild=?",
+        "setStats_users": {
+            "update": "UPDATE stats_users SET `value`=`value`+? WHERE `guild_id`=(SELECT `guild_id` FROM guilds WHERE `guild`=?) AND `user_id`=? AND `type`=?",
+            "insert": "INSERT INTO stats_users SELECT guilds.guild_id, ?, ?, ? FROM guilds WHERE guilds.guild = ?"
+        },
+        "getModlog": "SELECT modlog.id, guilds.guild, modlog.user, modlog.type, modlog.mod, modlog.timestamp, modlog.reason, modlog.time FROM modlog INNER JOIN guilds ON guilds.guild_id=modlog.guild_id WHERE guilds.guild=? AND modlog.user=?",
+        "setModlog": "INSERT INTO modlog SET ?",
+        "getEvent": "SELECT events.id, events.created_at, events.execute_at, guilds.guild, events.channel_id, events.initiator_id, events.action, events.target_id, events.data, events.status FROM events INNER JOIN guilds ON guilds.guild_id=events.guild_id WHERE true",
+        "setEvent": "INSERT INTO events (`execute_at`, `guild_id`, `channel_id`, `initiator_id`, `action`, `target_id`, `data`, `status`) SELECT FROM_UNIXTIME(?), guilds.guild_id, ?, ?, ?, ?, ?, ? FROM guilds WHERE guilds.guild = ?",
+        "updateEvent": "UPDATE events SET `status`=? WHERE `id`=?",
+        "editEvent": "UPDATE events SET `status`=? WHERE true"
     }
 }
