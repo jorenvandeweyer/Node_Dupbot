@@ -375,7 +375,7 @@ function extractRole(msg, pos) {
 
 function extractChannel(msg, pos) {
     if (msg.mentions.channels.size) return msg.mentions.channels.first();
-    let channel = msg.guild.channels.find(role => role.name.toLowerCase() === msg.params[pos] || role.id === msg.params[pos]);
+    let channel = msg.guild.channels.find(channel => channel.name.toLowerCase() === msg.params[pos] || channel.id === msg.params[pos]);
     if (channel) return channel;
     return null;
 }
