@@ -82,7 +82,7 @@ function command(msg) {
         });
     }
     execute(msg);
-    Logger.log(`Shard[${Client.shard.id}]: ${msg.author.id} ${msg.command} ${msg.params}`);
+    Logger.log(`Shard[${Client.shard.id}]: ${msg.guild.id} ${msg.author.tag} ${msg.command} ${msg.params}`);
 
 }
 

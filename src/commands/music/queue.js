@@ -5,7 +5,7 @@ module.exports = {
     guildOnly: true,
     execute (Client, msg) {
         let message = "";
-        if (!Client.music.queue.has(msg.guild.id)) Client.queue.set(msg.guild.id, new Array());
+        if (!Client.music.queue.has(msg.guild.id)) Client.music.queue.set(msg.guild.id, new Array());
         for (let song in Client.music.queue.get(msg.guild.id)) {
             let playlist = "";
             if (Client.music.queue.get(msg.guild.id)[song].type == "playlist") {

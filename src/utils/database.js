@@ -337,7 +337,7 @@ async function setModlog(guild, data) {
 async function getEvent(query_array) {
     let sql = queries.query.getEvent;
 
-    for (let i = 0; i < query.length; i++) {
+    for (let i = 0; i < query_array.length; i++) {
         sql += query_array[i];
     }
 
