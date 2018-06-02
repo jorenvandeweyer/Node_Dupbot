@@ -1,4 +1,3 @@
-const util = require("util");
 const mysql = require("mysql");
 const settings = require(__dirname + "/../../data/default");
 const Logger = require("../../src/utils/logger");
@@ -335,11 +334,11 @@ async function setModlog(guild, data) {
     return await query(queries.query.setModlog, data);
 }
 
-async function getEvent(query) {
+async function getEvent(query_array) {
     let sql = queries.query.getEvent;
 
     for (let i = 0; i < query.length; i++) {
-        sql += query[i];
+        sql += query_array[i];
     }
 
     sql += " ORDER BY events.execute_at ASC";
