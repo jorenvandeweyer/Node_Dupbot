@@ -355,23 +355,28 @@ function playSong(Client, msg) {
 }
 
 function addSongFeedback(msg) {
-    msg.react("❌");
-    //msg.react("✅");
-    const collector = msg.createReactionCollector( (reaction) => {
-        return reaction.emoji.name === "❌" || reaction.emoji.name === "✅";
-    }, {
-        time: 60 * 60 * 100
-    });
-    collectors.set(msg.guild.id, collector);
+    try {
+        msg.react("❌");
+        //msg.react("✅");
+        const collector = msg.createReactionCollector( (reaction) => {
+            return reaction.emoji.name === "❌" || reaction.emoji.name === "✅";
+        }, {
+            time: 60 * 60 * 100
+        });
+        collectors.set(msg.guild.id, collector);
 
-    collector.on("collect", (r) => {
-        if (r.emoji.name === "❌") {
-            let users = r.users.filter((value) => {
-                return msg.guild.members.get(value.id).voiceChannelID === msg.guild.voiceConnection.channel.id;
-            });
-            if (users.size > msg.client.voiceConnections.get(msg.guild.id).channel.members.size / 2) {
-                msg.client.voiceConnections.get(msg.guild.id).dispatcher.end();
+        collector.on("collect", (r) => {
+            if (r.emoji.name === "❌") {
+                let users = r.users.filter((value) => {
+                    return msg.guild.members.get(value.id).voiceChannelID === msg.guild.voiceConnection.channel.id;
+                });
+                if (users.size > msg.client.voiceConnections.get(msg.guild.id).channel.members.size / 2) {
+                    msg.client.voiceConnections.get(msg.guild.id).dispatcher.end();
+                }
             }
-        }
-    });
+        });
+    } catch (e) {
+        //no react permissions
+    }
+
 }
