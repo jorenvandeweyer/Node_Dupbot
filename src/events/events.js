@@ -75,7 +75,7 @@ class EventHandler {
         }
         if ("time" in date_params) {
             let time = date_params.time.split(":");
-            date.setHours(time[0]);
+            date.setHours(time[0]-2);
             date.setMinutes(time[1]);
             date.setSeconds(time[2]);
 
