@@ -364,11 +364,11 @@ async function updateEvent(id, status) {
     return await query(queries.query.updateEvent, [status, id]);
 }
 
-async function editEvent(query, status) {
+async function editEvent(query_array, status) {
     let sql = queries.query.editEvent;
 
-    for (let i = 0; i < query.length; i++) {
-        sql += query[i];
+    for (let i = 0; i < query_array.length; i++) {
+        sql += query_array[i];
     }
 
     return await query(sql, [status]);
