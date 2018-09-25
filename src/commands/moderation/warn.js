@@ -24,7 +24,7 @@ module.exports = {
                     if (reason) warnMessage += "\nReason: " + reason;
 
                     member.send(Client.createEmbed("warning", warnMessage)).catch((reason) => {
-                        Client.send(msg, Client.createEmbed("fail", reason.message));
+                        Client.send(msg, Client.createEmbed("fail", reason.message + "\n\n" + `You have been warned on **${msg.guild.name}**\n\nYou have ${active}/3 active warnings.`));
                     });
 
                     if (active >= 3) {
